@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <Copyright>Copyright © Groupe GSoft inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
+    <Authors>Groupe GSoft inc.</Authors>
+    <Owners>Groupe GSoft inc.</Owners>
+    <PackageProjectUrl>TODO</PackageProjectUrl>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Description>TODO</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
