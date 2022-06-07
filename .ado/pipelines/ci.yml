@@ -4,7 +4,7 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-  - job: UnitTests
+  - job: CI
     timeoutInMinutes: 10
 
     workspace:
@@ -28,3 +28,9 @@ jobs:
         inputs:
           targetType: "filePath"
           filePath: "build.ps1"
+
+      - task: PublishPipelineArtifact@1
+        displayName: "Publish packages"
+        inputs:
+          targetPath: ".output/"
+          artifact: packages
