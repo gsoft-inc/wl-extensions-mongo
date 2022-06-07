@@ -1,6 +1,9 @@
 using System;
 using System.IO;
+using System.Linq;
 using Cake.Common;
+using Cake.Common.Build;
+using Cake.Common.Build.AzurePipelines.Data;
 using Cake.Common.IO;
 using Cake.Common.Tools.DotNet;
 using Cake.Common.Tools.DotNet.Build;
@@ -88,6 +91,11 @@ public sealed class GitVersionTask : FrostingTask<BuildContext>
         context.AddMSBuildSetting("FileVersion", gitVersion.AssemblySemFileVer, log: true);
         context.AddMSBuildSetting("RepositoryBranch", gitVersion.BranchName, log: true);
         context.AddMSBuildSetting("RepositoryCommit", gitVersion.Sha, log: true);
+
+        if (context.AzurePipelines().IsRunningOnAzurePipelines)
+        {
+            context.AzurePipelines().Commands.UpdateBuildNumber(gitVersion.FullSemVer);
+        }
     }
 }
 
@@ -129,13 +137,28 @@ public sealed class TestTask : FrostingTask<BuildContext>
     {
         foreach (var testProjectFilePath in context.GetFiles(Path.Combine(Constants.SourceDirectoryPath, "*", "*.Tests.csproj")))
         {
-            context.DotNetTest(testProjectFilePath.FullPath, new DotNetTestSettings
+            var settings = new DotNetTestSettings
             {
                 Configuration = Constants.Release,
-                Loggers = new[] { "console;verbosity=detailed" },
+                Loggers = new[] { "console;verbosity=detailed", "trx" },
                 NoBuild = true,
                 NoLogo = true,
-            });
+            };
+
+            if (context.AzurePipelines().IsRunningOnAzurePipelines)
+            {
+                settings.ResultsDirectory = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
+            }
+
+            context.DotNetTest(testProjectFilePath.FullPath, settings);
+
+            if (context.AzurePipelines().IsRunningOnAzurePipelines)
+            {
+                context.AzurePipelines().Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
+                {
+                    TestResultsFiles = context.GetFiles(Path.Combine(Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY") ?? string.Empty, "*.trx")).ToArray()
+                });
+            }
         }
     }
 }
