@@ -15,30 +15,39 @@ namespace GSoft.Infra.Mongo.Indexing;
 /// </summary>
 internal sealed class UniqueIndexName
 {
-    public const int NamePrefixMaxLength = 62;
-    private const int NameSuffixLength = 64;
+    private const int IndexHashLength = 64;
 
-    // MongoDB 4.2 removed the index name length limit of 127 characters, but we still use this limit anyway, it should be enough:
+    public static readonly Version DefaultVersion = new Version(0, 0, 0, 0);
+
+    // Careful, pre-4.2 MongoDB has a index name length limit of 127 characters
     // https://www.mongodb.com/docs/manual/reference/limits/#mongodb-limit-Index-Name-Length
     private static readonly Regex ValidNameRegex = new Regex(
-        "^(?<NamePrefix>[a-z0-9_]{0," + NamePrefixMaxLength + "})_(?<NameSuffix>[a-z0-9]{" + NameSuffixLength + "})$",
+        "^(?<Prefix>[a-z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexHashLength + "})_(?<AppVersion>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)$",
         RegexOptions.Compiled);
 
     private UniqueIndexName()
     {
     }
 
-    public string Name { get; private init; } = string.Empty;
+    public string FullName { get; private init; } = string.Empty;
 
-    public string NamePrefix { get; private init; } = string.Empty;
+    public string Prefix { get; private init; } = string.Empty;
 
-    public string NameSuffix { get; private init; } = string.Empty;
+    public string Hash { get; private init; } = string.Empty;
 
-    public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, [MaybeNullWhen(false)] out UniqueIndexName indexName)
+    public Version ApplicationVersion { get; private init; } = DefaultVersion;
+
+    public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, Version applicationVersion, [MaybeNullWhen(false)] out UniqueIndexName indexName)
     {
         var options = indexModel.Options;
 
-        var namePrefix = options.Name?.Trim() ?? string.Empty;
+        var prefix = options.Name?.Trim() ?? string.Empty;
+        if (prefix.Length == 0)
+        {
+            indexName = null;
+            return false;
+        }
+
         var bsonSerializer = BsonSerializer.LookupSerializer<TDocument>();
         var serializerRegistry = BsonSerializer.SerializerRegistry;
 
@@ -50,26 +59,27 @@ internal sealed class UniqueIndexName
             .Append(options.PartialFilterExpression is { } filter ? filter.Render(bsonSerializer, serializerRegistry) : string.Empty)
             .ToString();
 
-        string nameSuffix;
+        string hashHex;
         using (var sha = SHA256.Create())
         {
             var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(indexDescription));
 #if NET6_0_OR_GREATER
-            nameSuffix = Convert.ToHexString(hash);
+            hashHex = Convert.ToHexString(hash).ToLowerInvariant();
 #else
-            nameSuffix = BitConverter.ToString(hash).Replace("-", string.Empty);
+            hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
 #endif
         }
 
-        var name = namePrefix + "_" + nameSuffix.ToLowerInvariant();
+        var name = prefix + "_" + hashHex + "_" + applicationVersion;
 
         if (ValidNameRegex.Match(name) is { Success: true })
         {
             indexName = new UniqueIndexName
             {
-                Name = name,
-                NamePrefix = namePrefix,
-                NameSuffix = nameSuffix,
+                FullName = name,
+                Prefix = prefix,
+                Hash = hashHex,
+                ApplicationVersion = applicationVersion,
             };
 
             return true;
@@ -87,9 +97,10 @@ internal sealed class UniqueIndexName
         {
             indexName = new UniqueIndexName
             {
-                Name = name,
-                NamePrefix = match.Groups["NamePrefix"].Value,
-                NameSuffix = match.Groups["NameSuffix"].Value,
+                FullName = name,
+                Prefix = match.Groups["Prefix"].Value,
+                Hash = match.Groups["Hash"].Value,
+                ApplicationVersion = Version.Parse(match.Groups["AppVersion"].Value),
             };
 
             return true;

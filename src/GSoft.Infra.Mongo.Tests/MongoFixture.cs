@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using GSoft.ComponentModel.DataAnnotations;
 using GSoft.Infra.Mongo.Security;
 using GSoft.Xunit.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -15,9 +16,19 @@ public sealed class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo().UseEphemeralRealServer().AddEncryptor<AmbientUserEncryptor>();
+        services.AddMongo(ConfigureApplicationVersion)
+
+            // .UseEphemeralRealServer()
+            .AddEncryptor<AmbientUserEncryptor>();
+
+        services.Configure<MongoOptions>(this.Configuration.GetRequiredSection("Mongo"));
 
         return services;
+    }
+
+    private static void ConfigureApplicationVersion(MongoOptions options)
+    {
+        // options.Indexing.ApplicationVersionAccessor = () => Version.Parse("1.2.3");
     }
 
     private sealed class AmbientUserEncryptor : IMongoValueEncryptor

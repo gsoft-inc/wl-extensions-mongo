@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="GSoft.ComponentModel.DataAnnotations" Version="0.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.15.1" />
