@@ -151,14 +151,6 @@ public sealed class TestTask : FrostingTask<BuildContext>
             }
 
             context.DotNetTest(testProjectFilePath.FullPath, settings);
-
-            if (context.AzurePipelines().IsRunningOnAzurePipelines)
-            {
-                context.AzurePipelines().Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
-                {
-                    TestResultsFiles = context.GetFiles(Path.Combine(Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY") ?? string.Empty, "*.trx")).ToArray()
-                });
-            }
         }
     }
 }
