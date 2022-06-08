@@ -5,7 +5,7 @@ Provides MongoDB access through **.NET dependency injection**, following `Micros
 Features:
 * **Automatic indexes** creation, update and removal based on code changes,
 * **Encryption at the property level** with different scopes (per user, tenant, or application-wide),
-* `IServiceCollection` enabled using `IServiceCollection` and `IServiceProvider`,
+* **Dependency-injection** enabled using `IServiceCollection` and `IServiceProvider`,
 * **Highly configurable** (custom serializers, conventions, multiple databases support)
 * `IAsyncEnumerable` support
 
