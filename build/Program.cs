@@ -160,7 +160,8 @@ public sealed class TestTask : FrostingTask<BuildContext>
             {
                 if (ado.IsRunningOnAzurePipelines && settings.ResultsDirectory != null)
                 {
-                    var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*", "*.trx")).ToArray();
+                    var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*.trx")).ToArray();
+                    context.Log.Information("TRX SEARCH: " + Path.Combine(settings.ResultsDirectory.FullPath, "*.trx"));
                     context.Log.Information("TRX: " + string.Join(", ", trxFiles.Select(x => x.FullPath)));
 
                     ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
