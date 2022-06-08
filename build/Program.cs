@@ -92,9 +92,9 @@ public sealed class GitVersionTask : FrostingTask<BuildContext>
         context.AddMSBuildSetting("RepositoryBranch", gitVersion.BranchName, log: true);
         context.AddMSBuildSetting("RepositoryCommit", gitVersion.Sha, log: true);
 
-        if (context.AzurePipelines().IsRunningOnAzurePipelines)
+        if (context.AzurePipelines() is { IsRunningOnAzurePipelines: true } ado)
         {
-            context.AzurePipelines().Commands.UpdateBuildNumber(gitVersion.FullSemVer);
+            ado.Commands.UpdateBuildNumber(gitVersion.FullSemVer);
         }
     }
 }
@@ -152,18 +152,23 @@ public sealed class TestTask : FrostingTask<BuildContext>
                 settings.ResultsDirectory = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
             }
 
-            context.DotNetTest(testProjectFilePath.FullPath, settings);
-
-            if (ado.IsRunningOnAzurePipelines && settings.ResultsDirectory != null)
+            try
             {
-                var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*", "*.trx")).ToArray();
-                context.Log.Information("TRX: " + string.Join(", ", trxFiles.Select(x => x.FullPath)));
-
-                ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
+                context.DotNetTest(testProjectFilePath.FullPath, settings);
+            }
+            finally
+            {
+                if (ado.IsRunningOnAzurePipelines && settings.ResultsDirectory != null)
                 {
-                    TestRunner = AzurePipelinesTestRunnerType.VSTest,
-                    TestResultsFiles = trxFiles,
-                });
+                    var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*", "*.trx")).ToArray();
+                    context.Log.Information("TRX: " + string.Join(", ", trxFiles.Select(x => x.FullPath)));
+
+                    ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
+                    {
+                        TestRunner = AzurePipelinesTestRunnerType.VSTest,
+                        TestResultsFiles = trxFiles,
+                    });
+                }
             }
         }
     }
