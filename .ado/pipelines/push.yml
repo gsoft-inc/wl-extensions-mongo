@@ -1,0 +1,34 @@
+trigger:
+  tags:
+    include:
+      - "*.*.*"
+
+pool:
+  name: "Azure Pipelines"
+
+jobs:
+  - job: CI
+    timeoutInMinutes: 10
+
+    workspace:
+      clean: all
+
+    steps:
+      - task: UseDotNet@2
+        displayName: "Use .NET Core 3.1 SDK"
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+
+      - task: UseDotNet@2
+        displayName: "Use .NET 6 SDK"
+        inputs:
+          packageType: sdk
+          version: 6.0.x
+
+      - task: PowerShell@2
+        displayName: "Restore, build, test, pack and push"
+        inputs:
+          targetType: "filePath"
+          filePath: "build.ps1"
+          arguments: --target=push --nuget-api-key=$(System.AccessToken) --nuget-source=https://pkgs.dev.azure.com/sharegate/_packaging/SGCloudCopy/nuget/v3/index.json
