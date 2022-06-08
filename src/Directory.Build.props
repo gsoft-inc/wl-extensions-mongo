@@ -3,11 +3,11 @@
     <Copyright>Copyright © Groupe GSoft inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
     <Authors>Groupe GSoft inc.</Authors>
     <Owners>Groupe GSoft inc.</Owners>
-    <PackageProjectUrl>TODO</PackageProjectUrl>
+    <PackageProjectUrl>https://dev.azure.com/sharegate/ShareGate.CloudCopy/_git/GSoft.Infra.Mongo</PackageProjectUrl>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Description>TODO</Description>
+    <Description>Provides MongoDB access through .NET dependency injection.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

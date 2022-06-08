@@ -1,6 +1,5 @@
 ﻿using MongoDB.Driver;
 
-// ReSharper disable once CheckNamespace
 namespace GSoft.Infra.Mongo;
 
 /// <summary>

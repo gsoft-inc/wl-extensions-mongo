@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{E16B8921
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GSoft.Infra.Mongo.Abstractions", "GSoft.Infra.Mongo.Abstractions\GSoft.Infra.Mongo.Abstractions.csproj", "{9F410354-6AEC-4A46-84B4-214076363660}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,5 +33,9 @@ Global
 		{639EC4EA-499F-4936-8864-F07B6293BE1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{639EC4EA-499F-4936-8864-F07B6293BE1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{639EC4EA-499F-4936-8864-F07B6293BE1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F410354-6AEC-4A46-84B4-214076363660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F410354-6AEC-4A46-84B4-214076363660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F410354-6AEC-4A46-84B4-214076363660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F410354-6AEC-4A46-84B4-214076363660}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

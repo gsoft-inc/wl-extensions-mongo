@@ -22,7 +22,7 @@ public sealed class MongoFixture : BaseIntegrationFixture
 
     private static void ConfigureApplicationVersion(MongoOptions options)
     {
-        options.Indexing.ApplicationVersionAccessor = () => new Version(1, 2, 3);
+        options.Indexing.ApplicationVersion = new Version(1, 2, 3);
     }
 
     private sealed class AmbientUserEncryptor : IMongoValueEncryptor

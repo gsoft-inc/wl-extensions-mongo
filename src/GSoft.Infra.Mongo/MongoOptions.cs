@@ -47,5 +47,5 @@ public sealed class MongoIndexingOptions
     [Range(1, int.MaxValue)]
     public int LockAcquisitionTimeoutInSeconds { get; set; } = 60;
 
-    public Func<Version?>? ApplicationVersionAccessor { get; set; }
+    public Version? ApplicationVersion { get; set; }
 }

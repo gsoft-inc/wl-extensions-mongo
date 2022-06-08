@@ -12,7 +12,7 @@ internal sealed class UniqueIndexNameFactory : IUniqueIndexNameFactory
 
     public UniqueIndexNameFactory(IOptions<MongoOptions> options, IHostEnvironment environment)
     {
-        var applicationVersion = options.Value.Indexing.ApplicationVersionAccessor?.Invoke() ?? UniqueIndexName.DefaultVersion;
+        var applicationVersion = options.Value.Indexing.ApplicationVersion ?? UniqueIndexName.DefaultVersion;
 
         // Make negative properties equal to zero
         var sanitizedApplicationVersion = new Version(
@@ -23,7 +23,7 @@ internal sealed class UniqueIndexNameFactory : IUniqueIndexNameFactory
 
         if (this._applicationVersion == UniqueIndexName.DefaultVersion && (environment.IsStaging() || environment.IsProduction()))
         {
-            throw new InvalidOperationException(nameof(MongoOptions) + "." + nameof(MongoOptions.Indexing) + "." + nameof(MongoOptions.Indexing.ApplicationVersionAccessor) + " must return a positive application version");
+            throw new InvalidOperationException(nameof(MongoOptions) + "." + nameof(MongoOptions.Indexing) + "." + nameof(MongoOptions.Indexing.ApplicationVersion) + " must return a positive application version");
         }
 
         this._applicationVersion = sanitizedApplicationVersion;

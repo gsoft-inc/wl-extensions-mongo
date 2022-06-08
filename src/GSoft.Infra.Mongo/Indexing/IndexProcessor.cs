@@ -199,14 +199,14 @@ internal sealed class IndexProcessor<TDocument>
         }
     }
 
-    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "TODO")]
+    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "These are private enums")]
     private enum AddReason
     {
         New,
         Updated,
     }
 
-    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "TODO")]
+    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "These are private enums")]
     private enum RemoveReason
     {
         Outdated,
