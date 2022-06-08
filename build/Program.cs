@@ -161,8 +161,6 @@ public sealed class TestTask : FrostingTask<BuildContext>
                 if (ado.IsRunningOnAzurePipelines && settings.ResultsDirectory != null)
                 {
                     var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*.trx")).ToArray();
-                    context.Log.Information("TRX SEARCH: " + Path.Combine(settings.ResultsDirectory.FullPath, "*.trx"));
-                    context.Log.Information("TRX: " + string.Join(", ", trxFiles.Select(x => x.FullPath)));
 
                     ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
                     {
@@ -179,15 +177,23 @@ public sealed class TestTask : FrostingTask<BuildContext>
 [IsDependentOn(typeof(TestTask))]
 public sealed class PackTask : FrostingTask<BuildContext>
 {
-    public override void Run(BuildContext context) => context.DotNetPack(Constants.MainProjectPath, new DotNetPackSettings
+    public override void Run(BuildContext context)
     {
-        Configuration = Constants.Release,
-        MSBuildSettings = context.MSBuildSettings,
-        OutputDirectory = Constants.OutputDirectoryPath,
-        NoBuild = true,
-        NoRestore = true,
-        NoLogo = true,
-    });
+        context.DotNetPack(Constants.MainProjectPath, new DotNetPackSettings
+        {
+            Configuration = Constants.Release,
+            MSBuildSettings = context.MSBuildSettings,
+            OutputDirectory = Constants.OutputDirectoryPath,
+            NoBuild = true,
+            NoRestore = true,
+            NoLogo = true,
+        });
+
+        if (context.AzurePipelines() is { IsRunningOnAzurePipelines: true } ado)
+        {
+            ado.Commands.UploadArtifactDirectory(new Cake.Core.IO.DirectoryPath(Constants.OutputDirectoryPath), "packages");
+        }
+    }
 }
 
 [TaskName("Push")]

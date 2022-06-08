@@ -43,35 +43,20 @@ internal sealed class MongoDistributedLock
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
         var linkedCt = linkedCts.Token;
 
-        var isAcquired = false;
-
         try
         {
             while (true)
             {
-                // Start watching the collection early so we won't miss any change event if the next attempt to acquire the lock fails
-                var isLockAvailableTask = this.WaitForLockToBeAvailableAsync(linkedCt);
-
                 if (await this.TryAcquireAsync(lifetime).ConfigureAwait(false))
                 {
-                    isAcquired = true;
-
-                    // Interrupts the background task that checks if the lock is available
-                    linkedCts.Cancel();
-
                     return true;
                 }
 
-                await isLockAvailableTask.ConfigureAwait(false);
+                await this.WaitForLockToBeAvailableAsync(linkedCt).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
         {
-            if (isAcquired)
-            {
-                return true;
-            }
-
             if (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
             {
                 return false;

@@ -28,9 +28,3 @@ jobs:
         inputs:
           targetType: "filePath"
           filePath: "build.ps1"
-
-      - task: PublishPipelineArtifact@1
-        displayName: "Publish packages"
-        inputs:
-          targetPath: ".output/"
-          artifact: packages
