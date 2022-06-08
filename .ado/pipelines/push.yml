@@ -27,8 +27,18 @@ jobs:
           version: 6.0.x
 
       - task: PowerShell@2
-        displayName: "Restore, build, test, pack and push"
+        displayName: "Restore, build, test, pack"
         inputs:
           targetType: "filePath"
           filePath: "build.ps1"
-          arguments: --target=push --nuget-api-key=$(System.AccessToken) --nuget-source=https://pkgs.dev.azure.com/sharegate/_packaging/SGCloudCopy/nuget/v3/index.json
+
+      - task: NuGetAuthenticate@1
+        displayName: "NuGet authenticate"
+
+      - task: NuGetCommand@2
+        displayName: "Push NuGet package to internal feed"
+        inputs:
+          command: push
+          publishVstsFeed: "SGCloudCopy"
+          packagesToPush: ".output/*.nupkg"
+          allowPackageConflicts: false
