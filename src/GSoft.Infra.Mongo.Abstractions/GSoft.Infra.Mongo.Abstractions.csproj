@@ -7,6 +7,7 @@
     <AssemblyTitle>GSoft.Infra.Mongo.Abstractions</AssemblyTitle>
     <PackageId>GSoft.Infra.Mongo.Abstractions</PackageId>
     <RootNamespace>GSoft.Infra.Mongo</RootNamespace>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +17,9 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

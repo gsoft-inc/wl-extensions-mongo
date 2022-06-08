@@ -6,6 +6,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyTitle>GSoft.Infra.Mongo</AssemblyTitle>
     <PackageId>GSoft.Infra.Mongo</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +17,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
