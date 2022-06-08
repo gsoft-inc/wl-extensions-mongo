@@ -135,39 +135,28 @@ public sealed class TestTask : FrostingTask<BuildContext>
 {
     public override void Run(BuildContext context)
     {
-        var ado = context.AzurePipelines();
-
-        foreach (var testProjectFilePath in context.GetFiles(Path.Combine(Constants.SourceDirectoryPath, "*", "*.Tests.csproj")))
+        try
         {
-            var settings = new DotNetTestSettings
+            context.DotNetTest(Constants.SolutionPath, new DotNetTestSettings
             {
                 Configuration = Constants.Release,
+                ResultsDirectory = Constants.OutputDirectoryPath,
                 Loggers = new[] { "console;verbosity=detailed", "trx" },
                 NoBuild = true,
                 NoLogo = true,
-            };
+            });
+        }
+        finally
+        {
+            if (context.AzurePipelines() is { IsRunningOnAzurePipelines: true } ado)
+            {
+                var trxFiles = context.GetFiles(Path.Combine(Constants.OutputDirectoryPath, "*.trx")).ToArray();
 
-            if (ado.IsRunningOnAzurePipelines)
-            {
-                settings.ResultsDirectory = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
-            }
-
-            try
-            {
-                context.DotNetTest(testProjectFilePath.FullPath, settings);
-            }
-            finally
-            {
-                if (ado.IsRunningOnAzurePipelines && settings.ResultsDirectory != null)
+                ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
                 {
-                    var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*.trx")).ToArray();
-
-                    ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
-                    {
-                        TestRunner = AzurePipelinesTestRunnerType.VSTest,
-                        TestResultsFiles = trxFiles,
-                    });
-                }
+                    TestRunner = AzurePipelinesTestRunnerType.VSTest,
+                    TestResultsFiles = trxFiles,
+                });
             }
         }
     }
@@ -192,6 +181,10 @@ public sealed class PackTask : FrostingTask<BuildContext>
         if (context.AzurePipelines() is { IsRunningOnAzurePipelines: true } ado)
         {
             ado.Commands.UploadArtifactDirectory(new Cake.Core.IO.DirectoryPath(Constants.OutputDirectoryPath), "packages");
+        }
+        else if (context.GitHubActions() is { IsRunningOnGitHubActions: true } github)
+        {
+            github.Commands.UploadArtifact(new Cake.Core.IO.DirectoryPath(Constants.OutputDirectoryPath), "packages");
         }
     }
 }

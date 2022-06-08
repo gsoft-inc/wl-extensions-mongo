@@ -15,9 +15,14 @@ public sealed class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo().UseEphemeralRealServer().AddEncryptor<AmbientUserEncryptor>();
+        services.AddMongo(ConfigureApplicationVersion).AddEncryptor<AmbientUserEncryptor>();
 
         return services;
+    }
+
+    private static void ConfigureApplicationVersion(MongoOptions options)
+    {
+        options.Indexing.ApplicationVersionAccessor = () => new Version(1, 2, 3);
     }
 
     private sealed class AmbientUserEncryptor : IMongoValueEncryptor
@@ -60,11 +65,11 @@ public sealed class MongoFixture : BaseIntegrationFixture
 
     private static class Aes256Cbc
     {
-        private const int KeySize = 256;
-        private const int BlockSize = 128;
+        private const int KeyBitSize = 256;
+        private const int BlockBitSize = 128;
         private const int BitsPerByte = 8;
 
-        private const int IVByteCount = BlockSize / BitsPerByte;
+        private const int IVByteSize = BlockBitSize / BitsPerByte;
 
         public static byte[] Encrypt(byte[] key, byte[] bytes)
         {
@@ -100,7 +105,7 @@ public sealed class MongoFixture : BaseIntegrationFixture
 
         private static void Decrypt(byte[] key, Stream sourceStream, Stream destinationStream)
         {
-            var iv = new byte[IVByteCount];
+            var iv = new byte[IVByteSize];
 
             var bytesRead = sourceStream.Read(iv, 0, iv.Length);
             if (bytesRead < iv.Length)
@@ -125,8 +130,8 @@ public sealed class MongoFixture : BaseIntegrationFixture
         {
             var aes = Aes.Create();
 
-            aes.KeySize = KeySize;
-            aes.BlockSize = BlockSize;
+            aes.KeySize = KeyBitSize;
+            aes.BlockSize = BlockBitSize;
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.PKCS7;
 

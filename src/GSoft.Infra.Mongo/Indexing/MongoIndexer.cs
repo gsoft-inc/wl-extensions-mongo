@@ -13,13 +13,15 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     private readonly IMongoDatabase _database;
     private readonly MongoDistributedLockFactory _distributedLockFactory;
+    private readonly IUniqueIndexNameFactory _indexNameFactory;
     private readonly IOptions<MongoOptions> _options;
     private readonly ILogger<MongoIndexer> _logger;
 
-    public MongoIndexer(IMongoDatabase database, MongoDistributedLockFactory distributedLockFactory, IOptions<MongoOptions> options, ILogger<MongoIndexer> logger)
+    public MongoIndexer(IMongoDatabase database, MongoDistributedLockFactory distributedLockFactory, IUniqueIndexNameFactory indexNameFactory, IOptions<MongoOptions> options, ILogger<MongoIndexer> logger)
     {
         this._database = database;
         this._distributedLockFactory = distributedLockFactory;
+        this._indexNameFactory = indexNameFactory;
         this._options = options;
         this._logger = logger;
     }
@@ -96,6 +98,6 @@ internal sealed class MongoIndexer : IMongoIndexer
     private Task ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, CancellationToken cancellationToken)
         where TDocument : IMongoDocument
     {
-        return IndexProcessor<TDocument>.ProcessAsync(provider, this._database, this._logger, cancellationToken);
+        return IndexProcessor<TDocument>.ProcessAsync(provider, this._database, this._indexNameFactory, this._logger, cancellationToken);
     }
 }

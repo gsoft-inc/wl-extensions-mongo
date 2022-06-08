@@ -19,6 +19,7 @@ internal sealed class IndexProcessor<TDocument>
 {
     private readonly MongoIndexProvider<TDocument> _provider;
     private readonly IMongoDatabase _database;
+    private readonly IUniqueIndexNameFactory _indexNameFactory;
     private readonly ILogger _logger;
     private readonly CancellationToken _cancellationToken;
     private readonly string _collectionName;
@@ -28,10 +29,11 @@ internal sealed class IndexProcessor<TDocument>
     private readonly Dictionary<UniqueIndexName, RemoveReason> _indexesToRemove;
     private readonly Dictionary<UniqueIndexName, AddReason> _indexesToAdd;
 
-    private IndexProcessor(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILogger logger, CancellationToken cancellationToken)
+    private IndexProcessor(MongoIndexProvider<TDocument> provider, IMongoDatabase database, IUniqueIndexNameFactory indexNameFactory, ILogger logger, CancellationToken cancellationToken)
     {
         this._provider = provider;
         this._database = database;
+        this._indexNameFactory = indexNameFactory;
         this._logger = logger;
         this._cancellationToken = cancellationToken;
         this._collectionName = database.GetCollectionName<TDocument>();
@@ -42,9 +44,9 @@ internal sealed class IndexProcessor<TDocument>
         this._indexesToAdd = new Dictionary<UniqueIndexName, AddReason>();
     }
 
-    public static Task ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILogger logger, CancellationToken cancellationToken)
+    public static Task ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, IUniqueIndexNameFactory indexNameFactory, ILogger logger, CancellationToken cancellationToken)
     {
-        return new IndexProcessor<TDocument>(provider, database, logger, cancellationToken).ProcessAsync();
+        return new IndexProcessor<TDocument>(provider, database, indexNameFactory, logger, cancellationToken).ProcessAsync();
     }
 
     private async Task ProcessAsync()
@@ -89,7 +91,7 @@ internal sealed class IndexProcessor<TDocument>
 
         foreach (var index in indexes)
         {
-            if (UniqueIndexName.TryCreate(index, out var indexName))
+            if (this._indexNameFactory.TryCreate(index, out var indexName))
             {
                 this._existingIndexes.Add(indexName);
             }
@@ -100,9 +102,9 @@ internal sealed class IndexProcessor<TDocument>
     {
         foreach (var indexModel in this._provider.CreateIndexModels())
         {
-            if (!UniqueIndexName.TryCreate(indexModel, out var indexName))
+            if (!this._indexNameFactory.TryCreate(indexModel, out var indexName))
             {
-                throw new ArgumentException($"All indexes in '{this._provider.GetType()}' must provide a snake cased name up to {UniqueIndexName.NamePrefixMaxLength} characters");
+                throw new ArgumentException($"All indexes in '{this._provider.GetType()}' must provide a snake cased name");
             }
 
             this._indexModels[indexName] = indexModel;
@@ -111,26 +113,34 @@ internal sealed class IndexProcessor<TDocument>
 
     private void ComputeIndexesToAddAndRemove()
     {
-        foreach (var newIndexName in this._indexModels.Keys)
+        foreach (var newIndex in this._indexModels.Keys)
         {
-            var existingIndexName = this._existingIndexes.FirstOrDefault(x => x.NamePrefix == newIndexName.NamePrefix);
-            if (existingIndexName == null)
+            var samePrefixIndexes = this._existingIndexes.Where(x => x.Prefix == newIndex.Prefix).ToArray();
+            var alreadyExistsWithSameHash = false;
+
+            foreach (var existingIndex in samePrefixIndexes)
             {
-                this._indexesToAdd.Add(newIndexName, AddReason.New);
-                continue;
+                if (newIndex.Hash == existingIndex.Hash)
+                {
+                    alreadyExistsWithSameHash = true;
+                    this._logger.LogInformation("Skipping {DocumentType} index {IndexName} as it is already up-to-date", typeof(TDocument).Name, existingIndex.FullName);
+                }
+                else if (newIndex.ApplicationVersion >= existingIndex.ApplicationVersion)
+                {
+                    this._indexesToRemove.Add(existingIndex, RemoveReason.Outdated);
+                }
+                else if (newIndex.ApplicationVersion < existingIndex.ApplicationVersion)
+                {
+                    // Keep existing index because it was created by a more recent version
+                }
+
+                this._existingIndexes.Remove(existingIndex);
             }
 
-            if (existingIndexName.NameSuffix == newIndexName.NameSuffix)
+            if (!alreadyExistsWithSameHash)
             {
-                this._logger.LogInformation("Skipping {DocumentType} index {IndexName} as it is already up-to-date", typeof(TDocument).Name, existingIndexName.Name);
+                this._indexesToAdd.Add(newIndex, samePrefixIndexes.Length > 0 ? AddReason.Updated : AddReason.New);
             }
-            else
-            {
-                this._indexesToRemove.Add(existingIndexName, RemoveReason.Outdated);
-                this._indexesToAdd.Add(newIndexName, AddReason.Updated);
-            }
-
-            this._existingIndexes.Remove(existingIndexName);
         }
 
         foreach (var existingIndex in this._existingIndexes)
@@ -149,16 +159,16 @@ internal sealed class IndexProcessor<TDocument>
             switch (reason)
             {
                 case RemoveReason.Outdated:
-                    this._logger.LogInformation("Dropping {DocumentType} index {IndexName} as its definition has changed", typeof(TDocument).Name, indexName.Name);
+                    this._logger.LogInformation("Dropping {DocumentType} index {IndexName} as its definition has changed", typeof(TDocument).Name, indexName.FullName);
                     break;
                 case RemoveReason.Orphaned:
-                    this._logger.LogInformation("Dropping {DocumentType} index {IndexName} as it is not referenced in the code anymore", typeof(TDocument).Name, indexName.Name);
+                    this._logger.LogInformation("Dropping {DocumentType} index {IndexName} as it is not referenced in the code anymore", typeof(TDocument).Name, indexName.FullName);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(reason));
             }
 
-            await this._database.GetCollection<TDocument>().Indexes.DropOneAsync(indexName.Name).ConfigureAwait(false);
+            await this._database.GetCollection<TDocument>().Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
         }
     }
 
@@ -171,15 +181,15 @@ internal sealed class IndexProcessor<TDocument>
 
             var indexModel = this._indexModels[indexName];
             var clonedIndexModel = new CreateIndexModel<TDocument>(indexModel.Keys, indexModel.Options);
-            clonedIndexModel.Options.Name = indexName.Name;
+            clonedIndexModel.Options.Name = indexName.FullName;
 
             switch (reason)
             {
                 case AddReason.New:
-                    this._logger.LogInformation("Creating {DocumentType} index {IndexName} for the first time", typeof(TDocument).Name, indexName.Name);
+                    this._logger.LogInformation("Creating {DocumentType} index {IndexName} for the first time", typeof(TDocument).Name, indexName.FullName);
                     break;
                 case AddReason.Updated:
-                    this._logger.LogInformation("Creating {DocumentType} index {IndexName} after dropping an older version", typeof(TDocument).Name, indexName.Name);
+                    this._logger.LogInformation("Creating {DocumentType} index {IndexName} after dropping an older version", typeof(TDocument).Name, indexName.FullName);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(reason));
