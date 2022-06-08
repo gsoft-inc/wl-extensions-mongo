@@ -135,6 +135,8 @@ public sealed class TestTask : FrostingTask<BuildContext>
 {
     public override void Run(BuildContext context)
     {
+        var ado = context.AzurePipelines();
+
         foreach (var testProjectFilePath in context.GetFiles(Path.Combine(Constants.SourceDirectoryPath, "*", "*.Tests.csproj")))
         {
             var settings = new DotNetTestSettings
@@ -145,12 +147,24 @@ public sealed class TestTask : FrostingTask<BuildContext>
                 NoLogo = true,
             };
 
-            if (context.AzurePipelines().IsRunningOnAzurePipelines)
+            if (ado.IsRunningOnAzurePipelines)
             {
                 settings.ResultsDirectory = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
             }
 
             context.DotNetTest(testProjectFilePath.FullPath, settings);
+
+            if (ado.IsRunningOnAzurePipelines && settings.ResultsDirectory != null)
+            {
+                var trxFiles = context.GetFiles(Path.Combine(settings.ResultsDirectory.FullPath, "*", "*.trx")).ToArray();
+                context.Log.Information("TRX: " + string.Join(", ", trxFiles.Select(x => x.FullPath)));
+
+                ado.Commands.PublishTestResults(new AzurePipelinesPublishTestResultsData
+                {
+                    TestRunner = AzurePipelinesTestRunnerType.VSTest,
+                    TestResultsFiles = trxFiles,
+                });
+            }
         }
     }
 }

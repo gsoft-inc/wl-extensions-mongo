@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace GSoft.Infra.Mongo.Tests;
 
+[Collection("threading")]
 public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture>
 {
     public MongoDistributedLockTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
@@ -25,15 +26,18 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
     }
 
     [Theory]
-    [InlineData(10, 1000, 100, 2)]
-    [InlineData(10, 1000, 2000, 4)]
-    [InlineData(10, 1000, 10000, 10)]
+    [InlineData(10, 500, 50, 2)]
+    [InlineData(10, 500, 1000, 4)]
+    [InlineData(10, 500, 5000, 10)]
     public async Task AcquireAsync_Only_Allows_One_Owner_At_A_Time(int taskCount, int lifetime, int timeout, int expectedAcquiredLockCount)
     {
         var distributedLockFactory = this.Services.GetRequiredService<MongoDistributedLockFactory>();
 
         var tasks = new Task[taskCount];
         var totalAcquiredLockCount = 0;
+
+        var lockId1 = Guid.NewGuid().ToString();
+        var lockId2 = Guid.NewGuid().ToString();
 
         for (var i = 0; i < tasks.Length; i++)
         {
@@ -49,7 +53,7 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
                 }
             }
 
-            var lockId = i % 2 == 0 ? "foo" : "bar";
+            var lockId = i % 2 == 0 ? lockId1 : lockId2;
             tasks[i] = Task.Factory.StartNew(() => AcquireAction(lockId).GetAwaiter().GetResult(), TaskCreationOptions.LongRunning);
         }
 
