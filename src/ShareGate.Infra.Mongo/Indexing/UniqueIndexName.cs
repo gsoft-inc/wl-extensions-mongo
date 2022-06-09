@@ -10,19 +10,20 @@ namespace ShareGate.Infra.Mongo.Indexing;
 
 /// <summary>
 /// Represents a unique index name generated from an instance of CreateIndexModel&lt;TDocument&gt;.
-/// The index name is composed of the developer-entered index name concatenated to the SHA256 hash of the index definition.
+/// The index name is composed of the developer-entered index name concatenated with a partial 32 char SHA256 hash of the index definition.
+/// We considered that using the half of the SHA256 hash is actually good enough to prevent collisions with other indexes for a given document.
 /// Any change to the index definition (new fields, uniqueness, etc.) will change the hash, and that's how we can know if an index should be updated.
 /// </summary>
 internal sealed class UniqueIndexName
 {
-    private const int IndexHashLength = 64;
+    private const int IndexPartialHashLength = 32;
 
     public static readonly Version DefaultVersion = new Version(0, 0, 0, 0);
 
     // Careful, pre-4.2 MongoDB has a index name length limit of 127 characters
     // https://www.mongodb.com/docs/manual/reference/limits/#mongodb-limit-Index-Name-Length
     private static readonly Regex ValidNameRegex = new Regex(
-        "^(?<Prefix>[a-z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexHashLength + "})_(?<AppVersion>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)$",
+        "^(?<Prefix>[a-z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexPartialHashLength + "})_(?<AppVersion>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)$",
         RegexOptions.Compiled);
 
     private UniqueIndexName()
@@ -64,10 +65,11 @@ internal sealed class UniqueIndexName
         {
             var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(indexDescription));
 #if NET6_0_OR_GREATER
-            hashHex = Convert.ToHexString(hash).ToLowerInvariant();
+            hashHex = Convert.ToHexString(hash);
 #else
-            hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
+            hashHex = BitConverter.ToString(hash).Replace("-", string.Empty);
 #endif
+            hashHex = hashHex.ToLowerInvariant().Substring(0, IndexPartialHashLength);
         }
 
         var name = prefix + "_" + hashHex + "_" + applicationVersion;

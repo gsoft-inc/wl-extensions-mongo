@@ -2,7 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ShareGate.Infra.Mongo;
+namespace ShareGate.Infra.Mongo.Tests;
 
 public abstract class MongoDocument : IMongoDocument
 {
