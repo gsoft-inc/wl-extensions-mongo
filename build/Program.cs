@@ -25,12 +25,11 @@ return new CakeHost()
 public static class Constants
 {
     public const string Release = "Release";
-    public const string ProjectName = "GSoft.Infra.Mongo";
+    public const string ProjectName = "ShareGate.Infra.Mongo";
 
     public static readonly string SourceDirectoryPath = Path.Combine("..", "src");
     public static readonly string OutputDirectoryPath = Path.Combine("..", ".output");
     public static readonly string SolutionPath = Path.Combine(SourceDirectoryPath, ProjectName + ".sln");
-    public static readonly string MainProjectPath = Path.Combine(SourceDirectoryPath, ProjectName, ProjectName + ".csproj");
 }
 
 public class BuildContext : FrostingContext
@@ -168,7 +167,7 @@ public sealed class PackTask : FrostingTask<BuildContext>
 {
     public override void Run(BuildContext context)
     {
-        context.DotNetPack(Constants.MainProjectPath, new DotNetPackSettings
+        context.DotNetPack(Constants.SolutionPath, new DotNetPackSettings
         {
             Configuration = Constants.Release,
             MSBuildSettings = context.MSBuildSettings,
@@ -181,10 +180,6 @@ public sealed class PackTask : FrostingTask<BuildContext>
         if (context.AzurePipelines() is { IsRunningOnAzurePipelines: true } ado)
         {
             ado.Commands.UploadArtifactDirectory(new Cake.Core.IO.DirectoryPath(Constants.OutputDirectoryPath), "packages");
-        }
-        else if (context.GitHubActions() is { IsRunningOnGitHubActions: true } github)
-        {
-            github.Commands.UploadArtifact(new Cake.Core.IO.DirectoryPath(Constants.OutputDirectoryPath), "packages");
         }
     }
 }

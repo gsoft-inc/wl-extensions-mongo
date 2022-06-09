@@ -1,4 +1,4 @@
-# GSoft.Infra.Mongo
+# ShareGate.Infra.Mongo
 
 Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices.
 
@@ -12,11 +12,11 @@ Features:
 
 ## Getting started
 
-Install the package `GSoft.Infra.Mongo.Abstractions` in the project where you'll declare your documents.
+Install the package `ShareGate.Infra.Mongo.Abstractions` in the project where you'll declare your documents.
 This package contains base classes and interfaces such as `MongoDocument`, `MongoIndexProvider`, `MongoCollectionAttribute`.
 There's also a few extension methods of the MongoDB C# driver classes and interfaces that adds `IAsyncEnumerable` support to cursors.
 
-Install the package `GSoft.Infra.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
+Install the package `ShareGate.Infra.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
 
 
 ## Example
