@@ -13,7 +13,7 @@ Features:
 ## Getting started
 
 Install the package `ShareGate.Infra.Mongo.Abstractions` in the project where you'll declare your documents.
-This package contains base classes and interfaces such as `MongoDocument`, `MongoIndexProvider`, `MongoCollectionAttribute`.
+This package contains base classes and interfaces such as `IMongoDocument`, `MongoIndexProvider`, `MongoCollectionAttribute`.
 There's also a few extension methods of the MongoDB C# driver classes and interfaces that adds `IAsyncEnumerable` support to cursors.
 
 Install the package `ShareGate.Infra.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
@@ -27,6 +27,10 @@ Install the package `ShareGate.Infra.Mongo` at the application entry point level
 [MongoCollection("people", IndexProviderType = typeof(PersonDocumentIndexes))]
 public class PersonDocument : MongoDocument
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
+
     public string Name { get; set; } = string.Empty;
 }
 
@@ -40,6 +44,7 @@ public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
             new CreateIndexOptions { Name = "name" });
     }
 }
+
 
 // 2) In the project that configures the application:
 var services = new ServiceCollection();
@@ -70,18 +75,14 @@ private static void ConfigureMongo(MongoOptions options)
 // This is not required if you never use the attribute.
 private sealed class YourMongoValueEncryptor : IMongoValueEncryptor
 {
-    public byte[] Encrypt(byte[] bytes, SensitivityScope sensitivityScope)
-    {
-        // Encrypt the bytes based on the sensitivity scope
-        return bytes;
-    }
-
-    public byte[] Decrypt(byte[] bytes, SensitivityScope sensitivityScope)
-    {
-        // Decrypt the bytes based on the sensitivity scope
-        return bytes;
-    }
+    // Encrypt and decrypt the bytes based on the sensitivity scope
+    // Use AsyncLocal<> to determine if the sensitivity scopes matches the current execution context.
+    // For instance, SensitivityScope.User should only work if there is actually an authenticated user detected through IHttpContextAccessor,
+    // or any other ambient mechanism that relies on AsyncLocal<>.
+    public byte[] Encrypt(byte[] bytes, SensitivityScope sensitivityScope) => bytes;
+    public byte[] Decrypt(byte[] bytes, SensitivityScope sensitivityScope) => bytes;
 }
+
 
 // 3) Consume the registered services
 // Automatically update indexes if their definition in the code has changed - a cryptographic hash is used to detect changes.
