@@ -1,5 +1,5 @@
 ﻿using GSoft.Infra.Mongo.Indexing;
-using GSoft.Xunit.Extensions;
+using ShareGate.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Xunit;

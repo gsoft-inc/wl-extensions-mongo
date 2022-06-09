@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GSoft.ComponentModel.DataAnnotations" Version="0.2.0" />
+    <PackageReference Include="ShareGate.ComponentModel.DataAnnotations" Version="0.2.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.15.1" />
   </ItemGroup>
 

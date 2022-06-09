@@ -1,5 +1,5 @@
 ﻿using GSoft.Infra.Mongo.Threading;
-using GSoft.Xunit.Extensions;
+using ShareGate.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;

@@ -1,4 +1,4 @@
-﻿using GSoft.ComponentModel.DataAnnotations;
+﻿using ShareGate.ComponentModel.DataAnnotations;
 
 namespace GSoft.Infra.Mongo.Security;
 
