@@ -2,5 +2,4 @@
 
 public interface IMongoDocument
 {
-    public string Id { get; set; }
 }
