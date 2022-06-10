@@ -11,6 +11,11 @@ public sealed class StringGuidIdGenerator : IIdGenerator
 
     public object GenerateId(object container, object document)
     {
+        return GenerateId();
+    }
+
+    public static object GenerateId()
+    {
         return Guid.NewGuid().ToString("D");
     }
 
