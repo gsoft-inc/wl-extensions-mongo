@@ -18,6 +18,9 @@ There's also a few extension methods of the MongoDB C# driver classes and interf
 
 Install the package `ShareGate.Infra.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
 
+Install the package `ShareGate.Infra.Mongo.Ephemeral` whenever you want to use a real but ephemeral MongoDB cluster with a single node replica set.
+This is ideal for integration testing, as each `IServiceProvider` will have access to an unique and isolated database.
+
 
 ## Example
 
@@ -44,8 +47,9 @@ public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
             new CreateIndexOptions { Name = "name" });
     }
 }
+```
 
-
+```csharp
 // 2) In the project that configures the application:
 var services = new ServiceCollection();
 services.AddMongo(ConfigureMongo).AddEncryptor<YourMongoValueEncryptor>();
@@ -82,8 +86,9 @@ private sealed class YourMongoValueEncryptor : IMongoValueEncryptor
     public byte[] Encrypt(byte[] bytes, SensitivityScope sensitivityScope) => bytes;
     public byte[] Decrypt(byte[] bytes, SensitivityScope sensitivityScope) => bytes;
 }
+```
 
-
+```csharp
 // 3) Consume the registered services
 // Automatically update indexes if their definition in the code has changed - a cryptographic hash is used to detect changes.
 // There's a distributed lock that prevents race conditions, and the application version is used to deal with deployements rollbacks.
@@ -95,4 +100,10 @@ await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument).Assembly }); // 
 // No cursors handling needed, use IAsyncEnumerable
 var collection = this.Services.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>();
 var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable().ToListAsync();
+```
+
+```csharp
+// 4) Add the ShareGate.Infra.Mongo.Ephemeral package to use a ephemeral but real MongoDB database in your tests
+var services = new ServiceCollection();
+services.AddMongo().UseEphemeralRealServer();
 ```
