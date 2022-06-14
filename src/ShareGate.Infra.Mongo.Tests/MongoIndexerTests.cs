@@ -35,8 +35,8 @@ public sealed class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
 
         Assert.Equal(3, indexNames.Count);
         Assert.Contains("_id_", indexNames);
-        Assert.Contains("fn_ln_15cfbc3bcdc8c4f800adf1709115006a_1.2.3.0", indexNames);
-        Assert.Contains("age_7c4afaa70df651e198675bca5bcb6ad2_1.2.3.0", indexNames);
+        Assert.Contains("fn_ln_15cfbc3bcdc8c4f800adf1709115006a", indexNames);
+        Assert.Contains("age_7c4afaa70df651e198675bca5bcb6ad2", indexNames);
     }
 
     [MongoCollection("person", IndexProviderType = typeof(PersonDocumentIndexes))]

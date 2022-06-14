@@ -30,7 +30,6 @@ public static class MongoServiceCollectionExtensions
         services.TryAddSingleton<MongoDistributedLockFactory>();
         services.TryAddSingleton<IMongoIndexer, MongoIndexer>();
         services.TryAddSingleton<IMongoValueEncryptor, NoopMongoValueEncryptor>();
-        services.TryAddSingleton<IUniqueIndexNameFactory, UniqueIndexNameFactory>();
 
         return new MongoBuilder(services);
     }

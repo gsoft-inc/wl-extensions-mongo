@@ -8,34 +8,34 @@ namespace ShareGate.Infra.Mongo.Indexing;
 /// </summary>
 internal sealed class IndexRegistry : Dictionary<Type, Type>
 {
-    public IndexRegistry(IEnumerable<Type> types)
+    public IndexRegistry(IEnumerable<Type> documentTypes)
     {
-        foreach (var type in types)
+        foreach (var documentType in documentTypes)
         {
-            if (!MongoReflectionCache.IsConcreteMongoDocumentType(type))
+            if (!MongoReflectionCache.IsConcreteMongoDocumentType(documentType))
             {
-                throw new ArgumentException($"Type '{type}' must implement {nameof(IMongoDocument)}");
+                throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
             }
 
-            var indexProviderType = type.GetCustomAttribute<MongoCollectionAttribute>()?.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(type);
+            var indexProviderType = documentType.GetCustomAttribute<MongoCollectionAttribute>()?.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
 
             if (!HasPublicParameterlessConstructor(indexProviderType))
             {
                 throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
             }
 
-            if (!IsIndexProvider(indexProviderType, out var documentType))
+            if (!IsIndexProvider(indexProviderType, out var indexProviderDocumentType))
             {
                 throw new InvalidOperationException($"Type '{indexProviderType} must derive from '{typeof(MongoIndexProvider<>)}");
             }
 
-            if (type == documentType)
+            if (documentType == indexProviderDocumentType)
             {
-                this.Add(type, indexProviderType);
+                this.Add(documentType, indexProviderType);
             }
             else
             {
-                throw new InvalidOperationException($"Type '{indexProviderType} must use '{type}' as its generic argument");
+                throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
             }
         }
     }
