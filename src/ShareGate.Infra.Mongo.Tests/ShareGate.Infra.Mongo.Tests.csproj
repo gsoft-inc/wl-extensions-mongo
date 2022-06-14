@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ShareGate.Infra.Mongo.Ephemeral\ShareGate.Infra.Mongo.Ephemeral.csproj" />
     <ProjectReference Include="..\ShareGate.Infra.Mongo\ShareGate.Infra.Mongo.csproj" />
   </ItemGroup>
 

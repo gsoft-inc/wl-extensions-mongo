@@ -5,6 +5,7 @@ using ShareGate.Infra.Mongo.Security;
 using ShareGate.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ShareGate.Infra.Mongo.Ephemeral;
 
 namespace ShareGate.Infra.Mongo.Tests;
 
@@ -15,14 +16,9 @@ public sealed class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo(ConfigureApplicationVersion).UseEphemeralRealServer().AddEncryptor<AmbientUserEncryptor>();
+        services.AddMongo().UseEphemeralRealServer().AddEncryptor<AmbientUserEncryptor>();
 
         return services;
-    }
-
-    private static void ConfigureApplicationVersion(MongoOptions options)
-    {
-        options.Indexing.ApplicationVersion = new Version(1, 2, 3);
     }
 
     private sealed class AmbientUserEncryptor : IMongoValueEncryptor

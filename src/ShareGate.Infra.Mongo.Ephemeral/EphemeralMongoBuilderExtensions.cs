@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Mongo2Go;
 
-namespace ShareGate.Infra.Mongo.Tests;
+namespace ShareGate.Infra.Mongo.Ephemeral;
 
 public static class EphemeralMongoBuilderExtensions
 {
@@ -65,7 +65,7 @@ public static class EphemeralMongoBuilderExtensions
 
         public void Configure(MongoOptions options)
         {
-            // Each test that requests a IMongoDatabase will have its own separate database and storage
+            // Each test that requests a IMongoDatabase will have its own separate database
             options.ConnectionString = this._runner.ConnectionString;
             options.DefaultDatabaseName = Guid.NewGuid().ToString("N");
         }

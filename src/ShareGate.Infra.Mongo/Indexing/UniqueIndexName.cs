@@ -18,12 +18,10 @@ internal sealed class UniqueIndexName
 {
     private const int IndexPartialHashLength = 32;
 
-    public static readonly Version DefaultVersion = new Version(0, 0, 0, 0);
-
     // Careful, pre-4.2 MongoDB has a index name length limit of 127 characters
     // https://www.mongodb.com/docs/manual/reference/limits/#mongodb-limit-Index-Name-Length
     private static readonly Regex ValidNameRegex = new Regex(
-        "^(?<Prefix>[a-z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexPartialHashLength + "})_(?<AppVersion>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)$",
+        "^(?<Prefix>[a-z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexPartialHashLength + "})$",
         RegexOptions.Compiled);
 
     private UniqueIndexName()
@@ -36,9 +34,7 @@ internal sealed class UniqueIndexName
 
     public string Hash { get; private init; } = string.Empty;
 
-    public Version ApplicationVersion { get; private init; } = DefaultVersion;
-
-    public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, Version applicationVersion, [MaybeNullWhen(false)] out UniqueIndexName indexName)
+    public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, [MaybeNullWhen(false)] out UniqueIndexName indexName)
     {
         var options = indexModel.Options;
 
@@ -72,7 +68,7 @@ internal sealed class UniqueIndexName
             hashHex = hashHex.ToLowerInvariant().Substring(0, IndexPartialHashLength);
         }
 
-        var name = prefix + "_" + hashHex + "_" + applicationVersion;
+        var name = prefix + "_" + hashHex;
 
         if (ValidNameRegex.Match(name) is { Success: true })
         {
@@ -81,7 +77,6 @@ internal sealed class UniqueIndexName
                 FullName = name,
                 Prefix = prefix,
                 Hash = hashHex,
-                ApplicationVersion = applicationVersion,
             };
 
             return true;
@@ -102,7 +97,6 @@ internal sealed class UniqueIndexName
                 FullName = name,
                 Prefix = match.Groups["Prefix"].Value,
                 Hash = match.Groups["Hash"].Value,
-                ApplicationVersion = Version.Parse(match.Groups["AppVersion"].Value),
             };
 
             return true;
