@@ -5,6 +5,7 @@ using ShareGate.Infra.Mongo.Security;
 using ShareGate.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ShareGate.Infra.Mongo.Ephemeral;
 
 namespace ShareGate.Infra.Mongo.Tests;
 

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net6.0;netstandard2.0</TargetFrameworks>
+    <IsPackable>True</IsPackable>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <AssemblyTitle>ShareGate.Infra.Mongo.Ephemeral</AssemblyTitle>
+    <PackageId>ShareGate.Infra.Mongo.Ephemeral</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShareGate.Infra.Mongo\ShareGate.Infra.Mongo.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Mongo2Go" Version="3.1.3" />
+  </ItemGroup>
+</Project>
