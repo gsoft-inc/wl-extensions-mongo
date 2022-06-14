@@ -7,7 +7,7 @@ pool:
   name: "Azure Pipelines"
 
 jobs:
-  - job: CI
+  - job: Push
     timeoutInMinutes: 10
 
     workspace:
