@@ -71,7 +71,6 @@ private static void ConfigureMongo(MongoOptions options)
     // Used by the automatic index update feature
     options.Indexing.LockMaxLifetimeInSeconds = 300;
     options.Indexing.LockAcquisitionTimeoutInSeconds = 60;
-    options.Indexing.ApplicationVersion = new Version(1, 0, 0);
 }
 
 // MongoDB document properties can be encrypted when decorated with the [SensitiveInformation(scope)] attribute
@@ -91,7 +90,7 @@ private sealed class YourMongoValueEncryptor : IMongoValueEncryptor
 ```csharp
 // 3) Consume the registered services
 // Automatically update indexes if their definition in the code has changed - a cryptographic hash is used to detect changes.
-// There's a distributed lock that prevents race conditions, and the application version is used to deal with deployements rollbacks.
+// There's a distributed lock that prevents race conditions.
 var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) });
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument).Assembly }); // Assembly scanning alternative
