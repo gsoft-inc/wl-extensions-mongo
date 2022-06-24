@@ -1,5 +1,8 @@
 # ShareGate.Infra.Mongo
 
+[![ShareGate.Infra.Mongo package in SGCloudCopy feed in Azure Artifacts](https://feeds.dev.azure.com/sharegate/_apis/public/Packaging/Feeds/SGCloudCopy/Packages/58873f85-2ee7-45ac-b7ee-1516a44a0a2c/Badge)](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_artifacts/feed/SGCloudCopy/NuGet/ShareGate.Infra.Mongo/)
+[![Build Status](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_apis/build/status/ShareGate.Infra.Mongo/ShareGate.Infra.Mongo%20CI?branchName=main)](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_build/latest?definitionId=307&branchName=main)
+
 Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices.
 
 Features:
