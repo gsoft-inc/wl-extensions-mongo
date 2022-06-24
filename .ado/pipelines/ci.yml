@@ -1,7 +1,11 @@
-trigger: none
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
 
 pool:
-  name: "Azure Pipelines"
+  vmImage: ubuntu-latest
 
 jobs:
   - job: CI
