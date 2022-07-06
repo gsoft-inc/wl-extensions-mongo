@@ -23,17 +23,17 @@ internal sealed class MongoDistributedLock
 
     public async ValueTask AcquireAsync(TimeSpan lifetime, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        this._logger.LogDebug("Attempting to acquire distributed lock {LockId} by owner {OwnerId}", this._lockId, this._ownerId);
+        this._logger.AcquiringDistributedLock(this._lockId, this._ownerId);
 
         this.IsAcquired = await this.AcquireAsyncInternal(lifetime, timeout, cancellationToken).ConfigureAwait(false);
 
         if (this.IsAcquired)
         {
-            this._logger.LogInformation("Distributed lock {LockId} has been acquired by owner {OwnerId}", this._lockId, this._ownerId);
+            this._logger.DistributedLockAcquired(this._lockId, this._ownerId);
         }
         else
         {
-            this._logger.LogDebug("Distributed lock {LockId} has not been acquired by owner {OwnerId}", this._lockId, this._ownerId);
+            this._logger.DistributedLockNotAcquired(this._lockId, this._ownerId);
         }
     }
 
@@ -137,7 +137,7 @@ internal sealed class MongoDistributedLock
             // Updating an existing document instead of deleting it seems to keep the write atomicity we need in the TryAcquireAsync method
             // We don't mind having a few unused lock documents in the database
             await this._collection.UpdateOneAsync(filter, update).ConfigureAwait(false);
-            this._logger.LogInformation("Distributed lock {LockId} has been released by owner {OwnerId}", this._lockId, this._ownerId);
+            this._logger.DistributedLockReleased(this._lockId, this._ownerId);
         }
     }
 

@@ -33,11 +33,11 @@ internal sealed class MongoLoggingEventSubscriber : AggregatorEventSubscriber
         {
             if (this._enableSensitiveInformationLogging)
             {
-                this._logger.LogDebug("Executing mongo command {MongoCommandName}:{MongoRequestId} {MongoCommandJson}", evt.CommandName, evt.RequestId, evt.Command.ToJson());
+                this._logger.CommandStartedSensitive(evt.CommandName, evt.RequestId, evt.Command.ToJson());
             }
             else
             {
-                this._logger.LogDebug("Executing mongo command {MongoCommandName}:{MongoRequestId}", evt.CommandName, evt.RequestId);
+                this._logger.CommandStartedNonSensitive(evt.CommandName, evt.RequestId);
             }
         }
     }
@@ -46,7 +46,7 @@ internal sealed class MongoLoggingEventSubscriber : AggregatorEventSubscriber
     {
         if (!IgnoredCommandNames.Contains(evt.CommandName))
         {
-            this._logger.LogDebug("Successfully executed mongo command {MongoCommandName}:{MongoRequestId} in {MongoCommandDuration} seconds", evt.CommandName, evt.RequestId, evt.Duration.TotalSeconds);
+            this._logger.CommandSucceeded(evt.CommandName, evt.RequestId, evt.Duration.TotalSeconds);
         }
     }
 
@@ -55,6 +55,6 @@ internal sealed class MongoLoggingEventSubscriber : AggregatorEventSubscriber
         // Manually cancelled MongoDB commands should not be logged as warnings.
         // The OperationCanceledException will eventually appear in the logs if not handled.
         var logLevel = evt.Failure is OperationCanceledException ? LogLevel.Debug : LogLevel.Warning;
-        this._logger.Log(logLevel, evt.Failure, "Failed to execute mongo command {MongoCommandName}:{MongoRequestId} in {MongoCommandDuration} seconds", evt.CommandName, evt.RequestId, evt.Duration.TotalSeconds);
+        this._logger.CommandFailed(logLevel, evt.Failure, evt.CommandName, evt.RequestId, evt.Duration.TotalSeconds);
     }
 }
