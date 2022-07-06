@@ -122,7 +122,7 @@ internal sealed class IndexProcessor<TDocument>
 
             if (existingIndexName.Hash == newIndexName.Hash)
             {
-                this._logger.LogInformation("Skipping {DocumentType} index {IndexName} as it is already up-to-date", typeof(TDocument).Name, existingIndexName.FullName);
+                this._logger.SkippingUpToDateIndex(typeof(TDocument).Name, existingIndexName.FullName);
             }
             else
             {
@@ -149,10 +149,10 @@ internal sealed class IndexProcessor<TDocument>
             switch (reason)
             {
                 case RemoveReason.Outdated:
-                    this._logger.LogInformation("Dropping {DocumentType} index {IndexName} as its definition has changed", typeof(TDocument).Name, indexName.FullName);
+                    this._logger.DroppingOutdatedIndex(typeof(TDocument).Name, indexName.FullName);
                     break;
                 case RemoveReason.Orphaned:
-                    this._logger.LogInformation("Dropping {DocumentType} index {IndexName} as it is not referenced in the code anymore", typeof(TDocument).Name, indexName.FullName);
+                    this._logger.DroppingOrphanedIndex(typeof(TDocument).Name, indexName.FullName);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(reason));
@@ -176,10 +176,10 @@ internal sealed class IndexProcessor<TDocument>
             switch (reason)
             {
                 case AddReason.New:
-                    this._logger.LogInformation("Creating {DocumentType} index {IndexName} for the first time", typeof(TDocument).Name, indexName.FullName);
+                    this._logger.CreatingCompletelyNewIndex(typeof(TDocument).Name, indexName.FullName);
                     break;
                 case AddReason.Updated:
-                    this._logger.LogInformation("Creating {DocumentType} index {IndexName} after dropping an older version", typeof(TDocument).Name, indexName.FullName);
+                    this._logger.CreatingUpdatedIndex(typeof(TDocument).Name, indexName.FullName);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(reason));
