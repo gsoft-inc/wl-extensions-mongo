@@ -1,73 +1,78 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Mongo2Go;
+using MongoDB.Driver;
 
 namespace ShareGate.Infra.Mongo.Ephemeral;
 
 public static class EphemeralMongoBuilderExtensions
 {
     /// <summary>
-    /// Provides a real implementation of MongoDB using a ephemeral localhost server that will be destroyed
+    /// Provides a real implementation of a MongoDB cluster using an ephemeral localhost server that will be destroyed
     /// when it will no longer be used by any running test. The first startup can take approximately two seconds on a dev workstation.
     /// https://github.com/Mongo2Go/Mongo2Go
     /// </summary>
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder)
     {
-        builder.Services.AddSingleton<PrivateMongoDbRunner>();
+        builder.Services.AddSingleton<DefaultDatabaseNameHolder>();
+        builder.Services.AddSingleton<ReusableMongoDbRunner>();
         builder.Services.ConfigureOptions<EphemeralMongoSetup>();
+
+        var existingMongoClientDescriptors = new List<(int, ServiceDescriptor)>();
+
+        // Find existing IMongoClient service descriptors with their indexes in the services list
+        for (var index = 0; index < builder.Services.Count; index++)
+        {
+            var descriptor = builder.Services[index];
+            if (descriptor.ServiceType != typeof(IMongoClient))
+            {
+                continue;
+            }
+
+            if (descriptor.Lifetime != ServiceLifetime.Singleton)
+            {
+                throw new NotSupportedException("IMongoClient service descriptor lifetime must be singleton");
+            }
+
+            existingMongoClientDescriptors.Add((index, descriptor));
+        }
+
+        if (existingMongoClientDescriptors.Count == 0)
+        {
+            throw new InvalidOperationException("At least one IMongoClient service descriptor is required");
+        }
+
+        // Wrap each existing IMongoClient service descriptor with a new one that drops its default database when disposed
+        foreach (var (index, existingMongoClientDescriptor) in existingMongoClientDescriptors)
+        {
+            var newMongoClientDescriptor = ServiceDescriptor.Singleton(serviceProvider => CreateDisposableMongoClient(serviceProvider, existingMongoClientDescriptor));
+            builder.Services.Insert(index, newMongoClientDescriptor);
+            builder.Services.Remove(existingMongoClientDescriptor);
+        }
 
         return builder;
     }
 
-    private sealed class PrivateMongoDbRunner : IDisposable
+    private static IMongoClient CreateDisposableMongoClient(IServiceProvider serviceProvider, ServiceDescriptor existingMongoClientDescriptor)
     {
-        private static readonly object _lockObj = new object();
-        private static MongoDbRunner? _runner;
-        private static int _useCount;
+        IMongoClient existingMongoClient;
 
-        public PrivateMongoDbRunner()
+        if (existingMongoClientDescriptor.ImplementationInstance != null)
         {
-            lock (_lockObj)
-            {
-                // The lock and use count prevent multiple instances of local MongoDB that would degrade the overall performance
-                _runner ??= MongoDbRunner.Start(singleNodeReplSet: true, logger: NullLogger.Instance);
-                _useCount++;
-
-                this.ConnectionString = _runner.ConnectionString;
-            }
+            existingMongoClient = (IMongoClient)existingMongoClientDescriptor.ImplementationInstance;
+        }
+        else if (existingMongoClientDescriptor.ImplementationFactory != null)
+        {
+            existingMongoClient = (IMongoClient)existingMongoClientDescriptor.ImplementationFactory(serviceProvider);
+        }
+        else if (existingMongoClientDescriptor.ImplementationType != null)
+        {
+            existingMongoClient = (IMongoClient)ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, existingMongoClientDescriptor.ImplementationType);
+        }
+        else
+        {
+            throw new InvalidOperationException("IMongoClient service descriptor must provide an implementation");
         }
 
-        public string ConnectionString { get; }
-
-        public void Dispose()
-        {
-            lock (_lockObj)
-            {
-                _useCount--;
-                if (_useCount == 0 && _runner != null)
-                {
-                    _runner.Dispose();
-                    _runner = null;
-                }
-            }
-        }
-    }
-
-    private sealed class EphemeralMongoSetup : IConfigureOptions<MongoOptions>
-    {
-        private readonly PrivateMongoDbRunner _runner;
-
-        public EphemeralMongoSetup(PrivateMongoDbRunner runner)
-        {
-            this._runner = runner;
-        }
-
-        public void Configure(MongoOptions options)
-        {
-            // Each test that requests a IMongoDatabase will have its own separate database
-            options.ConnectionString = this._runner.ConnectionString;
-            options.DefaultDatabaseName = Guid.NewGuid().ToString("N");
-        }
+        var databaseNameHolder = serviceProvider.GetRequiredService<DefaultDatabaseNameHolder>();
+        return new DisposableMongoClient(existingMongoClient, databaseNameHolder);
     }
 }
