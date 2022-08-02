@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using Mongo2Go;
+﻿using EphemeralMongo;
 
 namespace ShareGate.Infra.Mongo.Ephemeral;
 
 internal sealed class ReusableMongoDbRunner : IDisposable
 {
     private static readonly object _lockObj = new object();
-    private static MongoDbRunner? _runner;
+    private static IMongoRunner? _runner;
     private static int _useCount;
 
     public ReusableMongoDbRunner()
@@ -14,7 +13,11 @@ internal sealed class ReusableMongoDbRunner : IDisposable
         lock (_lockObj)
         {
             // The lock and use count prevent multiple instances of local mongod processes that would degrade the overall performance
-            _runner ??= MongoDbRunner.Start(singleNodeReplSet: true, logger: NullLogger.Instance);
+            _runner ??= MongoRunner.Run(new MongoRunnerOptions
+            {
+                UseSingleNodeReplicaSet = true,
+            });
+
             _useCount++;
 
             this.ConnectionString = _runner.ConnectionString;
