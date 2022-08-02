@@ -7,8 +7,8 @@ public static class EphemeralMongoBuilderExtensions
 {
     /// <summary>
     /// Provides a real implementation of a MongoDB cluster using an ephemeral localhost server that will be destroyed
-    /// when it will no longer be used by any running test. The first startup can take approximately two seconds on a dev workstation.
-    /// https://github.com/Mongo2Go/Mongo2Go
+    /// when it will no longer be used by any running test.
+    /// https://github.com/asimmon/ephemeral-mongo
     /// </summary>
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder)
     {
