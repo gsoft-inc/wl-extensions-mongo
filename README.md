@@ -74,6 +74,9 @@ private static void ConfigureMongo(MongoOptions options)
     // Used by the automatic index update feature
     options.Indexing.LockMaxLifetimeInSeconds = 300;
     options.Indexing.LockAcquisitionTimeoutInSeconds = 60;
+
+    // Modify MongoClientSettings (optional)
+    options.MongoClientSettingsConfigurator = settings => { };
 }
 
 // MongoDB document properties can be encrypted when decorated with the [SensitiveInformation(scope)] attribute
