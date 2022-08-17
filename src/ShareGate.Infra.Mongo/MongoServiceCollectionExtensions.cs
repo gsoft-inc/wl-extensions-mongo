@@ -41,14 +41,17 @@ public static class MongoServiceCollectionExtensions
         var options = serviceProvider.GetRequiredService<IOptions<MongoOptions>>();
         var settings = MongoClientSettings.FromConnectionString(options.Value.ConnectionString);
 
-        if (options.Value.MinConnectionPoolSize is { } minConnectionPoolSize)
+        // Default socket timeout is infinite. 60 seconds is the timeout used by OV.
+        // Keeping infinite timeout means we could wait up to 15 minutes or even more (as seen in SG Cloud Copy)
+        if (settings.SocketTimeout == TimeSpan.Zero)
         {
-            settings.MinConnectionPoolSize = minConnectionPoolSize;
+            settings.SocketTimeout = TimeSpan.FromSeconds(60);
         }
 
-        if (options.Value.MaxConnectionPoolSize is { } maxConnectionPoolSize)
+        // Default connect timeout is 30 seconds. 10 seconds is the timeout used by OV
+        if (settings.ConnectTimeout == TimeSpan.FromSeconds(30))
         {
-            settings.MaxConnectionPoolSize = maxConnectionPoolSize;
+            settings.ConnectTimeout = TimeSpan.FromSeconds(10);
         }
 
         var eventSubscribers = serviceProvider.GetServices<IEventSubscriber>();
@@ -60,6 +63,9 @@ public static class MongoServiceCollectionExtensions
                 builder.Subscribe(eventSubscriber);
             }
         };
+
+        // Allow devs from overriding these settings
+        options.Value.MongoClientSettingsConfigurator?.Invoke(settings);
 
         return new MongoClient(settings);
     }
