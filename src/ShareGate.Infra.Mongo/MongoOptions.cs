@@ -20,12 +20,6 @@ public sealed class MongoOptions
     [Required]
     public string DefaultDatabaseName { get; set; } = string.Empty;
 
-    [Range(1, int.MaxValue)]
-    public int? MinConnectionPoolSize { get; set; }
-
-    [Range(1, int.MaxValue)]
-    public int? MaxConnectionPoolSize { get; set; }
-
     public bool EnableSensitiveInformationLogging { get; set; }
 
     public Action<MongoClientSettings>? MongoClientSettingsConfigurator { get; set; }
