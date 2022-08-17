@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 
 namespace ShareGate.Infra.Mongo;
 
@@ -26,6 +27,8 @@ public sealed class MongoOptions
     public int? MaxConnectionPoolSize { get; set; }
 
     public bool EnableSensitiveInformationLogging { get; set; }
+
+    public Action<MongoClientSettings>? MongoClientSettingsConfigurator { get; set; }
 
     public IDictionary<Type, IBsonSerializer> BsonSerializers { get; }
 

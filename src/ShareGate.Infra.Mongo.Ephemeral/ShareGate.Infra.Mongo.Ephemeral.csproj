@@ -13,6 +13,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="EphemeralMongo5" Version="0.1.1" />
+    <PackageReference Include="EphemeralMongo5" Version="0.1.2" />
   </ItemGroup>
 </Project>

@@ -16,17 +16,22 @@ public sealed class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo().UseEphemeralRealServer().AddEncryptor<AmbientUserEncryptor>();
+        services.AddMongo(Configure).UseEphemeralRealServer().AddEncryptor<AesMongoValueEncryptor>();
 
         return services;
     }
 
-    private sealed class AmbientUserEncryptor : IMongoValueEncryptor
+    private static void Configure(MongoOptions options)
+    {
+        options.MongoClientSettingsConfigurator = static settings => settings.ApplicationName = "integrationtests";
+    }
+
+    private sealed class AesMongoValueEncryptor : IMongoValueEncryptor
     {
         private readonly ConcurrentDictionary<string, byte[]> _aesKeys;
         private readonly AmbientUserContext _userContext;
 
-        public AmbientUserEncryptor(AmbientUserContext userContext)
+        public AesMongoValueEncryptor(AmbientUserContext userContext)
         {
             this._userContext = userContext;
             this._aesKeys = new ConcurrentDictionary<string, byte[]>(StringComparer.Ordinal);
