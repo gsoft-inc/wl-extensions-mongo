@@ -29,10 +29,10 @@ public sealed class MongoBasicTests : BaseIntegrationTest<MongoFixture>
             new CarBrandDocument { Name = "Honda", DateTimeProperty = dtUtcNow, DateTimeOffsetProperty = dtoUtcNow },
         };
 
-        var collection = this.Services.GetRequiredService<IMongoDatabase>().GetCollection<CarBrandDocument>();
+        var collection = this.Services.GetRequiredService<IMongoCollection<CarBrandDocument>>();
         await collection.InsertManyAsync(brandsToInsert);
 
-        var insertedBrands = await collection.Find(FilterDefinition<CarBrandDocument>.Empty).ToAsyncEnumerable().ToListAsync();
+        var insertedBrands = await collection.Find(FilterDefinition<CarBrandDocument>.Empty).ToListAsync();
 
         Assert.Equal(brandsToInsert.Count, insertedBrands.Count);
         var toyota = Assert.Single(insertedBrands, x => x.Name == "Toyota");

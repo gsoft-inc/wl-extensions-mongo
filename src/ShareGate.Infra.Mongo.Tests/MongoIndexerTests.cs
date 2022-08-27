@@ -30,7 +30,7 @@ public sealed class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
 
     private async Task AssertPersonDocumentIndexes()
     {
-        using var indexCursor = await this.Services.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>().Indexes.ListAsync();
+        using var indexCursor = await this.Services.GetRequiredService<IMongoCollection<PersonDocument>>().Indexes.ListAsync();
         var indexNames = await indexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
 
         Assert.Equal(3, indexNames.Count);
