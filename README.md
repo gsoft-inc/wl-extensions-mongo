@@ -101,10 +101,12 @@ var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) });
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument).Assembly }); // Assembly scanning alternative
 
-// No need to know the collection name, just use the document type
+// No need to know the collection name, just use the document type which must be decorated with MongoCollectionAttribute
+var collection = this.Services.GetRequiredService<IMongoCollection<PersonDocument>>();
+// OR: var collection = this.Services.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>();
+
 // No cursors handling needed, use IAsyncEnumerable
-var collection = this.Services.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>();
-var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable().ToListAsync();
+var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable(); 
 ```
 
 ```csharp
