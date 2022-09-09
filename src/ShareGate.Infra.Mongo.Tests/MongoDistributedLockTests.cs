@@ -63,7 +63,7 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
         // Ex: on a dev workstation, works well all the time, the precision is great. On a Azure DevOps built-in agent, we often acquire one more lock due Task.Delay's lack of precision.
         // Because of this, we assert that the actual value is in a range instead of a specific value.
         var rangeLowerBound = Math.Max(0, expectedAcquiredLockCount - 1);
-        var rangeUpperBound = expectedAcquiredLockCount + 1;
+        var rangeUpperBound = expectedAcquiredLockCount + 2;
 
         Assert.InRange(totalAcquiredLockCount, rangeLowerBound, rangeUpperBound);
     }
