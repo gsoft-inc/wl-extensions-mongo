@@ -20,7 +20,7 @@ public sealed class MongoSecurityTests : BaseIntegrationTest<MongoFixture>
     }
 
     [Fact]
-    public async Task Nothing1()
+    public async Task Encryption_At_User_Scope_Prevents_One_User_From_Reading_Data_From_Another_User()
     {
         var database = this.Services.GetRequiredService<IMongoDatabase>();
         var collection = database.GetCollection<UserProtectionTestDocument>();
@@ -71,7 +71,7 @@ public sealed class MongoSecurityTests : BaseIntegrationTest<MongoFixture>
     }
 
     [Fact]
-    public async Task Nothing2()
+    public async Task Encryption_At_App_Scope_Works()
     {
         var database = this.Services.GetRequiredService<IMongoDatabase>();
         var collection = database.GetCollection<AppProtectionTestDocument>();
