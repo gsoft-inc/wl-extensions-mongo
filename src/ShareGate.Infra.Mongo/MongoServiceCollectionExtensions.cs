@@ -9,6 +9,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
+using ShareGate.Infra.Mongo.Performance;
 
 namespace ShareGate.Infra.Mongo;
 
@@ -32,7 +33,10 @@ public static class MongoServiceCollectionExtensions
         // https://github.com/dotnet/runtime/blob/v6.0.0/src/libraries/Microsoft.Extensions.Logging/src/LoggingServiceCollectionExtensions.cs#L42
         services.TryAdd(ServiceDescriptor.Singleton(typeof(IMongoCollection<>), typeof(MongoCollectionProxy<>)));
 
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEventSubscriber, MongoLoggingEventSubscriber>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEventSubscriber, CommandLoggingEventSubscriber>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEventSubscriber, CommandPerformanceEventSubscriber>());
+        services.TryAddSingleton<CommandPerformanceAnalyzer>();
+
         services.TryAddSingleton<MongoInitializer>();
         services.TryAddSingleton<MongoDistributedLockFactory>();
         services.TryAddSingleton<IMongoIndexer, MongoIndexer>();

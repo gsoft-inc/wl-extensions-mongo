@@ -6,7 +6,7 @@ using MongoDB.Driver.Core.Events;
 // The class is in its own namespace so its logging can be easily filtered using logging configuration
 namespace ShareGate.Infra.Mongo.Logging;
 
-internal sealed class MongoLoggingEventSubscriber : AggregatorEventSubscriber
+internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
 {
     // These commands are automatically executed and add noise to the log output
     private static readonly HashSet<string> IgnoredCommandNames = new HashSet<string>(StringComparer.Ordinal)
@@ -14,10 +14,10 @@ internal sealed class MongoLoggingEventSubscriber : AggregatorEventSubscriber
         "isMaster", "buildInfo", "saslStart", "saslContinue",
     };
 
-    private readonly ILogger<MongoLoggingEventSubscriber> _logger;
+    private readonly ILogger<CommandLoggingEventSubscriber> _logger;
     private readonly bool _enableSensitiveInformationLogging;
 
-    public MongoLoggingEventSubscriber(ILogger<MongoLoggingEventSubscriber> logger, IOptions<MongoOptions> options)
+    public CommandLoggingEventSubscriber(ILogger<CommandLoggingEventSubscriber> logger, IOptions<MongoOptions> options)
     {
         this._logger = logger;
         this._enableSensitiveInformationLogging = options.Value.EnableSensitiveInformationLogging;

@@ -12,6 +12,8 @@ public sealed class MongoOptions
     {
         this.BsonSerializers = new Dictionary<Type, IBsonSerializer>();
         this.ConventionPacks = new List<NamedConventionPack>();
+        this.Indexing = new MongoIndexingOptions();
+        this.CommandPerformanceAnalysis = new MongoCommandPerformanceAnalysisOptions();
     }
 
     [Required]
@@ -28,7 +30,9 @@ public sealed class MongoOptions
 
     public IList<NamedConventionPack> ConventionPacks { get; }
 
-    public MongoIndexingOptions Indexing { get; } = new MongoIndexingOptions();
+    public MongoIndexingOptions Indexing { get; }
+
+    public MongoCommandPerformanceAnalysisOptions CommandPerformanceAnalysis { get; }
 }
 
 public sealed class MongoIndexingOptions
@@ -43,4 +47,14 @@ public sealed class MongoIndexingOptions
     [Required]
     [Range(1, int.MaxValue)]
     public int LockAcquisitionTimeoutInSeconds { get; set; } = 60;
+}
+
+public sealed class MongoCommandPerformanceAnalysisOptions
+{
+    public bool EnableCollectionScanDetection { get; set; }
+
+    internal bool IsPerformanceAnalysisEnabled
+    {
+        get => this.EnableCollectionScanDetection;
+    }
 }
