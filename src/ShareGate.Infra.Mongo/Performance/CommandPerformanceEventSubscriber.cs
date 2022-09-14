@@ -28,11 +28,11 @@ internal sealed class CommandPerformanceEventSubscriber : AggregatorEventSubscri
         {
             if (this._performanceAnalyzer == null)
             {
-                // The performance analyzer cannot be built in the constructor as it depends on the mongo client that is not yet available at this point
+                // The performance analyzer cannot be built in the constructor as it depends on the mongo client that is not available yet at this point
                 var mongoClient = this._mongoClientProvider.GetClient(this._clientName);
 
                 this._performanceAnalyzer = new CommandPerformanceAnalyzer(mongoClient, this._options, this._loggerFactory);
-                this._performanceAnalyzer.Start();
+                this._performanceAnalyzer.StartBackgroundTask();
             }
 
             this._performanceAnalyzer.AnalyzeCommand(new CommandToAnalyze(evt.DatabaseNamespace.DatabaseName, evt.RequestId, evt.CommandName, evt.Command));

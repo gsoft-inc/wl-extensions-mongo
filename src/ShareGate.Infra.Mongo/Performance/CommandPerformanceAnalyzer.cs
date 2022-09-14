@@ -16,7 +16,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
     private readonly bool _enableCollectionScanDetection;
 
     // A background task and a channel are used to analyze MongoDB commands without consuming a whole thread
-    // The same process is used in the Azure.Extensions.AspNetCore.Configuration.Secrets package to periodically refresh secrets from Azure Key vault
+    // The similar process is used in the Azure.Extensions.AspNetCore.Configuration.Secrets package to periodically refresh secrets from Azure Key vault
     // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Extensions.AspNetCore.Configuration.Secrets_1.2.2/sdk/extensions/Azure.Extensions.AspNetCore.Configuration.Secrets/src/AzureKeyVaultConfigurationProvider.cs
     private Task? _explainTask;
     private int _isDisposed;
@@ -49,7 +49,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
         _ = this._commandChannelWriter.TryWrite(command);
     }
 
-    public void Start()
+    public void StartBackgroundTask()
     {
         if (Interlocked.CompareExchange(ref this._isDisposed, 1, 1) == 1)
         {
@@ -76,7 +76,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
             }
             finally
             {
-                // RawBsonCommand is disposable and we want to avoid memory leaks
+                // Command could be a BsonDocument derivative that implements IDisposable, and we want to avoid memory leaks
                 if (command is { Command: IDisposable disposableCommand })
                 {
                     disposableCommand.Dispose();

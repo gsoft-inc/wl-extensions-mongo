@@ -21,6 +21,9 @@ public static class MongoServiceCollectionExtensions
         }
 
         services.TryAddSingleton<IMongoClientProvider, MongoClientProvider>();
+
+        // MongoDB C# driver documentation says that IMongoClient, IMongoDatabase and IMongoCollection<> are thread-safe and can be stored globally (i.e. as singletons):
+        // https://mongodb.github.io/mongo-csharp-driver/2.10/reference/driver/connecting/
         services.TryAddSingleton(CreateDefaultMongoClient);
         services.TryAddSingleton(CreateDefaultMongoDatabase);
 
