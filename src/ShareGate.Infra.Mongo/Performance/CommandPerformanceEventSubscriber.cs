@@ -1,22 +1,25 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
 using MongoDB.Driver.Core.Events;
 
 namespace ShareGate.Infra.Mongo.Performance;
 
 internal sealed class CommandPerformanceEventSubscriber : AggregatorEventSubscriber, IDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IMongoClientProvider _mongoClientProvider;
+    private readonly MongoCommandPerformanceAnalysisOptions _options;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly string _clientName;
+
     private CommandPerformanceAnalyzer? _performanceAnalyzer;
 
-    public CommandPerformanceEventSubscriber(IServiceProvider serviceProvider, IOptions<MongoOptions> options)
+    public CommandPerformanceEventSubscriber(IMongoClientProvider mongoClientProvider, MongoCommandPerformanceAnalysisOptions options, ILoggerFactory loggerFactory, string clientName)
     {
-        this._serviceProvider = serviceProvider;
+        this._mongoClientProvider = mongoClientProvider;
+        this._options = options;
+        this._loggerFactory = loggerFactory;
+        this._clientName = clientName;
 
-        if (options.Value.CommandPerformanceAnalysis.IsPerformanceAnalysisEnabled)
-        {
-            this.Subscribe<CommandStartedEvent>(this.CommandStartedEventHandler);
-        }
+        this.Subscribe<CommandStartedEvent>(this.CommandStartedEventHandler);
     }
 
     private void CommandStartedEventHandler(CommandStartedEvent evt)
@@ -25,13 +28,14 @@ internal sealed class CommandPerformanceEventSubscriber : AggregatorEventSubscri
         {
             if (this._performanceAnalyzer == null)
             {
-                // The performance analyzer is lazy-instanciated from IServiceProvider on purpose
-                // It cannot be injected in the constructor as it depends on the database that is not yet available at this point
-                this._performanceAnalyzer = this._serviceProvider.GetRequiredService<CommandPerformanceAnalyzer>();
+                // The performance analyzer cannot be built in the constructor as it depends on the mongo client that is not yet available at this point
+                var mongoClient = this._mongoClientProvider.GetClient(this._clientName);
+
+                this._performanceAnalyzer = new CommandPerformanceAnalyzer(mongoClient, this._options, this._loggerFactory);
                 this._performanceAnalyzer.Start();
             }
 
-            this._performanceAnalyzer.AnalyzeCommand(new CommandToAnalyze(evt.CommandName, evt.Command, evt.RequestId));
+            this._performanceAnalyzer.AnalyzeCommand(new CommandToAnalyze(evt.DatabaseNamespace.DatabaseName, evt.RequestId, evt.CommandName, evt.Command));
         }
     }
 

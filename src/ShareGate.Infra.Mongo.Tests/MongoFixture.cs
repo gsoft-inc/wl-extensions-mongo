@@ -16,12 +16,12 @@ public sealed class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo(Configure).UseEphemeralRealServer().AddEncryptor<AesMongoValueEncryptor>();
+        services.AddMongo(Configure).UseEphemeralRealServer().UseEncryptor<AesMongoValueEncryptor>();
 
         return services;
     }
 
-    private static void Configure(MongoOptions options)
+    private static void Configure(MongoClientOptions options)
     {
         options.MongoClientSettingsConfigurator = static settings => settings.ApplicationName = "integrationtests";
     }

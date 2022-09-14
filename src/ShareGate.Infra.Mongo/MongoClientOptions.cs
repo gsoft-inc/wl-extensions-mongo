@@ -1,17 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace ShareGate.Infra.Mongo;
 
-public sealed class MongoOptions
+public sealed class MongoClientOptions
 {
     public const string SectionName = "Mongo";
 
-    public MongoOptions()
+    public MongoClientOptions()
     {
-        this.BsonSerializers = new Dictionary<Type, IBsonSerializer>();
-        this.ConventionPacks = new List<NamedConventionPack>();
         this.Indexing = new MongoIndexingOptions();
         this.CommandPerformanceAnalysis = new MongoCommandPerformanceAnalysisOptions();
     }
@@ -25,10 +22,6 @@ public sealed class MongoOptions
     public bool EnableSensitiveInformationLogging { get; set; }
 
     public Action<MongoClientSettings>? MongoClientSettingsConfigurator { get; set; }
-
-    public IDictionary<Type, IBsonSerializer> BsonSerializers { get; }
-
-    public IList<NamedConventionPack> ConventionPacks { get; }
 
     public MongoIndexingOptions Indexing { get; }
 

@@ -4,9 +4,9 @@ using MongoDB.Driver.Core.Clusters;
 
 namespace ShareGate.Infra.Mongo.Ephemeral;
 
-/// <summary>
-/// Drops the default database when disposed, meaning that each test drops its own database when disposed
-/// </summary>
+// Drops the default database when disposed, meaning that each test drops its own database when disposed.
+// Dispose() is only called when IMongoClient is requested from the dependency injection service provider.
+// The service provider, when disposed, also dispose alive objects that are registered.
 internal sealed class DisposableMongoClient : IMongoClient, IDisposable
 {
     private readonly IMongoClient _underlyingMongoClient;

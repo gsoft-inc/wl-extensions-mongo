@@ -10,9 +10,9 @@ internal sealed class MongoInitializer
     private static readonly object _lockObject = new object();
     private static bool _initialized;
 
-    private readonly IOptions<MongoOptions> _options;
+    private readonly IOptions<MongoStaticOptions> _options;
 
-    public MongoInitializer(IOptions<MongoOptions> options)
+    public MongoInitializer(IOptions<MongoStaticOptions> options)
     {
         this._options = options;
     }

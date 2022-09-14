@@ -28,11 +28,11 @@ internal sealed class IndexProcessor<TDocument>
     private readonly Dictionary<UniqueIndexName, RemoveReason> _indexesToRemove;
     private readonly Dictionary<UniqueIndexName, AddReason> _indexesToAdd;
 
-    private IndexProcessor(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILogger logger, CancellationToken cancellationToken)
+    private IndexProcessor(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
         this._provider = provider;
         this._database = database;
-        this._logger = logger;
+        this._logger = loggerFactory.CreateLogger<IndexProcessor<TDocument>>();
         this._cancellationToken = cancellationToken;
         this._collectionName = database.GetCollectionName<TDocument>();
 
@@ -42,9 +42,9 @@ internal sealed class IndexProcessor<TDocument>
         this._indexesToAdd = new Dictionary<UniqueIndexName, AddReason>();
     }
 
-    public static Task ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILogger logger, CancellationToken cancellationToken)
+    public static Task ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
-        return new IndexProcessor<TDocument>(provider, database, logger, cancellationToken).ProcessAsync();
+        return new IndexProcessor<TDocument>(provider, database, loggerFactory, cancellationToken).ProcessAsync();
     }
 
     private async Task ProcessAsync()

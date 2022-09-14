@@ -11,20 +11,23 @@ internal sealed class MongoIndexer : IMongoIndexer
     private static readonly MethodInfo ProcessAsyncMethod = typeof(MongoIndexer).GetMethod(nameof(ProcessAsync), BindingFlags.NonPublic | BindingFlags.Instance)
         ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoIndexer)}.{nameof(ProcessAsync)}");
 
-    private readonly IMongoDatabase _database;
-    private readonly MongoDistributedLockFactory _distributedLockFactory;
-    private readonly IOptions<MongoOptions> _options;
-    private readonly ILogger<MongoIndexer> _logger;
+    private readonly IMongoClientProvider _mongoClientProvider;
+    private readonly IOptionsMonitor<MongoClientOptions> _optionsMonitor;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public MongoIndexer(IMongoDatabase database, MongoDistributedLockFactory distributedLockFactory, IOptions<MongoOptions> options, ILogger<MongoIndexer> logger)
+    public MongoIndexer(IMongoClientProvider mongoClientProvider, IOptionsMonitor<MongoClientOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
-        this._database = database;
-        this._distributedLockFactory = distributedLockFactory;
-        this._options = options;
-        this._logger = logger;
+        this._mongoClientProvider = mongoClientProvider;
+        this._optionsMonitor = optionsMonitor;
+        this._loggerFactory = loggerFactory;
     }
 
-    public Task UpdateIndexesAsync(IEnumerable<Assembly> assemblies, CancellationToken cancellationToken = default)
+    public Task UpdateIndexesAsync(Assembly assembly, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
+    {
+        return this.UpdateIndexesAsync(new[] { assembly }, clientName, databaseName, cancellationToken);
+    }
+
+    public Task UpdateIndexesAsync(IEnumerable<Assembly> assemblies, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
     {
         if (assemblies == null)
         {
@@ -32,10 +35,10 @@ internal sealed class MongoIndexer : IMongoIndexer
         }
 
         var types = assemblies.SelectMany(x => x.GetTypes()).Where(MongoReflectionCache.IsConcreteMongoDocumentType).ToArray();
-        return this.UpdateIndexesAsync(types, cancellationToken);
+        return this.UpdateIndexesAsync(types, clientName, databaseName, cancellationToken);
     }
 
-    public async Task UpdateIndexesAsync(IEnumerable<Type> types, CancellationToken cancellationToken = default)
+    public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
     {
         if (types == null)
         {
@@ -54,21 +57,32 @@ internal sealed class MongoIndexer : IMongoIndexer
             enumeratedTypes.Add(type);
         }
 
-        var lockId = this._options.Value.Indexing.DistributedLockName;
-        var lockLifetime = TimeSpan.FromSeconds(this._options.Value.Indexing.LockMaxLifetimeInSeconds);
-        var acquireTimeout = TimeSpan.FromSeconds(this._options.Value.Indexing.LockAcquisitionTimeoutInSeconds);
+        // Use default MongoDB client by default
+        clientName ??= MongoDefaults.ClientName;
+        var mongoClient = this._mongoClientProvider.GetClient(clientName);
+        var options = this._optionsMonitor.Get(clientName);
+
+        // Use default MongoDB database by default
+        databaseName ??= options.DefaultDatabaseName;
+        var database = mongoClient.GetDatabase(databaseName);
+
+        // Attempt to update the indexes if we acquire the distributed lock
+        var lockId = options.Indexing.DistributedLockName;
+        var lockLifetime = TimeSpan.FromSeconds(options.Indexing.LockMaxLifetimeInSeconds);
+        var acquireTimeout = TimeSpan.FromSeconds(options.Indexing.LockAcquisitionTimeoutInSeconds);
+        var distributedLockFactory = new MongoDistributedLockFactory(database, this._loggerFactory);
 
         MongoDistributedLock distributedLock;
-        await using (distributedLock = await this._distributedLockFactory.AcquireAsync(lockId, lockLifetime, acquireTimeout, cancellationToken).ConfigureAwait(false))
+        await using (distributedLock = await distributedLockFactory.AcquireAsync(lockId, lockLifetime, acquireTimeout, cancellationToken).ConfigureAwait(false))
         {
             if (distributedLock.IsAcquired)
             {
-                await this.UpdateIndexesInternalAsync(enumeratedTypes, cancellationToken).ConfigureAwait(false);
+                await this.UpdateIndexesInternalAsync(enumeratedTypes, database, cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task UpdateIndexesInternalAsync(IEnumerable<Type> types, CancellationToken cancellationToken = default)
+    private async Task UpdateIndexesInternalAsync(IEnumerable<Type> types, IMongoDatabase database, CancellationToken cancellationToken = default)
     {
         var registry = new IndexRegistry(types);
 
@@ -86,16 +100,16 @@ internal sealed class MongoIndexer : IMongoIndexer
             }
 
             var processAsyncMethod = ProcessAsyncMethod.MakeGenericMethod(documentType);
-            var task = (Task?)processAsyncMethod.Invoke(this, new[] { indexProvider, cancellationToken })
+            var task = (Task?)processAsyncMethod.Invoke(this, new[] { indexProvider, database, cancellationToken })
                 ?? throw new InvalidOperationException($"'{nameof(MongoIndexer)}.{nameof(this.ProcessAsync)}(...)' should have returned a task");
 
             await task.ConfigureAwait(false);
         }
     }
 
-    private Task ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, CancellationToken cancellationToken)
+    private Task ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
         where TDocument : IMongoDocument
     {
-        return IndexProcessor<TDocument>.ProcessAsync(provider, this._database, this._logger, cancellationToken);
+        return IndexProcessor<TDocument>.ProcessAsync(provider, database, this._loggerFactory, cancellationToken);
     }
 }

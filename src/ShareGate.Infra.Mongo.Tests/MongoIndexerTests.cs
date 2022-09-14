@@ -24,7 +24,7 @@ public sealed class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
     [Fact]
     public async Task Indexes_Are_Automatically_Created_When_Specifying_Assembly()
     {
-        await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(new[] { typeof(PersonDocument).Assembly });
+        await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(typeof(PersonDocument).Assembly);
         await this.AssertPersonDocumentIndexes();
     }
 

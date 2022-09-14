@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver.Core.Events;
 
-// The class is in its own namespace so its logging can be easily filtered using logging configuration
 namespace ShareGate.Infra.Mongo.Logging;
 
 internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
@@ -17,10 +15,10 @@ internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
     private readonly ILogger<CommandLoggingEventSubscriber> _logger;
     private readonly bool _enableSensitiveInformationLogging;
 
-    public CommandLoggingEventSubscriber(ILogger<CommandLoggingEventSubscriber> logger, IOptions<MongoOptions> options)
+    public CommandLoggingEventSubscriber(ILoggerFactory loggerFactory, bool enableSensitiveInformationLogging)
     {
-        this._logger = logger;
-        this._enableSensitiveInformationLogging = options.Value.EnableSensitiveInformationLogging;
+        this._logger = loggerFactory.CreateLogger<CommandLoggingEventSubscriber>();
+        this._enableSensitiveInformationLogging = enableSensitiveInformationLogging;
 
         this.Subscribe<CommandStartedEvent>(this.CommandStartedEventHandler);
         this.Subscribe<CommandSucceededEvent>(this.CommandSucceededEventHandler);

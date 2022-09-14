@@ -1,6 +1,5 @@
 ﻿using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
@@ -9,7 +8,7 @@ namespace ShareGate.Infra.Mongo.Performance;
 
 internal sealed class CommandPerformanceAnalyzer : IDisposable
 {
-    private readonly IMongoDatabase _database;
+    private readonly IMongoClient _mongoClient;
     private readonly ILogger<CommandPerformanceAnalyzer> _logger;
     private readonly ChannelReader<CommandToAnalyze> _commandChannelReader;
     private readonly ChannelWriter<CommandToAnalyze> _commandChannelWriter;
@@ -22,10 +21,10 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
     private Task? _explainTask;
     private int _isDisposed;
 
-    public CommandPerformanceAnalyzer(IMongoDatabase database, IOptions<MongoOptions> options, ILogger<CommandPerformanceAnalyzer> logger)
+    public CommandPerformanceAnalyzer(IMongoClient mongoClient, MongoCommandPerformanceAnalysisOptions options, ILoggerFactory loggerFactory)
     {
-        this._database = database;
-        this._logger = logger;
+        this._mongoClient = mongoClient;
+        this._logger = loggerFactory.CreateLogger<CommandPerformanceAnalyzer>();
 
         var commandChannel = Channel.CreateUnbounded<CommandToAnalyze>(new UnboundedChannelOptions
         {
@@ -35,10 +34,8 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
         this._commandChannelReader = commandChannel.Reader;
         this._commandChannelWriter = commandChannel.Writer;
-
         this._cancellationToken = new CancellationTokenSource();
-
-        this._enableCollectionScanDetection = options.Value.CommandPerformanceAnalysis.EnableCollectionScanDetection;
+        this._enableCollectionScanDetection = options.EnableCollectionScanDetection;
     }
 
     public void AnalyzeCommand(CommandToAnalyze command)
@@ -66,34 +63,48 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
     {
         while (!this._cancellationToken.IsCancellationRequested)
         {
+            CommandToAnalyze? command = null;
+
             try
             {
-                var command = await this._commandChannelReader.ReadAsync().ConfigureAwait(false);
-                _ = this.ExplainAsync(command);
+                command = await this._commandChannelReader.ReadAsync().ConfigureAwait(false);
+                _ = this.ExplainAsync(command.Value);
             }
             catch (ChannelClosedException)
             {
                 // Ignored, the app is probably shutting down
+            }
+            finally
+            {
+                // RawBsonCommand is disposable and we want to avoid memory leaks
+                if (command is { Command: IDisposable disposableCommand })
+                {
+                    disposableCommand.Dispose();
+                }
             }
         }
     }
 
     private async Task ExplainAsync(CommandToAnalyze command)
     {
+        var database = this._mongoClient.GetDatabase(command.DatabaseName);
         var explainCommand = BuildExplainCommand(command);
+
+        ExplainResultDocument explainResult;
 
         try
         {
-            var explainResult = await this._database.RunCommandAsync(explainCommand, cancellationToken: this._cancellationToken.Token).ConfigureAwait(false);
-
-            if (this._enableCollectionScanDetection && explainResult.ExecutionStats.ExecutionStages.Stage == "COLLSCAN")
-            {
-                this._logger.CollectionScanDetected(command.RequestId);
-            }
+            explainResult = await database.RunCommandAsync(explainCommand, cancellationToken: this._cancellationToken.Token).ConfigureAwait(false);
         }
         catch
         {
             // Ignored, if there's an issue with MongoDB it will be logged with the other event subscriber
+            return;
+        }
+
+        if (this._enableCollectionScanDetection && explainResult.ExecutionStats.ExecutionStages.Stage == "COLLSCAN")
+        {
+            this._logger.CollectionScanDetected(command.RequestId);
         }
     }
 
