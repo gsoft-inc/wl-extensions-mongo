@@ -36,7 +36,7 @@ internal sealed class MongoClientProvider : IMongoClientProvider
 
     private IMongoClient MongoClientFactory(string clientName)
     {
-        this._serviceProvider.GetRequiredService<MongoInitializer>().Initialize();
+        this._serviceProvider.GetRequiredService<MongoStaticInitializer>().Initialize();
 
         var options = this._serviceProvider.GetRequiredService<IOptionsMonitor<MongoClientOptions>>().Get(clientName);
         var settings = MongoClientSettings.FromConnectionString(options.ConnectionString);

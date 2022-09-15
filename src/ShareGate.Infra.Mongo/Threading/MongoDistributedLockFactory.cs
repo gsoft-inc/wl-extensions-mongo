@@ -10,8 +10,8 @@ internal sealed class MongoDistributedLockFactory
 
     public MongoDistributedLockFactory(IMongoDatabase database, ILoggerFactory loggerFactory)
     {
-        this._logger = loggerFactory.CreateLogger<MongoDistributedLock>();
         this._collection = database.GetCollection<DistributedLockDocument>();
+        this._logger = loggerFactory.CreateLogger<MongoDistributedLock>();
     }
 
     public ValueTask<MongoDistributedLock> AcquireAsync(string lockId, int lifetime, int timeout, CancellationToken cancellationToken = default)
