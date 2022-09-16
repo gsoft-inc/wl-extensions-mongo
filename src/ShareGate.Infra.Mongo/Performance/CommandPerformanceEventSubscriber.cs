@@ -24,21 +24,24 @@ internal sealed class CommandPerformanceEventSubscriber : AggregatorEventSubscri
 
     private void CommandStartedEventHandler(CommandStartedEvent evt)
     {
-        if (CommandPerformanceConstants.AllowedCommandsAndNames.ContainsKey(evt.CommandName))
+        if (!CommandPerformanceConstants.AllowedCommandsAndNames.ContainsKey(evt.CommandName))
         {
-            if (this._performanceAnalyzer == null)
-            {
-                // The performance analyzer cannot be built in the constructor as it depends on the mongo client that is not available yet at this point
-                var mongoClient = this._mongoClientProvider.GetClient(this._clientName);
-
-                this._performanceAnalyzer = new CommandPerformanceAnalyzer(mongoClient, this._options, this._loggerFactory);
-                this._performanceAnalyzer.StartBackgroundTask();
-            }
-
-            this._performanceAnalyzer.AnalyzeCommand(new CommandToAnalyze(evt.DatabaseNamespace.DatabaseName, evt.RequestId, evt.CommandName, evt.Command));
+            return;
         }
+
+        if (this._performanceAnalyzer == null)
+        {
+            // The performance analyzer cannot be built in the constructor as it depends on the mongo client that is not available yet at this point
+            var mongoClient = this._mongoClientProvider.GetClient(this._clientName);
+
+            this._performanceAnalyzer = new CommandPerformanceAnalyzer(mongoClient, this._options, this._loggerFactory);
+            this._performanceAnalyzer.StartBackgroundTask();
+        }
+
+        this._performanceAnalyzer.AnalyzeCommand(new CommandToAnalyze(evt.DatabaseNamespace.DatabaseName, evt.RequestId, evt.CommandName, evt.Command));
     }
 
+    // TODO make sure this is actually called
     public void Dispose()
     {
         this._performanceAnalyzer?.Dispose();

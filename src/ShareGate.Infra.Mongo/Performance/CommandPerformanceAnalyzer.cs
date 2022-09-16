@@ -63,48 +63,49 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
     {
         while (!this._cancellationToken.IsCancellationRequested)
         {
-            CommandToAnalyze? command = null;
-
             try
             {
-                command = await this._commandChannelReader.ReadAsync().ConfigureAwait(false);
-                _ = this.ExplainAsync(command.Value);
+                var command = await this._commandChannelReader.ReadAsync().ConfigureAwait(false);
+                _ = this.ExplainAsync(command);
             }
             catch (ChannelClosedException)
             {
                 // Ignored, the app is probably shutting down
-            }
-            finally
-            {
-                // Command could be a BsonDocument derivative that implements IDisposable, and we want to avoid memory leaks
-                if (command is { Command: IDisposable disposableCommand })
-                {
-                    disposableCommand.Dispose();
-                }
             }
         }
     }
 
     private async Task ExplainAsync(CommandToAnalyze command)
     {
-        var database = this._mongoClient.GetDatabase(command.DatabaseName);
-        var explainCommand = BuildExplainCommand(command);
-
-        ExplainResultDocument explainResult;
-
         try
         {
-            explainResult = await database.RunCommandAsync(explainCommand, cancellationToken: this._cancellationToken.Token).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Ignored, if there's an issue with MongoDB it will be logged with the other event subscriber
-            return;
-        }
+            var database = this._mongoClient.GetDatabase(command.DatabaseName);
+            var explainCommand = BuildExplainCommand(command);
 
-        if (this._enableCollectionScanDetection && explainResult.ExecutionStats.ExecutionStages.Stage == "COLLSCAN")
+            ExplainResultDocument explainResult;
+
+            try
+            {
+                explainResult = await database.RunCommandAsync(explainCommand, cancellationToken: this._cancellationToken.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignored, if there's an issue with MongoDB it will be logged with the other event subscriber
+                return;
+            }
+
+            if (this._enableCollectionScanDetection && explainResult.ExecutionStats.ExecutionStages.Stage == "COLLSCAN")
+            {
+                this._logger.CollectionScanDetected(command.RequestId);
+            }
+        }
+        finally
         {
-            this._logger.CollectionScanDetected(command.RequestId);
+            // Command could be a BsonDocument derivative that implements IDisposable, and we want to avoid memory leaks
+            if (command is { Command: IDisposable disposableCommand })
+            {
+                disposableCommand.Dispose();
+            }
         }
     }
 
