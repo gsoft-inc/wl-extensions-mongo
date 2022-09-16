@@ -7,6 +7,7 @@ namespace ShareGate.Infra.Mongo.Ephemeral;
 // Drops the default database when disposed, meaning that each test drops its own database when disposed.
 // Dispose() is only called when IMongoClient is requested from the dependency injection service provider.
 // The service provider, when disposed, also dispose alive objects that are registered.
+// https://docs.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#disposal-of-services
 internal sealed class DisposableMongoClient : IMongoClient, IDisposable
 {
     private readonly IMongoClient _underlyingMongoClient;
