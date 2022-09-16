@@ -116,6 +116,10 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
         foreach (var name in command.Command.Names)
         {
+            // Mongo C# driver always adds extra BSON fields to each request, such as: $clusterTime, $db, lsid...
+            // These cannot be sent to the explain command, as it will throw an error.
+            // We can only send fields related to the specific request being executed.
+            // https://www.mongodb.com/docs/manual/reference/command/explain/
             if (allowedNames.Contains(name))
             {
                 sanitizedCommand[name] = command.Command[name];

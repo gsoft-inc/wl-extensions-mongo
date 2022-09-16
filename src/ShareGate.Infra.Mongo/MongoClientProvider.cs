@@ -7,6 +7,19 @@ namespace ShareGate.Infra.Mongo;
 
 internal sealed class MongoClientProvider : IMongoClientProvider
 {
+    // Default socket timeout is infinite, that's a real problem as we already experienced 15+ minutes socket timeout with this default setting
+    // https://github.com/mongodb/mongo-csharp-driver/blob/v2.17.1/src/MongoDB.Driver/MongoDefaults.cs#L43
+    private static readonly TimeSpan DefaultInfiniteSocketTimeout = TimeSpan.Zero;
+
+    // https://github.com/mongodb/mongo-csharp-driver/blob/v2.17.1/src/MongoDB.Driver/MongoDefaults.cs#L32
+    private static readonly TimeSpan DefaultThirtySecondsConnectTimeout = TimeSpan.FromSeconds(30);
+
+    // Officevibe also uses a 60 seconds socket timeout, it's better than the infinite default
+    private static readonly TimeSpan ReasonableSocketTimeout = TimeSpan.FromSeconds(60);
+
+    // Officevibe also uses a 10 seconds connect timeout
+    private static readonly TimeSpan ReasonableConnectTimeout = TimeSpan.FromSeconds(10);
+
     private readonly IServiceProvider _serviceProvider;
 
     // MongoDB C# driver documentation says that IMongoClient, IMongoDatabase and IMongoCollection<> are thread-safe and can be stored globally (i.e. as singletons):
@@ -26,32 +39,29 @@ internal sealed class MongoClientProvider : IMongoClientProvider
             throw new ArgumentNullException(nameof(clientName));
         }
 
-        return this._mongoClients.GetOrAdd(clientName, this.LazyMongoClientFactory).Value;
+        return this._mongoClients.GetOrAdd(clientName, this.CreateLazyMongoClient).Value;
     }
 
-    private Lazy<IMongoClient> LazyMongoClientFactory(string clientName)
+    private Lazy<IMongoClient> CreateLazyMongoClient(string clientName)
     {
-        return new Lazy<IMongoClient>(() => this.MongoClientFactory(clientName));
+        return new Lazy<IMongoClient>(() => this.CreateMongoClient(clientName));
     }
 
-    private IMongoClient MongoClientFactory(string clientName)
+    private IMongoClient CreateMongoClient(string clientName)
     {
         this._serviceProvider.GetRequiredService<MongoStaticInitializer>().Initialize();
 
         var options = this._serviceProvider.GetRequiredService<IOptionsMonitor<MongoClientOptions>>().Get(clientName);
         var settings = MongoClientSettings.FromConnectionString(options.ConnectionString);
 
-        // Default socket timeout is infinite. 60 seconds is the timeout used by OV.
-        // Keeping infinite timeout means we could wait up to 15 minutes or even more (as seen in SG Cloud Copy)
-        if (settings.SocketTimeout == TimeSpan.Zero)
+        if (settings.SocketTimeout == DefaultInfiniteSocketTimeout)
         {
-            settings.SocketTimeout = TimeSpan.FromSeconds(60);
+            settings.SocketTimeout = ReasonableSocketTimeout;
         }
 
-        // Default connect timeout is 30 seconds. 10 seconds is the timeout used by OV
-        if (settings.ConnectTimeout == TimeSpan.FromSeconds(30))
+        if (settings.ConnectTimeout == DefaultThirtySecondsConnectTimeout)
         {
-            settings.ConnectTimeout = TimeSpan.FromSeconds(10);
+            settings.ConnectTimeout = ReasonableConnectTimeout;
         }
 
         var eventSubscriberFactories = this._serviceProvider.GetServices<IMongoEventSubscriberFactory>();
@@ -65,7 +75,7 @@ internal sealed class MongoClientProvider : IMongoClientProvider
             }
         };
 
-        // Allow consumers from overriding mongo client settings
+        // Allow consumers to override mongo client settings
         options.MongoClientSettingsConfigurator?.Invoke(settings);
 
         return new MongoClient(settings);
