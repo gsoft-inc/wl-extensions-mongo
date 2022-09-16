@@ -19,16 +19,11 @@ public sealed class MongoBuilder
         return this;
     }
 
-    public MongoBuilder AddMongo(string clientName, Action<MongoClientOptions> configure)
+    public MongoBuilder AddMongo(string clientName, Action<MongoClientOptions>? configure = null)
     {
         if (clientName == null)
         {
             throw new ArgumentNullException(nameof(clientName));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
         }
 
         if (clientName.Length == 0)
@@ -36,8 +31,12 @@ public sealed class MongoBuilder
             throw new ArgumentException("Client name cannot be empty", nameof(clientName));
         }
 
-        this.Services.Configure(clientName, configure);
+        this.Services.Configure(clientName, configure ?? NoopMongoClientConfigure);
         return this;
+    }
+
+    private static void NoopMongoClientConfigure(MongoClientOptions options)
+    {
     }
 
     public MongoBuilder ConfigureStaticOptions(Action<MongoStaticOptions> configure)
