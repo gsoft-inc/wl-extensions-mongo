@@ -27,16 +27,18 @@ internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
 
     private void CommandStartedEventHandler(CommandStartedEvent evt)
     {
-        if (!IgnoredCommandNames.Contains(evt.CommandName))
+        if (IgnoredCommandNames.Contains(evt.CommandName))
         {
-            if (this._enableSensitiveInformationLogging)
-            {
-                this._logger.CommandStartedSensitive(evt.CommandName, evt.RequestId, evt.Command.ToJson());
-            }
-            else
-            {
-                this._logger.CommandStartedNonSensitive(evt.CommandName, evt.RequestId);
-            }
+            return;
+        }
+
+        if (this._enableSensitiveInformationLogging)
+        {
+            this._logger.CommandStartedSensitive(evt.CommandName, evt.RequestId, evt.Command.ToJson());
+        }
+        else
+        {
+            this._logger.CommandStartedNonSensitive(evt.CommandName, evt.RequestId);
         }
     }
 

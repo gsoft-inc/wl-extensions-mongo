@@ -41,7 +41,6 @@ internal sealed class CommandPerformanceEventSubscriber : AggregatorEventSubscri
         this._performanceAnalyzer.AnalyzeCommand(new CommandToAnalyze(evt.DatabaseNamespace.DatabaseName, evt.RequestId, evt.CommandName, evt.Command));
     }
 
-    // TODO make sure this is actually called
     public void Dispose()
     {
         this._performanceAnalyzer?.Dispose();

@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace ShareGate.Infra.Mongo;
 
-internal sealed class MongoClientProvider : IMongoClientProvider
+internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
 {
     // Default socket timeout is infinite, that's a real problem as we already experienced 15+ minutes socket timeout with this default setting
     // https://github.com/mongodb/mongo-csharp-driver/blob/v2.17.1/src/MongoDB.Driver/MongoDefaults.cs#L43
@@ -21,6 +21,7 @@ internal sealed class MongoClientProvider : IMongoClientProvider
     private static readonly TimeSpan ReasonableConnectTimeout = TimeSpan.FromSeconds(10);
 
     private readonly IServiceProvider _serviceProvider;
+    private readonly List<IDisposable> _disposableDependencies;
 
     // MongoDB C# driver documentation says that IMongoClient, IMongoDatabase and IMongoCollection<> are thread-safe and can be stored globally (i.e. as singletons):
     // https://mongodb.github.io/mongo-csharp-driver/2.10/reference/driver/connecting/
@@ -30,6 +31,7 @@ internal sealed class MongoClientProvider : IMongoClientProvider
     {
         this._serviceProvider = serviceProvider;
         this._mongoClients = new ConcurrentDictionary<string, Lazy<IMongoClient>>(StringComparer.Ordinal);
+        this._disposableDependencies = new List<IDisposable>();
     }
 
     public IMongoClient GetClient(string clientName)
@@ -65,7 +67,9 @@ internal sealed class MongoClientProvider : IMongoClientProvider
         }
 
         var eventSubscriberFactories = this._serviceProvider.GetServices<IMongoEventSubscriberFactory>();
-        var eventSubscribers = eventSubscriberFactories.SelectMany(x => x.CreateEventSubscribers(clientName));
+        var eventSubscribers = eventSubscriberFactories.SelectMany(x => x.CreateEventSubscribers(clientName)).ToArray();
+
+        this._disposableDependencies.AddRange(eventSubscribers.OfType<IDisposable>());
 
         settings.ClusterConfigurator = builder =>
         {
@@ -79,5 +83,13 @@ internal sealed class MongoClientProvider : IMongoClientProvider
         options.MongoClientSettingsConfigurator?.Invoke(settings);
 
         return new MongoClient(settings);
+    }
+
+    public void Dispose()
+    {
+        foreach (var disposable in this._disposableDependencies)
+        {
+            disposable.Dispose();
+        }
     }
 }

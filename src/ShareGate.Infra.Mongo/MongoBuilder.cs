@@ -12,7 +12,7 @@ public sealed class MongoBuilder
 
     public IServiceCollection Services { get; }
 
-    public MongoBuilder UseEncryptor<TEncryptor>()
+    public MongoBuilder AddEncryptor<TEncryptor>()
         where TEncryptor : class, IMongoValueEncryptor
     {
         this.Services.AddSingleton<IMongoValueEncryptor, TEncryptor>();

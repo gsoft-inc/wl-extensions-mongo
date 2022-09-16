@@ -19,7 +19,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
     // The similar process is used in the Azure.Extensions.AspNetCore.Configuration.Secrets package to periodically refresh secrets from Azure Key vault
     // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Extensions.AspNetCore.Configuration.Secrets_1.2.2/sdk/extensions/Azure.Extensions.AspNetCore.Configuration.Secrets/src/AzureKeyVaultConfigurationProvider.cs
     private Task? _explainTask;
-    private int _isDisposed;
+    private bool _isDisposed;
 
     public CommandPerformanceAnalyzer(IMongoClient mongoClient, MongoCommandPerformanceAnalysisOptions options, ILoggerFactory loggerFactory)
     {
@@ -40,7 +40,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
     public void AnalyzeCommand(CommandToAnalyze command)
     {
-        if (Interlocked.CompareExchange(ref this._isDisposed, 1, 1) == 1)
+        if (this._isDisposed)
         {
             throw new ObjectDisposedException(nameof(CommandPerformanceAnalyzer));
         }
@@ -51,7 +51,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
     public void StartBackgroundTask()
     {
-        if (Interlocked.CompareExchange(ref this._isDisposed, 1, 1) == 1)
+        if (this._isDisposed)
         {
             throw new ObjectDisposedException(nameof(CommandPerformanceAnalyzer));
         }
@@ -137,8 +137,10 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
     public void Dispose()
     {
-        if (Interlocked.CompareExchange(ref this._isDisposed, 1, 0) == 0)
+        if (!this._isDisposed)
         {
+            this._isDisposed = true;
+
             this._commandChannelWriter.Complete();
             this._cancellationToken.Cancel();
             this._cancellationToken.Dispose();

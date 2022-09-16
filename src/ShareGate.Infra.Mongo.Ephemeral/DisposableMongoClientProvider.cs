@@ -2,7 +2,7 @@ using MongoDB.Driver;
 
 namespace ShareGate.Infra.Mongo.Ephemeral;
 
-internal sealed class DisposableMongoClientProvider : IMongoClientProvider
+internal sealed class DisposableMongoClientProvider : IMongoClientProvider, IDisposable
 {
     private readonly IMongoClientProvider _underlyingMongoClientProvider;
     private readonly DefaultDatabaseNameHolder _defaultDatabaseNameHolder;
@@ -17,5 +17,10 @@ internal sealed class DisposableMongoClientProvider : IMongoClientProvider
     {
         var underlyingMongoClient = this._underlyingMongoClientProvider.GetClient(clientName);
         return new DisposableMongoClient(underlyingMongoClient, this._defaultDatabaseNameHolder);
+    }
+
+    public void Dispose()
+    {
+        (this._underlyingMongoClientProvider as IDisposable)?.Dispose();
     }
 }

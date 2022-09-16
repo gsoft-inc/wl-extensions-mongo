@@ -12,7 +12,7 @@ internal static class DecorationServiceCollectionExtensions
     {
         if (!services.TryDecorateDescriptors(typeof(TService), x => x.Decorate(decoratorFactory)))
         {
-            throw new Exception("Could not find a registration of type " + typeof(TService) + " in the service collection");
+            throw new Exception($"Could not find a registration of type {typeof(TService)} in the service collection");
         }
 
         return services;

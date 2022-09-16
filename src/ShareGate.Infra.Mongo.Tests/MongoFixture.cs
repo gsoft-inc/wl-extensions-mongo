@@ -16,7 +16,7 @@ public sealed class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo(Configure).UseEphemeralRealServer().UseEncryptor<AesMongoValueEncryptor>();
+        services.AddMongo(Configure).UseEphemeralRealServer().AddEncryptor<AesMongoValueEncryptor>();
 
         return services;
     }
