@@ -55,12 +55,12 @@ public sealed class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
         {
             yield return new CreateIndexModel<PersonDocument>(
                 Builders<PersonDocument>.IndexKeys.Combine(
-                    Builders<PersonDocument>.IndexKeys.Combine().Ascending(x => x.Firstname),
-                    Builders<PersonDocument>.IndexKeys.Combine().Ascending(x => x.Lastname)),
+                    Builders<PersonDocument>.IndexKeys.Ascending(x => x.Firstname),
+                    Builders<PersonDocument>.IndexKeys.Ascending(x => x.Lastname)),
                 new CreateIndexOptions { Name = "fn_ln" });
 
             yield return new CreateIndexModel<PersonDocument>(
-                Builders<PersonDocument>.IndexKeys.Combine().Ascending(x => x.Age),
+                Builders<PersonDocument>.IndexKeys.Ascending(x => x.Age),
                 new CreateIndexOptions { Name = "age" });
         }
     }

@@ -9,7 +9,7 @@ using ShareGate.Infra.Mongo.Ephemeral;
 
 namespace ShareGate.Infra.Mongo.Tests;
 
-public sealed class MongoFixture : BaseIntegrationFixture
+public class MongoFixture : BaseIntegrationFixture
 {
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {

@@ -12,7 +12,7 @@ public static class EphemeralMongoBuilderExtensions
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder)
     {
         builder.Services.AddSingleton<DefaultDatabaseNameHolder>();
-        builder.Services.AddSingleton<ReusableMongoDbRunner>();
+        builder.Services.AddSingleton<ReusableMongoRunnerProvider>();
         builder.Services.ConfigureOptions<ConfigureEphemeralMongoClientOptions>();
 
         builder.Services.DecorateWithSameLifetime<IMongoClientProvider>(static (serviceProvider, underlyingMongoClientProvider) =>

@@ -5,23 +5,25 @@ namespace ShareGate.Infra.Mongo.Ephemeral;
 internal sealed class ConfigureEphemeralMongoClientOptions : IConfigureNamedOptions<MongoClientOptions>
 {
     private readonly string _databaseName;
-    private readonly ReusableMongoDbRunner _runner;
+    private readonly ReusableMongoRunnerProvider _runnerProvider;
 
-    public ConfigureEphemeralMongoClientOptions(DefaultDatabaseNameHolder defaultDatabaseNameHolder, ReusableMongoDbRunner runner)
+    public ConfigureEphemeralMongoClientOptions(DefaultDatabaseNameHolder defaultDatabaseNameHolder, ReusableMongoRunnerProvider runnerProvider)
     {
         this._databaseName = defaultDatabaseNameHolder.DatabaseName;
-        this._runner = runner;
+        this._runnerProvider = runnerProvider;
     }
 
     public void Configure(string name, MongoClientOptions options)
     {
-        this.Configure(options);
+        // Each test that requests a IMongoDatabase will have its own database
+        // There will also be one MongoDB instance per named MongoDB client
+        var runner = this._runnerProvider.GetRunner(name);
+
+        options.ConnectionString = runner.ConnectionString;
+        options.DefaultDatabaseName = this._databaseName;
     }
 
     public void Configure(MongoClientOptions options)
     {
-        // Each test that requests a IMongoDatabase will have its own database
-        options.ConnectionString = this._runner.ConnectionString;
-        options.DefaultDatabaseName = this._databaseName;
     }
 }

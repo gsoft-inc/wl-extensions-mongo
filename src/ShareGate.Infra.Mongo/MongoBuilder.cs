@@ -19,7 +19,7 @@ public sealed class MongoBuilder
         return this;
     }
 
-    public MongoBuilder AddMongo(string clientName, Action<MongoClientOptions>? configure = null)
+    public MongoBuilder AddNamedClient(string clientName, Action<MongoClientOptions>? configure = null)
     {
         if (clientName == null)
         {

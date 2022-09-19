@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace ShareGate.Infra.Mongo.Tests;
 
-[Collection("threading")]
+[Collection(XunitCollectionConstants.PerformanceCritical)]
 public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture>
 {
     public MongoDistributedLockTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
