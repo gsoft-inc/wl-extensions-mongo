@@ -9,7 +9,7 @@ using ShareGate.Infra.Mongo.Ephemeral;
 
 namespace ShareGate.Infra.Mongo.Tests;
 
-public sealed class MongoFixture : BaseIntegrationFixture
+public class MongoFixture : BaseIntegrationFixture
 {
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
@@ -21,7 +21,7 @@ public sealed class MongoFixture : BaseIntegrationFixture
         return services;
     }
 
-    private static void Configure(MongoOptions options)
+    private static void Configure(MongoClientOptions options)
     {
         options.MongoClientSettingsConfigurator = static settings => settings.ApplicationName = "integrationtests";
     }

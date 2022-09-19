@@ -1,12 +1,14 @@
 ﻿using ShareGate.Infra.Mongo.Threading;
 using ShareGate.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace ShareGate.Infra.Mongo.Tests;
 
-[Collection("threading")]
+[Collection(XunitCollectionConstants.PerformanceCritical)]
 public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture>
 {
     public MongoDistributedLockTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
@@ -14,10 +16,17 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
     {
     }
 
+    private MongoDistributedLockFactory CreateMongoDistributedLockFactory()
+    {
+        var database = this.Services.GetRequiredService<IMongoDatabase>();
+        var loggerFactory = this.Services.GetRequiredService<ILoggerFactory>();
+        return new MongoDistributedLockFactory(database, loggerFactory);
+    }
+
     [Fact]
     public async Task AcquireAsync_Single_Lock_Works()
     {
-        var distributedLockFactory = this.Services.GetRequiredService<MongoDistributedLockFactory>();
+        var distributedLockFactory = this.CreateMongoDistributedLockFactory();
 
         await using (var distributedLock = await distributedLockFactory.AcquireAsync("single", lifetime: 100, timeout: 100))
         {
@@ -31,7 +40,7 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
     [InlineData(10, 500, 5000, 10)]
     public async Task AcquireAsync_Only_Allows_One_Owner_At_A_Time(int taskCount, int lifetime, int timeout, int expectedAcquiredLockCount)
     {
-        var distributedLockFactory = this.Services.GetRequiredService<MongoDistributedLockFactory>();
+        var distributedLockFactory = this.CreateMongoDistributedLockFactory();
 
         var tasks = new Task[taskCount];
         var totalAcquiredLockCount = 0;
@@ -72,7 +81,7 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
     [InlineData(10, 2000, 2000, 200)]
     public async Task AcquireAsync_Throws_When_Cancellation_Is_Requested(int taskCount, int lifetime, int timeout, int cancelAfter)
     {
-        var distributedLockFactory = this.Services.GetRequiredService<MongoDistributedLockFactory>();
+        var distributedLockFactory = this.CreateMongoDistributedLockFactory();
 
         var tasks = new Task[taskCount];
         var ocexCount = 0;

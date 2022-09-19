@@ -1,17 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace ShareGate.Infra.Mongo;
 
-public sealed class MongoOptions
+public sealed class MongoClientOptions
 {
     public const string SectionName = "Mongo";
 
-    public MongoOptions()
+    public MongoClientOptions()
     {
-        this.BsonSerializers = new Dictionary<Type, IBsonSerializer>();
-        this.ConventionPacks = new List<NamedConventionPack>();
+        this.Indexing = new MongoIndexingOptions();
+        this.CommandPerformanceAnalysis = new MongoCommandPerformanceAnalysisOptions();
     }
 
     [Required]
@@ -24,11 +23,9 @@ public sealed class MongoOptions
 
     public Action<MongoClientSettings>? MongoClientSettingsConfigurator { get; set; }
 
-    public IDictionary<Type, IBsonSerializer> BsonSerializers { get; }
+    public MongoIndexingOptions Indexing { get; }
 
-    public IList<NamedConventionPack> ConventionPacks { get; }
-
-    public MongoIndexingOptions Indexing { get; } = new MongoIndexingOptions();
+    public MongoCommandPerformanceAnalysisOptions CommandPerformanceAnalysis { get; }
 }
 
 public sealed class MongoIndexingOptions
@@ -43,4 +40,14 @@ public sealed class MongoIndexingOptions
     [Required]
     [Range(1, int.MaxValue)]
     public int LockAcquisitionTimeoutInSeconds { get; set; } = 60;
+}
+
+public sealed class MongoCommandPerformanceAnalysisOptions
+{
+    public bool EnableCollectionScanDetection { get; set; }
+
+    internal bool IsPerformanceAnalysisEnabled
+    {
+        get => this.EnableCollectionScanDetection;
+    }
 }

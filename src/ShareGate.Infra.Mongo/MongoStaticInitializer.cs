@@ -5,14 +5,14 @@ using MongoDB.Bson.Serialization.Conventions;
 
 namespace ShareGate.Infra.Mongo;
 
-internal sealed class MongoInitializer
+internal sealed class MongoStaticInitializer
 {
     private static readonly object _lockObject = new object();
     private static bool _initialized;
 
-    private readonly IOptions<MongoOptions> _options;
+    private readonly IOptions<MongoStaticOptions> _options;
 
-    public MongoInitializer(IOptions<MongoOptions> options)
+    public MongoStaticInitializer(IOptions<MongoStaticOptions> options)
     {
         this._options = options;
     }

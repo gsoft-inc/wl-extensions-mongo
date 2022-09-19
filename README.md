@@ -3,14 +3,14 @@
 [![ShareGate.Infra.Mongo package in SGCloudCopy feed in Azure Artifacts](https://feeds.dev.azure.com/sharegate/_apis/public/Packaging/Feeds/SGCloudCopy/Packages/58873f85-2ee7-45ac-b7ee-1516a44a0a2c/Badge)](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_artifacts/feed/SGCloudCopy/NuGet/ShareGate.Infra.Mongo/)
 [![Build Status](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_apis/build/status/ShareGate.Infra.Mongo/ShareGate.Infra.Mongo%20CI?branchName=main)](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_build/latest?definitionId=307&branchName=main)
 
-Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices.
+Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices with several features:
 
-Features:
 * **Automatic indexes** creation, update and removal based on code changes,
-* **Encryption at the property level** with different scopes (per user, tenant, or application-wide),
+* **Encryption at field level** with different scopes (per user, tenant, or application-wide),
 * **Dependency-injection** enabled using `IServiceCollection` and `IServiceProvider`,
 * **Highly configurable** (custom serializers, conventions, multiple databases support)
-* `IAsyncEnumerable` support
+* Support for **multiple MongoDB connection strings** and MongoDB clients
+* `IAsyncEnumerable` support,
 
 
 ## Getting started
@@ -31,7 +31,7 @@ This is ideal for integration testing, as each `IServiceProvider` will have acce
 // In the project that contains the documents:
 // 1) Declare the collection name (camelCase) and the type responsible for providing indexes (optional)
 [MongoCollection("people", IndexProviderType = typeof(PersonDocumentIndexes))]
-public class PersonDocument : MongoDocument
+public class PersonDocument : IMongoDocument
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -55,20 +55,18 @@ public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
 ```csharp
 // 2) In the project that configures the application:
 var services = new ServiceCollection();
-services.AddMongo(ConfigureMongo).AddEncryptor<YourMongoValueEncryptor>();
+services
+    .AddMongo(ConfigureDefaultMongoClient) // <-- register the default MongoDB client and database
+    .AddNamedClient("anotherClient", ConfigureAnotherMongoClient) // <-- (optional) register multiple MongoDB clients with different options and connection strings
+    .AddEncryptor<YourMongoValueEncryptor>() // (optional) <-- specify how to encrypt sensitive fields
+    .ConfigureStaticOptions(ConfigureMongoStatic); // (optional) <-- specify MongoDB C# driver static settings
 
-private static void ConfigureMongo(MongoOptions options)
+private static void ConfigureDefaultMongoClient(MongoClientOptions options)
 {
     // Simplified for demo purposes, it is better to use appsettings.json, secret vaults
     // and IConfigureOptions<> classes that can use dependency injection to access other options or dependencies
     options.ConnectionString = "mongodb://localhost";
     options.DefaultDatabaseName = "default";
-    
-    // There are built-in serializers and conventions registered, but you can remove or override them
-    // ⚠ Careful, these are objects that will live for the entire lifetime of the application (singleton) as MongoDB C# driver
-    // uses static properties to configure its behavior and serialization
-    options.BsonSerializers[typeof(Foo)] = new MyFooBsonSerializer();
-    options.ConventionPacks.Add(new MyConventionPack());
     options.EnableSensitiveInformationLogging = true;
 
     // Used by the automatic index update feature
@@ -77,6 +75,25 @@ private static void ConfigureMongo(MongoOptions options)
 
     // Modify MongoClientSettings (optional)
     options.MongoClientSettingsConfigurator = settings => { };
+    
+    // FOR LOCAL DEVELOPMENT ONLY:
+    // This will output a warning log when a collection scan is detected on a "find" command
+    options.CommandPerformanceAnalysis.EnableCollectionScanDetection = true;
+}
+
+private static void ConfigureAnotherMongoClient(MongoClientOptions options)
+{
+    // Define options relative to this non-default MongoDB client
+    // Ideally, use IConfigureNamedOptions<MongoClientOptions>
+}
+
+private static void ConfigureMongoStatic(MongoStaticOptions options)
+{    
+    // There are built-in serializers and conventions registered, but you can remove or override them
+    // ⚠ Careful, these are objects that will live for the entire lifetime of the application (singleton) as MongoDB C# driver
+    // uses static properties to configure its behavior and serialization
+    options.BsonSerializers[typeof(Foo)] = new MyFooBsonSerializer();
+    options.ConventionPacks.Add(new MyConventionPack());
 }
 
 // MongoDB document properties can be encrypted when decorated with the [SensitiveInformation(scope)] attribute
@@ -97,6 +114,7 @@ private sealed class YourMongoValueEncryptor : IMongoValueEncryptor
 // 3) Consume the registered services
 // Automatically update indexes if their definition in the code has changed - a cryptographic hash is used to detect changes.
 // There's a distributed lock that prevents race conditions.
+// UpdateIndexesAsync() also accepts an optional registered MongoDB client name, database name and/or cancellation token. 
 var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) });
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument).Assembly }); // Assembly scanning alternative
@@ -106,7 +124,10 @@ var collection = this.Services.GetRequiredService<IMongoCollection<PersonDocumen
 // OR: var collection = this.Services.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>();
 
 // No cursors handling needed, use IAsyncEnumerable
-var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable(); 
+var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable();
+
+// Access other registered MongoDB clients
+var anotherMongoClient = this.Services.GetRequiredService<IMongoClientProvider>().GetClient("anotherClient");
 ```
 
 ```csharp

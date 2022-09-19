@@ -14,5 +14,5 @@ public sealed class MongoCollectionAttribute : Attribute
 
     public string Name { get; }
 
-    public Type? IndexProviderType { get; init; }
+    public Type? IndexProviderType { get; set; }
 }

@@ -47,4 +47,8 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(13, LogLevel.Information, "Distributed lock {LockId} has been released by owner {OwnerId}")]
     public static partial void DistributedLockReleased(this ILogger logger, string lockId, string ownerId);
+
+    // CommandPerformanceAnalyzer
+    [LoggerMessage(14, LogLevel.Warning, "Collection scan detected on command {MongoRequestId}")]
+    public static partial void CollectionScanDetected(this ILogger logger, int mongoRequestId);
 }

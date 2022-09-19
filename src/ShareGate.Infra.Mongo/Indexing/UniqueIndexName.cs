@@ -28,11 +28,11 @@ internal sealed class UniqueIndexName
     {
     }
 
-    public string FullName { get; private init; } = string.Empty;
+    public string FullName { get; private set; } = string.Empty;
 
-    public string Prefix { get; private init; } = string.Empty;
+    public string Prefix { get; private set; } = string.Empty;
 
-    public string Hash { get; private init; } = string.Empty;
+    public string Hash { get; private set; } = string.Empty;
 
     public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, [MaybeNullWhen(false)] out UniqueIndexName indexName)
     {
