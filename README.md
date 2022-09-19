@@ -6,7 +6,7 @@
 Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices with several features:
 
 * **Automatic indexes** creation, update and removal based on code changes,
-* **Encryption at the property level** with different scopes (per user, tenant, or application-wide),
+* **Encryption at field level** with different scopes (per user, tenant, or application-wide),
 * **Dependency-injection** enabled using `IServiceCollection` and `IServiceProvider`,
 * **Highly configurable** (custom serializers, conventions, multiple databases support)
 * Support for **multiple MongoDB connection strings** and MongoDB clients
@@ -57,7 +57,7 @@ public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
 var services = new ServiceCollection();
 services
     .AddMongo(ConfigureDefaultMongoClient) // <-- register the default MongoDB client and database
-    .AddNamedClient("anotherClient", ConfigureAnotherMongoClient) // <-- (optional) register multiple MongoDB clients with different options
+    .AddNamedClient("anotherClient", ConfigureAnotherMongoClient) // <-- (optional) register multiple MongoDB clients with different options and connection strings
     .AddEncryptor<YourMongoValueEncryptor>() // (optional) <-- specify how to encrypt sensitive fields
     .ConfigureStaticOptions(ConfigureMongoStatic); // (optional) <-- specify MongoDB C# driver static settings
 
