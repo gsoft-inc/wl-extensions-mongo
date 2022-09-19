@@ -31,7 +31,8 @@ internal sealed class ReusableMongoRunner
                 return;
             }
 
-            // The lock and use count prevent multiple instances of local mongod processes that would degrade the overall performance
+            // The lock and use count prevent multiple instances of local mongod processes for a same named MongoClient
+            // that would degrade the overall performance.
             this._runner ??= MongoRunner.Run(new MongoRunnerOptions
             {
                 UseSingleNodeReplicaSet = true,
