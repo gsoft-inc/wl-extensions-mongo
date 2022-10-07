@@ -1,0 +1,28 @@
+#nullable enable
+abstract ShareGate.Infra.Mongo.MongoIndexProvider<TDocument>.CreateIndexModels() -> System.Collections.Generic.IEnumerable<MongoDB.Driver.CreateIndexModel<TDocument>!>!
+MongoDB.Driver.AsyncCursorExtensions
+MongoDB.Driver.IMongoCollectionExtensions
+MongoDB.Driver.IMongoDatabaseExtensions
+ShareGate.Infra.Mongo.IMongoClientProvider
+ShareGate.Infra.Mongo.IMongoClientProvider.GetClient(string! clientName) -> MongoDB.Driver.IMongoClient!
+ShareGate.Infra.Mongo.IMongoDocument
+ShareGate.Infra.Mongo.MongoCollectionAttribute
+ShareGate.Infra.Mongo.MongoCollectionAttribute.IndexProviderType.get -> System.Type?
+ShareGate.Infra.Mongo.MongoCollectionAttribute.IndexProviderType.set -> void
+ShareGate.Infra.Mongo.MongoCollectionAttribute.MongoCollectionAttribute(string! name) -> void
+ShareGate.Infra.Mongo.MongoCollectionAttribute.Name.get -> string!
+ShareGate.Infra.Mongo.MongoDefaults
+ShareGate.Infra.Mongo.MongoIndexProvider<TDocument>
+ShareGate.Infra.Mongo.MongoIndexProvider<TDocument>.MongoIndexProvider() -> void
+ShareGate.Infra.Mongo.StringGuidIdGenerator
+ShareGate.Infra.Mongo.StringGuidIdGenerator.GenerateId(object! container, object! document) -> object!
+ShareGate.Infra.Mongo.StringGuidIdGenerator.IsEmpty(object! id) -> bool
+ShareGate.Infra.Mongo.StringGuidIdGenerator.StringGuidIdGenerator() -> void
+static MongoDB.Driver.AsyncCursorExtensions.ToAsyncEnumerable<TDocument>(this MongoDB.Driver.IAsyncCursor<TDocument>! cursor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TDocument>!
+static MongoDB.Driver.AsyncCursorExtensions.ToAsyncEnumerable<TDocument>(this MongoDB.Driver.IAsyncCursorSource<TDocument>! source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TDocument>!
+static MongoDB.Driver.IMongoCollectionExtensions.GetName<TDocument>(this MongoDB.Driver.IMongoCollection<TDocument>! collection) -> string!
+static MongoDB.Driver.IMongoDatabaseExtensions.GetCollection<TDocument>(this MongoDB.Driver.IMongoDatabase! database, MongoDB.Driver.MongoCollectionSettings? settings = null) -> MongoDB.Driver.IMongoCollection<TDocument>!
+static MongoDB.Driver.IMongoDatabaseExtensions.GetCollectionName<TDocument>(this MongoDB.Driver.IMongoDatabase! database) -> string!
+static readonly ShareGate.Infra.Mongo.MongoDefaults.ClientName -> string!
+static ShareGate.Infra.Mongo.StringGuidIdGenerator.GenerateId() -> object!
+static ShareGate.Infra.Mongo.StringGuidIdGenerator.Instance.get -> MongoDB.Bson.Serialization.IIdGenerator!
