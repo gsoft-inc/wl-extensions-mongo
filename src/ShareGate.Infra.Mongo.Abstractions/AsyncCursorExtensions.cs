@@ -1,10 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace MongoDB.Driver;
 
 public static class AsyncCursorExtensions
 {
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "That's a common pattern to use the default cancellation token")]
     public static async IAsyncEnumerable<TDocument> ToAsyncEnumerable<TDocument>(
         this IAsyncCursor<TDocument> cursor,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -23,6 +25,7 @@ public static class AsyncCursorExtensions
         }
     }
 
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "That's a common pattern to use the default cancellation token")]
     public static async IAsyncEnumerable<TDocument> ToAsyncEnumerable<TDocument>(
         this IAsyncCursorSource<TDocument> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

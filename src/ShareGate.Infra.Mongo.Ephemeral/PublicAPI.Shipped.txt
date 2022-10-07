@@ -1,0 +1,3 @@
+#nullable enable
+ShareGate.Infra.Mongo.Ephemeral.EphemeralMongoBuilderExtensions
+static ShareGate.Infra.Mongo.Ephemeral.EphemeralMongoBuilderExtensions.UseEphemeralRealServer(this ShareGate.Infra.Mongo.MongoBuilder! builder) -> ShareGate.Infra.Mongo.MongoBuilder!
