@@ -6,7 +6,12 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyTitle>ShareGate.Infra.Mongo.Ephemeral</AssemblyTitle>
     <PackageId>ShareGate.Infra.Mongo.Ephemeral</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ShareGate.Infra.Mongo\ShareGate.Infra.Mongo.csproj" />

@@ -76,7 +76,7 @@ private static void ConfigureDefaultMongoClient(MongoClientOptions options)
     // Modify MongoClientSettings (optional)
     options.MongoClientSettingsConfigurator = settings => { };
     
-    // FOR LOCAL DEVELOPMENT ONLY:
+    // EXPERIMENTAL, FOR LOCAL DEVELOPMENT ONLY:
     // This will output a warning log when a collection scan is detected on a "find" command
     options.CommandPerformanceAnalysis.EnableCollectionScanDetection = true;
 }
