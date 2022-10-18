@@ -101,13 +101,10 @@ internal sealed class MongoDistributedLock
         // Watch uses change streams that require a replica set - even with a single node
         // https://www.mongodb.com/docs/manual/changeStreams/
         var watchPipeline = new EmptyPipelineDefinition<ChangeStreamDocument<DistributedLockDocument>>()
-            .Match(x => x.OperationType == ChangeStreamOperationType.Update && x.FullDocument.Id == this._lockId && (!x.FullDocument.IsAcquired || x.FullDocument.ExpiresAt < DateTime.UtcNow.Ticks));
+            .Match(x => x.OperationType == ChangeStreamOperationType.Delete && x.DocumentKey["_id"] == this._lockId);
 
         var watchOptions = new ChangeStreamOptions
         {
-            // Required in order for our filter to access the full document
-            FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
-
             // Delay between each "getMore" command, default is one second
             MaxAwaitTime = TimeSpan.FromSeconds(10),
         };
@@ -132,11 +129,7 @@ internal sealed class MongoDistributedLock
         if (this.IsAcquired)
         {
             var filter = new ExpressionFilterDefinition<DistributedLockDocument>(x => x.Id == this._lockId && x.OwnerId == this._ownerId);
-            var update = Builders<DistributedLockDocument>.Update.Set(x => x.IsAcquired, false).Set(x => x.OwnerId, string.Empty);
-
-            // Updating an existing document instead of deleting it seems to keep the write atomicity we need in the TryAcquireAsync method
-            // We don't mind having a few unused lock documents in the database
-            await this._collection.UpdateOneAsync(filter, update).ConfigureAwait(false);
+            await this._collection.DeleteOneAsync(filter).ConfigureAwait(false);
             this._logger.DistributedLockReleased(this._lockId, this._ownerId);
         }
     }
