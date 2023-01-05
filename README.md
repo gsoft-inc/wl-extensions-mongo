@@ -1,7 +1,7 @@
-# ShareGate.Infra.Mongo
+# GSoft.Extensions.Mongo
 
-[![ShareGate.Infra.Mongo package in SGCloudCopy feed in Azure Artifacts](https://feeds.dev.azure.com/sharegate/_apis/public/Packaging/Feeds/SGCloudCopy/Packages/58873f85-2ee7-45ac-b7ee-1516a44a0a2c/Badge)](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_artifacts/feed/SGCloudCopy/NuGet/ShareGate.Infra.Mongo/)
-[![Build Status](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_apis/build/status/ShareGate.Infra.Mongo/ShareGate.Infra.Mongo%20CI?branchName=main)](https://dev.azure.com/sharegate/ShareGate.CloudCopy/_build/latest?definitionId=307&branchName=main)
+[![GSoft.Extensions.Mongo package in SGCloudCopy feed in Azure Artifacts](https://feeds.dev.azure.com/sharegate/_apis/public/Packaging/Feeds/SGCloudCopy/Packages/58873f85-2ee7-45ac-b7ee-1516a44a0a2c/Badge)](https://dev.azure.com/sharegate/GSoft.CloudCopy/_artifacts/feed/SGCloudCopy/NuGet/GSoft.Extensions.Mongo/)
+[![Build Status](https://dev.azure.com/sharegate/GSoft.CloudCopy/_apis/build/status/GSoft.Extensions.Mongo/GSoft.Extensions.Mongo%20CI?branchName=main)](https://dev.azure.com/sharegate/GSoft.CloudCopy/_build/latest?definitionId=307&branchName=main)
 
 Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices with several features:
 
@@ -15,13 +15,13 @@ Provides MongoDB access through **.NET dependency injection**, following `Micros
 
 ## Getting started
 
-Install the package `ShareGate.Infra.Mongo.Abstractions` in the project where you'll declare your documents.
+Install the package `GSoft.Extensions.Mongo.Abstractions` in the project where you'll declare your documents.
 This package contains base classes and interfaces such as `IMongoDocument`, `MongoIndexProvider`, `MongoCollectionAttribute`.
 There's also a few extension methods of the MongoDB C# driver classes and interfaces that adds `IAsyncEnumerable` support to cursors.
 
-Install the package `ShareGate.Infra.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
+Install the package `GSoft.Extensions.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
 
-Install the package `ShareGate.Infra.Mongo.Ephemeral` whenever you want to use a real but ephemeral MongoDB cluster with a single node replica set.
+Install the package `GSoft.Extensions.Mongo.Ephemeral` whenever you want to use a real but ephemeral MongoDB cluster with a single node replica set.
 This is ideal for integration testing, as each `IServiceProvider` will have access to an unique and isolated database.
 
 
@@ -131,7 +131,7 @@ var anotherMongoClient = this.Services.GetRequiredService<IMongoClientProvider>(
 ```
 
 ```csharp
-// 4) Add the ShareGate.Infra.Mongo.Ephemeral package to use a ephemeral but real MongoDB database in your tests
+// 4) Add the GSoft.Extensions.Mongo.Ephemeral package to use a ephemeral but real MongoDB database in your tests
 var services = new ServiceCollection();
 services.AddMongo().UseEphemeralRealServer();
 ```

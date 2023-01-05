@@ -1,0 +1,3 @@
+#nullable enable
+GSoft.Extensions.Mongo.Ephemeral.EphemeralMongoBuilderExtensions
+static GSoft.Extensions.Mongo.Ephemeral.EphemeralMongoBuilderExtensions.UseEphemeralRealServer(this GSoft.Extensions.Mongo.MongoBuilder! builder) -> GSoft.Extensions.Mongo.MongoBuilder!

@@ -3,7 +3,7 @@
     <Copyright>Copyright © Groupe GSoft inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
     <Authors>Groupe GSoft inc.</Authors>
     <Owners>Groupe GSoft inc.</Owners>
-    <PackageProjectUrl>https://dev.azure.com/sharegate/ShareGate.CloudCopy/_git/ShareGate.Infra.Mongo</PackageProjectUrl>
+    <PackageProjectUrl>https://dev.azure.com/sharegate/GSoft.CloudCopy/_git/GSoft.Extensions.Mongo</PackageProjectUrl>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

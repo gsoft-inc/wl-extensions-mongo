@@ -25,7 +25,7 @@ return new CakeHost()
 public static class Constants
 {
     public const string Release = "Release";
-    public const string ProjectName = "ShareGate.Infra.Mongo";
+    public const string ProjectName = "GSoft.Extensions.Mongo";
 
     public static readonly string SourceDirectoryPath = Path.Combine("..", "src");
     public static readonly string OutputDirectoryPath = Path.Combine("..", ".output");

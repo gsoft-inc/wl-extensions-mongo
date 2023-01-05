@@ -1,0 +1,56 @@
+#nullable enable
+abstract GSoft.Extensions.Mongo.NamedConventionPack.Name.get -> string!
+abstract GSoft.Extensions.Mongo.NamedConventionPack.TypeFilter(System.Type! type) -> bool
+const GSoft.Extensions.Mongo.MongoClientOptions.SectionName = "Mongo" -> string!
+GSoft.Extensions.Mongo.AggregatorEventSubscriber
+GSoft.Extensions.Mongo.AggregatorEventSubscriber.AggregatorEventSubscriber() -> void
+GSoft.Extensions.Mongo.AggregatorEventSubscriber.Subscribe(MongoDB.Driver.Core.Events.IEventSubscriber! subscriber) -> void
+GSoft.Extensions.Mongo.AggregatorEventSubscriber.Subscribe<TEvent>(System.Action<TEvent>! handler) -> void
+GSoft.Extensions.Mongo.AggregatorEventSubscriber.TryGetEventHandler<TEvent>(out System.Action<TEvent>! handler) -> bool
+GSoft.Extensions.Mongo.IMongoEventSubscriberFactory
+GSoft.Extensions.Mongo.IMongoEventSubscriberFactory.CreateEventSubscribers(string! clientName) -> System.Collections.Generic.IEnumerable<MongoDB.Driver.Core.Events.IEventSubscriber!>!
+GSoft.Extensions.Mongo.Indexing.IMongoIndexer
+GSoft.Extensions.Mongo.Indexing.IMongoIndexer.UpdateIndexesAsync(System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>! assemblies, string? clientName = null, string? databaseName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+GSoft.Extensions.Mongo.Indexing.IMongoIndexer.UpdateIndexesAsync(System.Collections.Generic.IEnumerable<System.Type!>! types, string? clientName = null, string? databaseName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+GSoft.Extensions.Mongo.Indexing.IMongoIndexer.UpdateIndexesAsync(System.Reflection.Assembly! assembly, string? clientName = null, string? databaseName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+GSoft.Extensions.Mongo.MongoBuilder
+GSoft.Extensions.Mongo.MongoBuilder.AddEncryptor<TEncryptor>() -> GSoft.Extensions.Mongo.MongoBuilder!
+GSoft.Extensions.Mongo.MongoBuilder.AddNamedClient(string! clientName, System.Action<GSoft.Extensions.Mongo.MongoClientOptions!>? configure = null) -> GSoft.Extensions.Mongo.MongoBuilder!
+GSoft.Extensions.Mongo.MongoBuilder.ConfigureStaticOptions(System.Action<GSoft.Extensions.Mongo.MongoStaticOptions!>! configure) -> GSoft.Extensions.Mongo.MongoBuilder!
+GSoft.Extensions.Mongo.MongoBuilder.MongoBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
+GSoft.Extensions.Mongo.MongoBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+GSoft.Extensions.Mongo.MongoClientOptions
+GSoft.Extensions.Mongo.MongoClientOptions.CommandPerformanceAnalysis.get -> GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions!
+GSoft.Extensions.Mongo.MongoClientOptions.ConnectionString.get -> string!
+GSoft.Extensions.Mongo.MongoClientOptions.ConnectionString.set -> void
+GSoft.Extensions.Mongo.MongoClientOptions.DefaultDatabaseName.get -> string!
+GSoft.Extensions.Mongo.MongoClientOptions.DefaultDatabaseName.set -> void
+GSoft.Extensions.Mongo.MongoClientOptions.EnableSensitiveInformationLogging.get -> bool
+GSoft.Extensions.Mongo.MongoClientOptions.EnableSensitiveInformationLogging.set -> void
+GSoft.Extensions.Mongo.MongoClientOptions.Indexing.get -> GSoft.Extensions.Mongo.MongoIndexingOptions!
+GSoft.Extensions.Mongo.MongoClientOptions.MongoClientOptions() -> void
+GSoft.Extensions.Mongo.MongoClientOptions.MongoClientSettingsConfigurator.get -> System.Action<MongoDB.Driver.MongoClientSettings!>?
+GSoft.Extensions.Mongo.MongoClientOptions.MongoClientSettingsConfigurator.set -> void
+GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions
+GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions.EnableCollectionScanDetection.get -> bool
+GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions.EnableCollectionScanDetection.set -> void
+GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions.MongoCommandPerformanceAnalysisOptions() -> void
+GSoft.Extensions.Mongo.MongoIndexingOptions
+GSoft.Extensions.Mongo.MongoIndexingOptions.DistributedLockName.get -> string!
+GSoft.Extensions.Mongo.MongoIndexingOptions.DistributedLockName.set -> void
+GSoft.Extensions.Mongo.MongoIndexingOptions.LockAcquisitionTimeoutInSeconds.get -> int
+GSoft.Extensions.Mongo.MongoIndexingOptions.LockAcquisitionTimeoutInSeconds.set -> void
+GSoft.Extensions.Mongo.MongoIndexingOptions.LockMaxLifetimeInSeconds.get -> int
+GSoft.Extensions.Mongo.MongoIndexingOptions.LockMaxLifetimeInSeconds.set -> void
+GSoft.Extensions.Mongo.MongoIndexingOptions.MongoIndexingOptions() -> void
+GSoft.Extensions.Mongo.MongoServiceCollectionExtensions
+GSoft.Extensions.Mongo.MongoStaticOptions
+GSoft.Extensions.Mongo.MongoStaticOptions.BsonSerializers.get -> System.Collections.Generic.IDictionary<System.Type!, MongoDB.Bson.Serialization.IBsonSerializer!>!
+GSoft.Extensions.Mongo.MongoStaticOptions.ConventionPacks.get -> System.Collections.Generic.IList<GSoft.Extensions.Mongo.NamedConventionPack!>!
+GSoft.Extensions.Mongo.MongoStaticOptions.MongoStaticOptions() -> void
+GSoft.Extensions.Mongo.NamedConventionPack
+GSoft.Extensions.Mongo.NamedConventionPack.NamedConventionPack() -> void
+GSoft.Extensions.Mongo.Security.IMongoValueEncryptor
+GSoft.Extensions.Mongo.Security.IMongoValueEncryptor.Decrypt(byte[]! bytes, ShareGate.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
+GSoft.Extensions.Mongo.Security.IMongoValueEncryptor.Encrypt(byte[]! bytes, ShareGate.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
+static GSoft.Extensions.Mongo.MongoServiceCollectionExtensions.AddMongo(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<GSoft.Extensions.Mongo.MongoClientOptions!>? configure = null) -> GSoft.Extensions.Mongo.MongoBuilder!
