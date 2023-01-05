@@ -3,8 +3,6 @@ using ShareGate.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GSoft.Extensions.Mongo.Tests;
 

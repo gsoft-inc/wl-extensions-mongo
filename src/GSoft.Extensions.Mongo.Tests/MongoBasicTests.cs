@@ -3,8 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GSoft.Extensions.Mongo.Tests;
 

@@ -2,8 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using ShareGate.Extensions.Xunit;
 using GSoft.Extensions.Mongo.Indexing;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GSoft.Extensions.Mongo.Tests;
 
