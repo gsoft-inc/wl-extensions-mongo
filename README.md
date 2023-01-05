@@ -135,3 +135,8 @@ var anotherMongoClient = this.Services.GetRequiredService<IMongoClientProvider>(
 var services = new ServiceCollection();
 services.AddMongo().UseEphemeralRealServer();
 ```
+
+
+## License
+
+Copyright © 2023, GSoft Group Inc. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/gsoft-inc/gsoft-license/blob/master/LICENSE.
