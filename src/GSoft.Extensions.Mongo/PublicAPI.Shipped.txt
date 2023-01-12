@@ -51,6 +51,6 @@ GSoft.Extensions.Mongo.MongoStaticOptions.MongoStaticOptions() -> void
 GSoft.Extensions.Mongo.NamedConventionPack
 GSoft.Extensions.Mongo.NamedConventionPack.NamedConventionPack() -> void
 GSoft.Extensions.Mongo.Security.IMongoValueEncryptor
-GSoft.Extensions.Mongo.Security.IMongoValueEncryptor.Decrypt(byte[]! bytes, ShareGate.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
-GSoft.Extensions.Mongo.Security.IMongoValueEncryptor.Encrypt(byte[]! bytes, ShareGate.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
+GSoft.Extensions.Mongo.Security.IMongoValueEncryptor.Decrypt(byte[]! bytes, GSoft.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
+GSoft.Extensions.Mongo.Security.IMongoValueEncryptor.Encrypt(byte[]! bytes, GSoft.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
 static GSoft.Extensions.Mongo.MongoServiceCollectionExtensions.AddMongo(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<GSoft.Extensions.Mongo.MongoClientOptions!>? configure = null) -> GSoft.Extensions.Mongo.MongoBuilder!

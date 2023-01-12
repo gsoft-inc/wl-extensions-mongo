@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GSoft.ComponentModel.DataAnnotations" Version="1.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MongoDB.Driver" Version="2.17.1" />
-    <PackageReference Include="ShareGate.ComponentModel.DataAnnotations" Version="0.2.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0' ">

@@ -1,5 +1,5 @@
 ﻿using GSoft.Extensions.Mongo.Threading;
-using ShareGate.Extensions.Xunit;
+using GSoft.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using ShareGate.ComponentModel.DataAnnotations;
+using GSoft.ComponentModel.DataAnnotations;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 

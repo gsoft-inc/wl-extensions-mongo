@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using ShareGate.ComponentModel.DataAnnotations;
+using GSoft.ComponentModel.DataAnnotations;
 
 namespace GSoft.Extensions.Mongo.Security;
 

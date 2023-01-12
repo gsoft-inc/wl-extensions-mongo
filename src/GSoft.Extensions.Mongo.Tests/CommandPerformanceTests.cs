@@ -2,7 +2,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using ShareGate.Extensions.Xunit;
+using GSoft.Extensions.Xunit;
 
 namespace GSoft.Extensions.Mongo.Tests;
 

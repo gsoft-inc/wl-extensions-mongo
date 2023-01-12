@@ -1,4 +1,4 @@
-﻿using ShareGate.Extensions.Xunit;
+﻿using GSoft.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;

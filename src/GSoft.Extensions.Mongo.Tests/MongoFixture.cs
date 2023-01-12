@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
-using ShareGate.ComponentModel.DataAnnotations;
+using GSoft.ComponentModel.DataAnnotations;
 using GSoft.Extensions.Mongo.Security;
-using ShareGate.Extensions.Xunit;
+using GSoft.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using GSoft.Extensions.Mongo.Ephemeral;

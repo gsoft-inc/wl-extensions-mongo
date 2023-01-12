@@ -1,5 +1,5 @@
-﻿using ShareGate.ComponentModel.DataAnnotations;
-using ShareGate.Extensions.Xunit;
+﻿using GSoft.ComponentModel.DataAnnotations;
+using GSoft.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;

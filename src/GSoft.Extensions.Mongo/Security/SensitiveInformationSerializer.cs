@@ -1,4 +1,4 @@
-﻿using ShareGate.ComponentModel.DataAnnotations;
+﻿using GSoft.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
