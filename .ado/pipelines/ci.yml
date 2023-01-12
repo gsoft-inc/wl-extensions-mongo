@@ -1,9 +1,3 @@
-trigger:
-  batch: true
-  branches:
-    include:
-      - main
-
 pool:
   vmImage: ubuntu-latest
 
@@ -16,12 +10,6 @@ jobs:
 
     steps:
       - task: UseDotNet@2
-        displayName: "Use .NET Core 3.1 SDK"
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-
-      - task: UseDotNet@2
         displayName: "Use .NET 6 SDK"
         inputs:
           packageType: sdk
@@ -31,4 +19,4 @@ jobs:
         displayName: "Restore, build, test and pack"
         inputs:
           targetType: "filePath"
-          filePath: "build.ps1"
+          filePath: "Build.ps1"

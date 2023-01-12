@@ -1,9 +1,11 @@
 <Project>
   <PropertyGroup>
-    <Copyright>Copyright © Groupe GSoft inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
-    <Authors>Groupe GSoft inc.</Authors>
-    <Owners>Groupe GSoft inc.</Owners>
+    <Copyright>Copyright © GSoft Group Inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
+    <Authors>GSoft Group Inc.</Authors>
+    <Owners>GSoft Group Inc.</Owners>
     <PackageProjectUrl>https://dev.azure.com/sharegate/ShareGate.CloudCopy/_git/ShareGate.Infra.Mongo</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -19,5 +21,22 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="GitVersion.MsBuild" Version="5.11.1" Condition=" '$(Configuration)' == 'Release' ">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink -->
+  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' Or '$(TF_BUILD)' == 'true' ">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' ">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectName.Contains('Tests'))">
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 </Project>

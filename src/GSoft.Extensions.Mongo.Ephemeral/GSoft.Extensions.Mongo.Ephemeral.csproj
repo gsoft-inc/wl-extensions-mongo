@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net6.0;netstandard2.0</TargetFrameworks>
+    <IsPackable>True</IsPackable>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <AssemblyTitle>GSoft.Extensions.Mongo.Ephemeral</AssemblyTitle>
+    <PackageId>GSoft.Extensions.Mongo.Ephemeral</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GSoft.Extensions.Mongo\GSoft.Extensions.Mongo.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="EphemeralMongo6" Version="0.1.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
