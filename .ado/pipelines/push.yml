@@ -41,6 +41,6 @@ jobs:
         displayName: "Push NuGet package to internal feed"
         inputs:
           command: push
-          publishVstsFeed: "SGCloudCopy"
+          publishVstsFeed: "gsoft"
           packagesToPush: ".output/*.nupkg"
           allowPackageConflicts: false

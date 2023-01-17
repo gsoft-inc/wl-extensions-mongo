@@ -3,7 +3,7 @@
     <Copyright>Copyright © GSoft Group Inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
     <Authors>GSoft Group Inc.</Authors>
     <Owners>GSoft Group Inc.</Owners>
-    <PackageProjectUrl>https://dev.azure.com/sharegate/ShareGate.CloudCopy/_git/ShareGate.Infra.Mongo</PackageProjectUrl>
+    <PackageProjectUrl>https://dev.azure.com/gsoft/Shared-Assets/_git/GSoft.Extensions.Mongo</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <LangVersion>10</LangVersion>
