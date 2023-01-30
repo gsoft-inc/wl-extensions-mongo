@@ -10,6 +10,7 @@ public sealed class MongoClientOptions
     public MongoClientOptions()
     {
         this.Indexing = new MongoIndexingOptions();
+        this.Telemetry = new MongoTelemetryOptions();
         this.CommandPerformanceAnalysis = new MongoCommandPerformanceAnalysisOptions();
     }
 
@@ -19,11 +20,11 @@ public sealed class MongoClientOptions
     [Required]
     public string DefaultDatabaseName { get; set; } = string.Empty;
 
-    public bool EnableSensitiveInformationLogging { get; set; }
-
     public Action<MongoClientSettings>? MongoClientSettingsConfigurator { get; set; }
 
     public MongoIndexingOptions Indexing { get; }
+
+    public MongoTelemetryOptions Telemetry { get; }
 
     public MongoCommandPerformanceAnalysisOptions CommandPerformanceAnalysis { get; }
 }
@@ -40,6 +41,22 @@ public sealed class MongoIndexingOptions
     [Required]
     [Range(1, int.MaxValue)]
     public int LockAcquisitionTimeoutInSeconds { get; set; } = 60;
+}
+
+public sealed class MongoTelemetryOptions
+{
+    public MongoTelemetryOptions()
+    {
+        this.IgnoredCommandNames = new HashSet<string>(StringComparer.Ordinal)
+        {
+            // Inspired from Officevibe's ignored command names list
+            "isMaster", "buildInfo", "saslStart", "saslContinue", "getLastError", "getMore", "listIndexes", "ping",
+        };
+    }
+
+    public bool CaptureCommandText { get; set; }
+
+    public ISet<string> IgnoredCommandNames { get; }
 }
 
 public sealed class MongoCommandPerformanceAnalysisOptions

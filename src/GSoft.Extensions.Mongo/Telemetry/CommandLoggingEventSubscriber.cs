@@ -1,24 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 using MongoDB.Driver.Core.Events;
 
-namespace GSoft.Extensions.Mongo.Logging;
+namespace GSoft.Extensions.Mongo.Telemetry;
 
 internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
 {
-    // These commands are automatically executed and add noise to the log output
-    private static readonly HashSet<string> IgnoredCommandNames = new HashSet<string>(StringComparer.Ordinal)
-    {
-        "isMaster", "buildInfo", "saslStart", "saslContinue",
-    };
-
+    private readonly MongoClientOptions _options;
     private readonly ILogger<CommandLoggingEventSubscriber> _logger;
-    private readonly bool _enableSensitiveInformationLogging;
 
-    public CommandLoggingEventSubscriber(ILoggerFactory loggerFactory, bool enableSensitiveInformationLogging)
+    public CommandLoggingEventSubscriber(MongoClientOptions options, ILoggerFactory loggerFactory)
     {
+        this._options = options;
         this._logger = loggerFactory.CreateLogger<CommandLoggingEventSubscriber>();
-        this._enableSensitiveInformationLogging = enableSensitiveInformationLogging;
 
         this.Subscribe<CommandStartedEvent>(this.CommandStartedEventHandler);
         this.Subscribe<CommandSucceededEvent>(this.CommandSucceededEventHandler);
@@ -27,14 +20,14 @@ internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
 
     private void CommandStartedEventHandler(CommandStartedEvent evt)
     {
-        if (IgnoredCommandNames.Contains(evt.CommandName))
+        if (this._options.Telemetry.IgnoredCommandNames.Contains(evt.CommandName))
         {
             return;
         }
 
-        if (this._enableSensitiveInformationLogging)
+        if (this._options.Telemetry.CaptureCommandText)
         {
-            this._logger.CommandStartedSensitive(evt.CommandName, evt.RequestId, evt.Command.ToJson());
+            this._logger.CommandStartedSensitive(evt.CommandName, evt.RequestId, evt.Command.ToString());
         }
         else
         {
@@ -44,7 +37,7 @@ internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
 
     private void CommandSucceededEventHandler(CommandSucceededEvent evt)
     {
-        if (!IgnoredCommandNames.Contains(evt.CommandName))
+        if (!this._options.Telemetry.IgnoredCommandNames.Contains(evt.CommandName))
         {
             this._logger.CommandSucceeded(evt.CommandName, evt.RequestId, evt.Duration.TotalSeconds);
         }
@@ -52,7 +45,7 @@ internal sealed class CommandLoggingEventSubscriber : AggregatorEventSubscriber
 
     private void CommandFailedEventHandler(CommandFailedEvent evt)
     {
-        // Manually cancelled MongoDB commands should not be logged as warnings.
+        // Manually-cancelled MongoDB commands should not be logged as warnings.
         // The OperationCanceledException will eventually appear in the logs if not handled.
         var logLevel = evt.Failure is OperationCanceledException ? LogLevel.Debug : LogLevel.Warning;
         this._logger.CommandFailed(logLevel, evt.Failure, evt.CommandName, evt.RequestId, evt.Duration.TotalSeconds);

@@ -25,12 +25,11 @@ GSoft.Extensions.Mongo.MongoClientOptions.ConnectionString.get -> string!
 GSoft.Extensions.Mongo.MongoClientOptions.ConnectionString.set -> void
 GSoft.Extensions.Mongo.MongoClientOptions.DefaultDatabaseName.get -> string!
 GSoft.Extensions.Mongo.MongoClientOptions.DefaultDatabaseName.set -> void
-GSoft.Extensions.Mongo.MongoClientOptions.EnableSensitiveInformationLogging.get -> bool
-GSoft.Extensions.Mongo.MongoClientOptions.EnableSensitiveInformationLogging.set -> void
 GSoft.Extensions.Mongo.MongoClientOptions.Indexing.get -> GSoft.Extensions.Mongo.MongoIndexingOptions!
 GSoft.Extensions.Mongo.MongoClientOptions.MongoClientOptions() -> void
 GSoft.Extensions.Mongo.MongoClientOptions.MongoClientSettingsConfigurator.get -> System.Action<MongoDB.Driver.MongoClientSettings!>?
 GSoft.Extensions.Mongo.MongoClientOptions.MongoClientSettingsConfigurator.set -> void
+GSoft.Extensions.Mongo.MongoClientOptions.Telemetry.get -> GSoft.Extensions.Mongo.MongoTelemetryOptions!
 GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions
 GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions.EnableCollectionScanDetection.get -> bool
 GSoft.Extensions.Mongo.MongoCommandPerformanceAnalysisOptions.EnableCollectionScanDetection.set -> void
@@ -48,6 +47,11 @@ GSoft.Extensions.Mongo.MongoStaticOptions
 GSoft.Extensions.Mongo.MongoStaticOptions.BsonSerializers.get -> System.Collections.Generic.IDictionary<System.Type!, MongoDB.Bson.Serialization.IBsonSerializer!>!
 GSoft.Extensions.Mongo.MongoStaticOptions.ConventionPacks.get -> System.Collections.Generic.IList<GSoft.Extensions.Mongo.NamedConventionPack!>!
 GSoft.Extensions.Mongo.MongoStaticOptions.MongoStaticOptions() -> void
+GSoft.Extensions.Mongo.MongoTelemetryOptions
+GSoft.Extensions.Mongo.MongoTelemetryOptions.CaptureCommandText.get -> bool
+GSoft.Extensions.Mongo.MongoTelemetryOptions.CaptureCommandText.set -> void
+GSoft.Extensions.Mongo.MongoTelemetryOptions.IgnoredCommandNames.get -> System.Collections.Generic.ISet<string!>!
+GSoft.Extensions.Mongo.MongoTelemetryOptions.MongoTelemetryOptions() -> void
 GSoft.Extensions.Mongo.NamedConventionPack
 GSoft.Extensions.Mongo.NamedConventionPack.NamedConventionPack() -> void
 GSoft.Extensions.Mongo.Security.IMongoValueEncryptor

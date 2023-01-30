@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver.Core.Events;
-using GSoft.Extensions.Mongo.Logging;
 using GSoft.Extensions.Mongo.Performance;
+using GSoft.Extensions.Mongo.Telemetry;
 
 namespace GSoft.Extensions.Mongo;
 
@@ -24,7 +24,10 @@ internal sealed class MongoEventSubscriberFactory : IMongoEventSubscriberFactory
         var options = this._optionsMonitor.Get(clientName);
 
         // Command logging
-        yield return new CommandLoggingEventSubscriber(this._loggerFactory, options.EnableSensitiveInformationLogging);
+        yield return new CommandLoggingEventSubscriber(options, this._loggerFactory);
+
+        // Command distributed tracing (Open Telemetry)
+        yield return new CommandTracingEventSubscriber(options);
 
         // Command performance analysis
         if (options.CommandPerformanceAnalysis.IsPerformanceAnalysisEnabled)

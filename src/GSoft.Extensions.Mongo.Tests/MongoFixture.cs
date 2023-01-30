@@ -24,6 +24,7 @@ public class MongoFixture : BaseIntegrationFixture
     private static void Configure(MongoClientOptions options)
     {
         options.MongoClientSettingsConfigurator = static settings => settings.ApplicationName = "integrationtests";
+        options.Telemetry.CaptureCommandText = true;
     }
 
     private sealed class AesMongoValueEncryptor : IMongoValueEncryptor
