@@ -71,16 +71,20 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
 
         this._disposableDependencies.AddRange(eventSubscribers.OfType<IDisposable>());
 
+        // Allow consumers to override mongo client settings
+        options.MongoClientSettingsConfigurator?.Invoke(settings);
+
+        var userDefinedClusterConfiguration = settings.ClusterConfigurator;
+
         settings.ClusterConfigurator = builder =>
         {
+            userDefinedClusterConfiguration?.Invoke(builder);
+
             foreach (var eventSubscriber in eventSubscribers)
             {
                 builder.Subscribe(eventSubscriber);
             }
         };
-
-        // Allow consumers to override mongo client settings
-        options.MongoClientSettingsConfigurator?.Invoke(settings);
 
         return new MongoClient(settings);
     }
