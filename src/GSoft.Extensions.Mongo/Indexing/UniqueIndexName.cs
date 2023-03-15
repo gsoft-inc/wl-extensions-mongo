@@ -21,7 +21,7 @@ internal sealed class UniqueIndexName
     // Careful, pre-4.2 MongoDB has a index name length limit of 127 characters
     // https://www.mongodb.com/docs/manual/reference/limits/#mongodb-limit-Index-Name-Length
     private static readonly Regex ValidNameRegex = new Regex(
-        "^(?<Prefix>[a-z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexPartialHashLength + "})$",
+        "^(?<Prefix>[a-zA-Z0-9_]+)_(?<Hash>[a-z0-9]{" + IndexPartialHashLength + "})$",
         RegexOptions.Compiled);
 
     private UniqueIndexName()
