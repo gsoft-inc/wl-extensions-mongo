@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GSoft.Extensions.Mongo.Analyzers\GSoft.Extensions.Mongo.Analyzers.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="GSoft.ComponentModel.DataAnnotations" Version="1.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.3">
       <PrivateAssets>all</PrivateAssets>
@@ -26,4 +30,28 @@
   <ItemGroup>
     <None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <!--
+    Here we use some advanced MSBuild to embed our Roslyn analyzers into the generated package.
+    The idea is to only insert the analyzers DLL into the corresponding analyzers directory (analyzers\dotnet\cs) of the NuGet package, during the packing phase.
+    Here is the official documentation about this process: https://learn.microsoft.com/en-us/nuget/reference/msbuild-targets#targetsfortfmspecificcontentinpackage
+    This technique was originally found here: https://stackoverflow.com/q/40396161/825695
+    Microsoft does something similar with several packages, including the source generators embed in Microsoft.Extensions.Logging.Abstractions.
+    However their MSBuild engineering is way more complicated and reused through the entire .NET runtime monorepo. We don't want that kind of complexity here.
+    -->
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+      <_OurPrivateAssetsFiles Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))" />
+      <_OurRoslynAnalyzersDlls Include="@(_OurPrivateAssetsFiles)" Condition=" '%(Filename)' == 'GSoft.Extensions.Mongo.Analyzers' And '%(Extension)' == '.dll' " />
+    </ItemGroup>
+
+    <!-- Prevent copying the Roslyn analyzer files multiple times (because this project targets multiple frameworks) -->
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+      <TfmSpecificPackageFile Include="@(_OurRoslynAnalyzersDlls)" PackagePath="analyzers\dotnet\cs" />
+    </ItemGroup>
+  </Target>
 </Project>
