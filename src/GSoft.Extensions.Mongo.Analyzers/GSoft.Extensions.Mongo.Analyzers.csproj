@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!--
     "Microsoft.CodeAnalysis.*" packages allow the development of Roslyn analyzers and source generators.
     These packages also define the minimum .NET compiler version required by consumer developer IDEs and build agents:

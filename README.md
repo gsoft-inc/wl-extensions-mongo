@@ -136,6 +136,20 @@ var services = new ServiceCollection();
 services.AddMongo().UseEphemeralRealServer();
 ```
 
+## Included Roslyn analyzers
+
+| Rule ID | Category | Severity | Description                                                                                   |
+|---------|----------|----------|-----------------------------------------------------------------------------------------------|
+| GMNG01  | Design   | Warning  | Specify whether or not an index is required with IndexedByAttribute or NoIndexNeededAttribute |
+
+In order to change the severity of one of these diagnostic rules, use a `.editorconfig` file, for instance:
+```ini
+## Disable analyzer for test files
+[**Tests*/**.cs]
+dotnet_diagnostic.GMNG01.severity = none
+```
+To learn more about how to configure or suppress code analysis warnings, [read this documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/suppress-warnings).
+
 
 ## License
 
