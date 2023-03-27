@@ -4,7 +4,7 @@ public class IndexAttributeUsageAnalyzerTests : BaseAnalyzerTest<IndexAttributeU
 {
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
-    [InlineData("[NoIndexNeeded]")]
+    [InlineData("[NoIndexNeeded(\"Default index used\")]")]
     public async Task Given_IndexAttribute_When_Analyze_Then_No_Diagnostics(string attribute)
     {
         const string source = @"
@@ -136,7 +136,7 @@ namespace FirstClass
 {
     public class PersonDocument : IMongoDocument { }
 
-    [NoIndexNeeded]
+    [NoIndexNeeded(""Default index used"")]
     public class MyWorker
     {
         public void DoSomething()
