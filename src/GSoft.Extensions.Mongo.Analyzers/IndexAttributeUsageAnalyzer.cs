@@ -12,8 +12,8 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
 {
     internal static readonly DiagnosticDescriptor UseIndexAttributeRule = new DiagnosticDescriptor(
         id: RuleIdentifiers.UseIndexAttribute,
-        title: "Specify whether or not an index is required with IndexedByAttribute or NoIndexNeededAttribute",
-        messageFormat: "Specify whether or not an index is required with IndexedByAttribute or NoIndexNeededAttribute",
+        title: "Add 'IndexBy' or 'NoIndexNeeded' attributes on the containing type",
+        messageFormat: "Add 'IndexBy' or 'NoIndexNeeded' attributes on '{0}' to specify required indexes",
         category: RuleCategories.Design,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
@@ -35,7 +35,6 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
         if (analyzer.IsValid)
         {
             context.RegisterOperationAction(analyzer.AnalyzeOperationInvocation, OperationKind.Invocation);
-            context.RegisterCompilationEndAction(analyzer.CompilationEnd);
         }
     }
 
@@ -84,15 +83,8 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
 
             if (!hasIndexAttribute)
             {
+                context.ReportDiagnostic(UseIndexAttributeRule, operation);
                 this._symbolsWithoutAttributes.TryAdd(containingClassSymbol, true);
-            }
-        }
-
-        public void CompilationEnd(CompilationAnalysisContext context)
-        {
-            foreach (var symbolWithoutAttributes in this._symbolsWithoutAttributes.Keys)
-            {
-                context.ReportDiagnostic(UseIndexAttributeRule, symbolWithoutAttributes);
             }
         }
 

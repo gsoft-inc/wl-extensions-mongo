@@ -2,6 +2,8 @@
 
 public class IndexAttributeUsageAnalyzerTests : BaseAnalyzerTest<IndexAttributeUsageAnalyzer>
 {
+    private const string TestClassName = "MyWorker";
+
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
     [InlineData("[NoIndexNeeded(\"Default index used\")]")]
@@ -40,7 +42,7 @@ public class MyWorker
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 4, startColumn: 14, endLine: 4, endColumn: 22)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 78, TestClassName)
             .RunAsync();
     }
 
@@ -61,7 +63,7 @@ public class MyWorker
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 4, startColumn: 14, endLine: 4, endColumn: 22)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 68, TestClassName)
             .RunAsync();
     }
 
@@ -88,7 +90,7 @@ public partial class MyWorker
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 4, startColumn: 22, endLine: 4, endColumn: 30)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 16, startColumn: 13, endLine: 16, endColumn: 68, TestClassName)
             .RunAsync();
     }
 
@@ -124,7 +126,7 @@ namespace SecondClass
 ";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 18, startColumn: 18, endLine: 18, endColumn: 26)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 23, startColumn: 17, endLine: 23, endColumn: 72, TestClassName)
             .RunAsync();
     }
 
@@ -163,7 +165,7 @@ namespace SecondClass
 ";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 21, startColumn: 18, endLine: 21, endColumn: 26)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 26, startColumn: 17, endLine: 26, endColumn: 72, TestClassName)
             .RunAsync();
     }
 
@@ -201,8 +203,8 @@ namespace SecondClass
 ";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 6, startColumn: 18, endLine: 6, endColumn: 26)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 20, startColumn: 18, endLine: 20, endColumn: 26)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 11, startColumn: 17, endLine: 11, endColumn: 82, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 25, startColumn: 17, endLine: 25, endColumn: 72, TestClassName)
             .RunAsync();
     }
 

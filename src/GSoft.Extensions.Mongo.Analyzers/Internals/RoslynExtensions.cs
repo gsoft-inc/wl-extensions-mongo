@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace GSoft.Extensions.Mongo.Analyzers.Internals;
 
@@ -38,14 +39,10 @@ internal static class RoslynExtensions
         }
     }
 
-    public static void ReportDiagnostic(this CompilationAnalysisContext context, DiagnosticDescriptor diagnosticDescriptor, ISymbol symbol)
+    public static void ReportDiagnostic(this OperationAnalysisContext context, DiagnosticDescriptor diagnosticDescriptor, IInvocationOperation operation)
     {
-        if (symbol.Locations.Length <= 0)
-        {
-            return;
-        }
-
-        var firstLocation = symbol.Locations.First();
-        context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, firstLocation));
+        var containingTypeName = context.ContainingSymbol.ContainingType.Name;
+        var operationLocation = operation.Syntax.GetLocation();
+        context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, operationLocation, containingTypeName));
     }
 }

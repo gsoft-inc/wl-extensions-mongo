@@ -42,9 +42,11 @@ global using MongoDB.Driver;";
     protected override ParseOptions CreateParseOptions()
         => new CSharpParseOptions(LanguageVersion.CSharp10, DocumentationMode.Diagnose);
 
-    public BaseAnalyzerTest<TAnalyzer> WithExpectedDiagnostic(DiagnosticDescriptor descriptor, int startLine, int startColumn, int endLine, int endColumn)
+    public BaseAnalyzerTest<TAnalyzer> WithExpectedDiagnostic(DiagnosticDescriptor descriptor, int startLine, int startColumn, int endLine, int endColumn, params object[] args)
     {
-        this.TestState.ExpectedDiagnostics.Add(new DiagnosticResult(descriptor).WithSpan(SourceFileName, startLine, startColumn, endLine, endColumn));
+        this.TestState.ExpectedDiagnostics.Add(new DiagnosticResult(descriptor)
+            .WithSpan(SourceFileName, startLine, startColumn, endLine, endColumn)
+            .WithArguments(args));
         return this;
     }
 
