@@ -69,7 +69,7 @@ public sealed class DistributedTracingTests : BaseIntegrationTest<DistributedTra
         {
             base.ConfigureServices(services);
 
-            services.AddOpenTelemetry().StartWithHost().WithTracing(builder =>
+            services.AddOpenTelemetry().WithTracing(builder =>
             {
                 builder.AddSource("GSoft.Extensions.Mongo");
                 builder.AddProcessor<InMemoryActivityRecorder>();

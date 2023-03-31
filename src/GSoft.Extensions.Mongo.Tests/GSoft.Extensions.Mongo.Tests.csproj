@@ -15,11 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GSoft.Extensions.Xunit" Version="1.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.4.0" Condition=" '$(OS)' != 'Windows_NT' " />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.4.0-rc.2" />
+    <PackageReference Include="GSoft.Extensions.Xunit" Version="1.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.5.0" Condition=" '$(OS)' != 'Windows_NT' " />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.4.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
