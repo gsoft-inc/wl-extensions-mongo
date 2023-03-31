@@ -1,16 +1,17 @@
 # GSoft.Extensions.Mongo
 
-[![nuget](https://feeds.dev.azure.com/gsoft/_apis/public/Packaging/Feeds/gsoft/Packages/5906e692-9c21-43b3-bfba-77626b116183/Badge)](https://dev.azure.com/gsoft/Shared-Assets/_artifacts/feed/gsoft/NuGet/GSoft.Extensions.Mongo?preferRelease=true)
-[![build](https://dev.azure.com/gsoft/Shared-Assets/_apis/build/status/GSoft.Extensions.Mongo/GSoft.Extensions.Mongo%20NuGet%20push?branchName=main)](https://dev.azure.com/gsoft/Shared-Assets/_build/latest?definitionId=143&branchName=main)
+[![nuget](https://img.shields.io/nuget/v/GSoft.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/GSoft.Extensions.Mongo/)
+[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/gsoft-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/gsoft-extensions-mongo/actions/workflows/publish.yml)
 
 Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices with several features:
 
-* **Automatic indexes** creation, update and removal based on code changes,
-* **Encryption at field level** with different scopes (per user, tenant, or application-wide),
-* **Dependency-injection** enabled using `IServiceCollection` and `IServiceProvider`,
+* **Automatic indexes** creation, update and removal based on code changes
+* **Encryption at field level** with different scopes (per user, tenant, or application-wide)
+* **Dependency-injection** enabled using `IServiceCollection` and `IServiceProvider`
 * **Highly configurable** (custom serializers, conventions, multiple databases support)
 * Support for **multiple MongoDB connection strings** and MongoDB clients
-* `IAsyncEnumerable` support,
+* Roslyn analyzers for increased awareness of **index usage**
+* `IAsyncEnumerable` support
 
 
 ## Getting started
@@ -138,9 +139,9 @@ services.AddMongo().UseEphemeralRealServer();
 
 ## Included Roslyn analyzers
 
-| Rule ID | Category | Severity | Description                                                                                   |
-|---------|----------|----------|-----------------------------------------------------------------------------------------------|
-| GMNG01  | Design   | Warning  | Specify whether or not an index is required with IndexedByAttribute or NoIndexNeededAttribute |
+| Rule ID | Category | Severity | Description                                                        |
+|---------|----------|----------|--------------------------------------------------------------------|
+| GMNG01  | Design   | Warning  | Add 'IndexBy' or 'NoIndexNeeded' attributes on the containing type |
 
 In order to change the severity of one of these diagnostic rules, use a `.editorconfig` file, for instance:
 ```ini

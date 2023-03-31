@@ -3,7 +3,7 @@
     <Copyright>Copyright © GSoft Group Inc. $([System.DateTime]::UtcNow.ToString(yyyy))</Copyright>
     <Authors>GSoft Group Inc.</Authors>
     <Owners>GSoft Group Inc.</Owners>
-    <PackageProjectUrl>https://dev.azure.com/gsoft/Shared-Assets/_git/GSoft.Extensions.Mongo</PackageProjectUrl>
+    <PackageProjectUrl>https://www.nuget.org/packages/GSoft.Extensions.Mongo</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <LangVersion>10</LangVersion>
@@ -30,6 +30,7 @@
   <!-- https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink -->
   <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' Or '$(TF_BUILD)' == 'true' ">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' ">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />

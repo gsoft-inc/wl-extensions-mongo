@@ -4,4 +4,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-GMNG01 | Design | Warning | IndexAttributeUsageAnalyzer, [Documentation](https://dev.azure.com/gsoft/Shared-Assets/_git/GSoft.Extensions.Mongo)
+GMNG01 | Design | Warning | IndexAttributeUsageAnalyzer, [Documentation](https://github.com/gsoft-inc/gsoft-extensions-mongo)

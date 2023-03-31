@@ -2,7 +2,7 @@
 
 internal static class RuleIdentifiers
 {
-    public const string HelpUri = "https://dev.azure.com/gsoft/Shared-Assets/_git/GSoft.Extensions.Mongo";
+    public const string HelpUri = "https://github.com/gsoft-inc/gsoft-extensions-mongo";
 
     // DO NOT change the identifier of existing rules.
     // Projects can customize the severity level of analysis rules using a .editorconfig file.

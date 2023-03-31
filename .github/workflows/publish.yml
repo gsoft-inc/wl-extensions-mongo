@@ -20,6 +20,6 @@ jobs:
 
       - run: ./Build.ps1
         shell: pwsh
-        env:
-          NUGET_SOURCE: ${{ secrets.NUGET_SOURCE }}
-          NUGET_API_KEY: ${{ secrets.GSOFTINC_NUGET_API_KEY }}
+        # env:
+        #   NUGET_SOURCE: ${{ secrets.NUGET_SOURCE }}
+          # NUGET_API_KEY: ${{ secrets.GSOFTINC_NUGET_API_KEY }}
