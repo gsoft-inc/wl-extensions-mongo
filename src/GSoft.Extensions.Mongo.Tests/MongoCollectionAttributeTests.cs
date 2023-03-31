@@ -4,7 +4,7 @@ namespace GSoft.Extensions.Mongo.Tests;
 
 public class MongoCollectionAttributeTests : BaseUnitTest
 {
-    public MongoCollectionAttributeTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    public MongoCollectionAttributeTests(EmptyUnitFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture, testOutputHelper)
     {
     }
 

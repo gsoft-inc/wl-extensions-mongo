@@ -6,7 +6,7 @@ namespace GSoft.Extensions.Mongo.Tests;
 
 public sealed class UniqueIndexNameTests : BaseUnitTest
 {
-    public UniqueIndexNameTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    public UniqueIndexNameTests(EmptyUnitFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture, testOutputHelper)
     {
     }
 
