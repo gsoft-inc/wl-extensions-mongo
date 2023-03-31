@@ -36,6 +36,7 @@ internal sealed class ReusableMongoRunner
             this._runner ??= MongoRunner.Run(new MongoRunnerOptions
             {
                 UseSingleNodeReplicaSet = true,
+                KillMongoProcessesWhenCurrentProcessExits = true,
             });
 
             this._useCount++;
