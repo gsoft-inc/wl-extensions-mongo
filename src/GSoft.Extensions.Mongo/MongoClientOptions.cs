@@ -48,13 +48,15 @@ public sealed class MongoIndexingOptions
 
 public sealed class MongoTelemetryOptions
 {
+    internal static readonly string[] DefaultIgnoredCommandNames =
+    {
+        // These commands would generate a lot of noise in the instrumentation output.
+        "isMaster", "buildInfo", "saslStart", "saslContinue", "getLastError", "getMore", "listIndexes", "ping",
+    };
+
     public MongoTelemetryOptions()
     {
-        this.IgnoredCommandNames = new HashSet<string>(StringComparer.Ordinal)
-        {
-            // Inspired from Officevibe's ignored command names list
-            "isMaster", "buildInfo", "saslStart", "saslContinue", "getLastError", "getMore", "listIndexes", "ping",
-        };
+        this.IgnoredCommandNames = new HashSet<string>(DefaultIgnoredCommandNames, StringComparer.Ordinal);
     }
 
     public bool CaptureCommandText { get; set; }
