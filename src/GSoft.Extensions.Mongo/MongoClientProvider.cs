@@ -67,7 +67,8 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
         }
 
         var eventSubscriberFactories = this._serviceProvider.GetServices<IMongoEventSubscriberFactory>();
-        var eventSubscribers = eventSubscriberFactories.SelectMany(x => x.CreateEventSubscribers(clientName)).ToArray();
+        var eventSubscribers = eventSubscriberFactories.SelectMany(x => x.CreateEventSubscribers(clientName)).ToList();
+        options.PostConfigureEventSubscribers?.Invoke(eventSubscribers);
 
         this._disposableDependencies.AddRange(eventSubscribers.OfType<IDisposable>());
 

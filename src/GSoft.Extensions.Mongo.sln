@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GSoft.Extensions.Mongo.Anal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GSoft.Extensions.Mongo.Analyzers.Tests", "GSoft.Extensions.Mongo.Analyzers.Tests\GSoft.Extensions.Mongo.Analyzers.Tests.csproj", "{4E098500-7424-457C-9B02-DF36B8157FEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GSoft.Extensions.Mongo.ApplicationInsights", "GSoft.Extensions.Mongo.ApplicationInsights\GSoft.Extensions.Mongo.ApplicationInsights.csproj", "{C81ED89B-648E-484F-B39D-7EB8EEA47ECE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,5 +57,9 @@ Global
 		{4E098500-7424-457C-9B02-DF36B8157FEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E098500-7424-457C-9B02-DF36B8157FEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E098500-7424-457C-9B02-DF36B8157FEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C81ED89B-648E-484F-B39D-7EB8EEA47ECE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C81ED89B-648E-484F-B39D-7EB8EEA47ECE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C81ED89B-648E-484F-B39D-7EB8EEA47ECE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C81ED89B-648E-484F-B39D-7EB8EEA47ECE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

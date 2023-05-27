@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Events;
 
 namespace GSoft.Extensions.Mongo;
 
@@ -27,6 +28,8 @@ public sealed class MongoClientOptions
     public MongoTelemetryOptions Telemetry { get; }
 
     public MongoCommandPerformanceAnalysisOptions CommandPerformanceAnalysis { get; }
+
+    internal Action<List<IEventSubscriber>>? PostConfigureEventSubscribers { get; set; }
 }
 
 public sealed class MongoIndexingOptions

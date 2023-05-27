@@ -1,0 +1,3 @@
+#nullable enable
+GSoft.Extensions.Mongo.ApplicationInsights.MongoBuilderExtensions
+static GSoft.Extensions.Mongo.ApplicationInsights.MongoBuilderExtensions.AddApplicationInsights(this GSoft.Extensions.Mongo.MongoBuilder! builder) -> GSoft.Extensions.Mongo.MongoBuilder!
