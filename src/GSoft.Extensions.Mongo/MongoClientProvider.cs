@@ -80,11 +80,7 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
         settings.ClusterConfigurator = builder =>
         {
             userDefinedClusterConfiguration?.Invoke(builder);
-
-            foreach (var eventSubscriber in eventSubscribers)
-            {
-                builder.Subscribe(eventSubscriber);
-            }
+            builder.Subscribe(new OrderedAggregatorEventSubscriber(eventSubscribers));
         };
 
         return new MongoClient(settings);
