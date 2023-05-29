@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using GSoft.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
@@ -25,6 +26,10 @@ public class EventSubscriberTests : BaseIntegrationTest<EventSubscriberTests.Eve
 CommandTracingEventSubscriber.CommandStartedEvent(find)
   ApplicationInsightsEventSubscriber.CommandStartedEvent(find)
     CommandLoggingEventSubscriber.CommandStartedEvent(find)
+      UserDefinedEventSubscriber1.CommandStartedEvent(find)
+        UserDefinedEventSubscriber2.CommandStartedEvent(find)
+        UserDefinedEventSubscriber2.CommandSucceededEvent(find)
+      UserDefinedEventSubscriber1.CommandSucceededEvent(find)
     CommandLoggingEventSubscriber.CommandSucceededEvent(find)
   ApplicationInsightsEventSubscriber.CommandSucceededEvent(find)
 CommandTracingEventSubscriber.CommandSucceededEvent(find)";
@@ -38,26 +43,32 @@ CommandTracingEventSubscriber.CommandSucceededEvent(find)";
         {
             base.ConfigureServices(services);
 
-            var actualOutput = new StringBuilder();
-
-            services.AddSingleton(actualOutput);
-            services.Configure<MongoClientOptions>(options =>
-            {
-                var originalPostConfigureEventSubscribers = options.PostConfigureEventSubscribers;
-
-                options.PostConfigureEventSubscribers = eventSubscribers =>
-                {
-                    originalPostConfigureEventSubscribers?.Invoke(eventSubscribers);
-
-                    for (var i = 0; i < eventSubscribers.Count; i++)
-                    {
-                        eventSubscribers[i] = new StringBuilderOutputEventSubscriber(eventSubscribers[i], actualOutput, i);
-                    }
-                };
-            });
+            services.AddSingleton<StringBuilder>();
+            services.AddOptions<MongoClientOptions>().Configure<StringBuilder>(WrapRegisteredEventSubscribersWithStringBuilderOutput);
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IMongoEventSubscriberFactory, UserDefinedEventSubscriberFactory>());
 
             return services;
         }
+
+        private static void WrapRegisteredEventSubscribersWithStringBuilderOutput(MongoClientOptions options, StringBuilder output)
+        {
+            var originalPostConfigureEventSubscribers = options.PostConfigureEventSubscribers;
+
+            options.PostConfigureEventSubscribers = eventSubscribers =>
+            {
+                originalPostConfigureEventSubscribers?.Invoke(eventSubscribers);
+
+                for (var i = 0; i < eventSubscribers.Count; i++)
+                {
+                    eventSubscribers[i] = new StringBuilderOutputEventSubscriber(eventSubscribers[i], output, i);
+                }
+            };
+        }
+    }
+
+    [MongoCollection("dummy")]
+    private class DummyDocument : MongoDocument
+    {
     }
 
     private sealed class StringBuilderOutputEventSubscriber : IEventSubscriber
@@ -80,37 +91,63 @@ CommandTracingEventSubscriber.CommandSucceededEvent(find)";
             if (this._eventSubscriber.TryGetEventHandler(out handler))
             {
                 var originalHandler = handler;
-
-                handler = evt =>
-                {
-                    var indent = new string(' ', this._indentLevel * 2);
-
-                    var commandName = evt switch
-                    {
-                        CommandStartedEvent x => x.CommandName,
-                        CommandSucceededEvent x => x.CommandName,
-                        CommandFailedEvent x => x.CommandName,
-                        _ => string.Empty,
-                    };
-
-                    if (!MongoTelemetryOptions.DefaultIgnoredCommandNames.Contains(commandName))
-                    {
-                        lock (LockObj)
-                        {
-                            this._output.AppendLine($"{indent}{this._eventSubscriber.GetType().Name}.{typeof(TEvent).Name}({commandName})");
-                        }
-                    }
-
-                    originalHandler(evt);
-                };
+                handler = evt => this.Something(evt, originalHandler);
             }
 
             return handler != null;
         }
+
+        private void Something<TEvent>(TEvent evt, Action<TEvent> originalHandler)
+        {
+            var commandName = GetCommandName(evt);
+            var indent = new string(' ', this._indentLevel * 2);
+
+            if (!MongoTelemetryOptions.DefaultIgnoredCommandNames.Contains(commandName))
+            {
+                lock (LockObj)
+                {
+                    this._output.AppendLine($"{indent}{this._eventSubscriber.GetType().Name}.{typeof(TEvent).Name}({commandName})");
+                }
+            }
+
+            originalHandler(evt);
+        }
+
+        private static string GetCommandName<TEvent>(TEvent evt) => evt switch
+        {
+            CommandStartedEvent x => x.CommandName,
+            CommandSucceededEvent x => x.CommandName,
+            CommandFailedEvent x => x.CommandName,
+            _ => string.Empty,
+        };
     }
 
-    [MongoCollection("dummy")]
-    private class DummyDocument : MongoDocument
+    private sealed class UserDefinedEventSubscriber1 : AggregatorEventSubscriber
     {
+        public UserDefinedEventSubscriber1()
+        {
+            this.Subscribe<CommandStartedEvent>(_ => { });
+            this.Subscribe<CommandSucceededEvent>(_ => { });
+            this.Subscribe<CommandFailedEvent>(_ => { });
+        }
+    }
+
+    private sealed class UserDefinedEventSubscriber2 : AggregatorEventSubscriber
+    {
+        public UserDefinedEventSubscriber2()
+        {
+            this.Subscribe<CommandStartedEvent>(_ => { });
+            this.Subscribe<CommandSucceededEvent>(_ => { });
+            this.Subscribe<CommandFailedEvent>(_ => { });
+        }
+    }
+
+    private sealed class UserDefinedEventSubscriberFactory : IMongoEventSubscriberFactory
+    {
+        public IEnumerable<IEventSubscriber> CreateEventSubscribers(string clientName)
+        {
+            yield return new UserDefinedEventSubscriber1();
+            yield return new UserDefinedEventSubscriber2();
+        }
     }
 }
