@@ -1,11 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using GSoft.ComponentModel.DataAnnotations;
+using GSoft.Extensions.Mongo.ApplicationInsights;
 using GSoft.Extensions.Mongo.Security;
 using GSoft.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using GSoft.Extensions.Mongo.Ephemeral;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace GSoft.Extensions.Mongo.Tests;
 
@@ -16,7 +20,8 @@ public class MongoFixture : BaseIntegrationFixture
         base.ConfigureServices(services);
 
         services.TryAddSingleton<AmbientUserContext>();
-        services.AddMongo(Configure).UseEphemeralRealServer().AddEncryptor<AesMongoValueEncryptor>();
+        services.AddMongo(Configure).AddApplicationInsights().UseEphemeralRealServer().AddEncryptor<AesMongoValueEncryptor>();
+        services.AddSingleton(new TelemetryClient(new TelemetryConfiguration("fake-instrumentation-key", new InMemoryChannel())));
 
         return services;
     }

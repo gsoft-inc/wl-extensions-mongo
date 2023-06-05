@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Reflection;
 using MongoDB.Driver.Core.Events;
 
 namespace GSoft.Extensions.Mongo.Telemetry;
@@ -11,13 +10,6 @@ namespace GSoft.Extensions.Mongo.Telemetry;
 // https://github.com/jbogard/MongoDB.Driver.Core.Extensions.DiagnosticSources/blob/1.3.0/src/MongoDB.Driver.Core.Extensions.DiagnosticSources/DiagnosticsActivityEventSubscriber.cs
 internal sealed class CommandTracingEventSubscriber : AggregatorEventSubscriber
 {
-    private const string ActivityName = "MongoDB.Driver.Core.Events.Command";
-
-    private static readonly AssemblyName AssemblyName = typeof(CommandTracingEventSubscriber).Assembly.GetName();
-    private static readonly string ActivitySourceName = AssemblyName.Name!;
-    private static readonly Version Version = AssemblyName.Version!;
-    private static readonly ActivitySource ActivitySource = new ActivitySource(ActivitySourceName, Version.ToString());
-
     private readonly MongoClientOptions _options;
     private readonly ConcurrentDictionary<int, Activity> _currentActivitiesMap;
 
@@ -39,7 +31,7 @@ internal sealed class CommandTracingEventSubscriber : AggregatorEventSubscriber
             return;
         }
 
-        var activity = ActivitySource.StartActivity(ActivityName, ActivityKind.Client);
+        var activity = TracingHelper.StartActivity();
         if (activity == null)
         {
             return;
@@ -88,12 +80,13 @@ internal sealed class CommandTracingEventSubscriber : AggregatorEventSubscriber
     {
         if (this._currentActivitiesMap.TryRemove(evt.RequestId, out var activity))
         {
-            WithReplacedActivityCurrent(activity, evt, EndActivityOnCommandSucceeded);
+            TracingHelper.WithTemporaryCurrentActivity(activity, evt, activity, EndActivityOnCommandSucceeded);
         }
     }
 
     private static void EndActivityOnCommandSucceeded(Activity activity, CommandSucceededEvent evt)
     {
+        activity.SetEndTime(evt.Timestamp);
         activity.AddTag("otel.status_code", "OK");
         activity.SetStatus(ActivityStatusCode.Ok);
         activity.Dispose();
@@ -103,7 +96,7 @@ internal sealed class CommandTracingEventSubscriber : AggregatorEventSubscriber
     {
         if (this._currentActivitiesMap.TryRemove(evt.RequestId, out var activity))
         {
-            WithReplacedActivityCurrent(activity, evt, EndActivityOnCommandFailed);
+            TracingHelper.WithTemporaryCurrentActivity(activity, evt, activity, EndActivityOnCommandFailed);
         }
     }
 
@@ -118,25 +111,8 @@ internal sealed class CommandTracingEventSubscriber : AggregatorEventSubscriber
             activity.AddTag("exception.stacktrace", evt.Failure.StackTrace);
         }
 
+        activity.SetEndTime(evt.Timestamp);
         activity.SetStatus(ActivityStatusCode.Error);
         activity.Dispose();
-    }
-
-    // Seems like MongoDB async commands are not sticking to the Activity.Current flow and we need this workaround:
-    // https://github.com/jbogard/MongoDB.Driver.Core.Extensions.DiagnosticSources/pull/5
-    private static void WithReplacedActivityCurrent<TEvent>(Activity activity, TEvent evt, Action<Activity, TEvent> action)
-        where TEvent : struct
-    {
-        var current = Activity.Current;
-
-        try
-        {
-            Activity.Current = activity;
-            action(activity, evt);
-        }
-        finally
-        {
-            Activity.Current = current;
-        }
     }
 }

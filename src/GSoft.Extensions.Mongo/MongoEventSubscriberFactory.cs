@@ -23,11 +23,11 @@ internal sealed class MongoEventSubscriberFactory : IMongoEventSubscriberFactory
     {
         var options = this._optionsMonitor.Get(clientName);
 
-        // Command logging
-        yield return new CommandLoggingEventSubscriber(options, this._loggerFactory);
-
         // Command distributed tracing (Open Telemetry)
         yield return new CommandTracingEventSubscriber(options);
+
+        // Command logging
+        yield return new CommandLoggingEventSubscriber(options, this._loggerFactory);
 
         // Command performance analysis
         if (options.CommandPerformanceAnalysis.IsPerformanceAnalysisEnabled)

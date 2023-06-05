@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GSoft.Extensions.Mongo.ApplicationInsights\GSoft.Extensions.Mongo.ApplicationInsights.csproj" />
     <ProjectReference Include="..\GSoft.Extensions.Mongo.Ephemeral\GSoft.Extensions.Mongo.Ephemeral.csproj" />
     <ProjectReference Include="..\GSoft.Extensions.Mongo\GSoft.Extensions.Mongo.csproj" />
   </ItemGroup>
