@@ -11,6 +11,8 @@ namespace GSoft.Extensions.Mongo.ApplicationInsights;
 
 internal sealed class ApplicationInsightsEventSubscriber : AggregatorEventSubscriber
 {
+    private const string TelemetryType = "mongodb";
+
     private readonly TelemetryClient _telemetryClient;
     private readonly MongoClientOptions _options;
     private readonly ConcurrentDictionary<int, ActivityAwareOperationHolder> _currentOperationsMap;
@@ -39,12 +41,12 @@ internal sealed class ApplicationInsightsEventSubscriber : AggregatorEventSubscr
 
         var operation = this.StartActivityAwareDependencyOperation(name);
 
-        operation.Telemetry.Type = "mongodb";
+        operation.Telemetry.Type = TelemetryType;
 
         operation.Telemetry.Target = evt.ConnectionId?.ServerId?.EndPoint switch
         {
-            IPEndPoint endPoint => endPoint.Address + ":" + endPoint.Port,
-            DnsEndPoint endPoint => endPoint.Host + ":" + endPoint.Port,
+            IPEndPoint endPoint => $"{endPoint.Address}:{endPoint.Port}",
+            DnsEndPoint endPoint => $"{endPoint.Host}:{endPoint.Port}",
             _ => "unknown",
         };
 
@@ -106,12 +108,7 @@ internal sealed class ApplicationInsightsEventSubscriber : AggregatorEventSubscr
             operation.Telemetry.Name = name;
 
             // Remove telemetry copied from our Mongo activity as we already have it in the AI operation
-            foreach (var item in activity.Baggage)
-            {
-                operation.Telemetry.Properties.Remove(item.Key);
-            }
-
-            foreach (var item in activity.Tags)
+            foreach (var item in activity.Baggage.Union(activity.Tags))
             {
                 operation.Telemetry.Properties.Remove(item.Key);
             }
