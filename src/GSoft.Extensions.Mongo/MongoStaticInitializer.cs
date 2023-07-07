@@ -31,8 +31,7 @@ internal sealed class MongoStaticInitializer
                 return;
             }
 
-            // Guid representation V3 will be the default in Mongo C# driver 3.x so we use it already
-            BsonDefaults.GuidRepresentationMode = GuidRepresentationMode.V3;
+            BsonDefaults.GuidRepresentationMode = this._options.Value.GuidRepresentationMode;
 
             foreach (var kvp in this._options.Value.BsonSerializers)
             {

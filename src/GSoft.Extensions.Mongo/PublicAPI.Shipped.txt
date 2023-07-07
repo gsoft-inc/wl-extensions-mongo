@@ -46,6 +46,8 @@ GSoft.Extensions.Mongo.MongoServiceCollectionExtensions
 GSoft.Extensions.Mongo.MongoStaticOptions
 GSoft.Extensions.Mongo.MongoStaticOptions.BsonSerializers.get -> System.Collections.Generic.IDictionary<System.Type!, MongoDB.Bson.Serialization.IBsonSerializer!>!
 GSoft.Extensions.Mongo.MongoStaticOptions.ConventionPacks.get -> System.Collections.Generic.IList<GSoft.Extensions.Mongo.NamedConventionPack!>!
+GSoft.Extensions.Mongo.MongoStaticOptions.GuidRepresentationMode.get -> MongoDB.Bson.GuidRepresentationMode
+GSoft.Extensions.Mongo.MongoStaticOptions.GuidRepresentationMode.set -> void
 GSoft.Extensions.Mongo.MongoStaticOptions.MongoStaticOptions() -> void
 GSoft.Extensions.Mongo.MongoTelemetryOptions
 GSoft.Extensions.Mongo.MongoTelemetryOptions.CaptureCommandText.get -> bool
