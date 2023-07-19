@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+    "Microsoft.CodeAnalysis.*" packages allow the development of Roslyn analyzers and source generators.
+    These packages also define the minimum .NET compiler version required by consumer developer IDEs and build agents:
+    https://learn.microsoft.com/bs-latn-ba/visualstudio/extensibility/roslyn-version-support
+    
+    In other words, targeting a lower package version increases the compatibility of our custom Roslyn analyzers with consumers.
+    The only reasons why we would eventually upgrade this package are:
+     - If we want to use newer Roslyn APIs,
+     - If there's a vulnerability in these packages.
+    Right now, our Roslyn analyzers are simple enough to stick to 2021's 3.9.0 Roslyn APIs.
+    -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Workleap.Extensions.Mongo.Analyzers.Tests" />
+  </ItemGroup>
+</Project>
