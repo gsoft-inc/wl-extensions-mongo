@@ -3,34 +3,188 @@
 [![nuget](https://img.shields.io/nuget/v/GSoft.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/GSoft.Extensions.Mongo/)
 [![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/gsoft-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/gsoft-extensions-mongo/actions/workflows/publish.yml)
 
-Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices with several features:
+GSoft.Extensions.Mongo is a convenient set of .NET libraries designed to enhance and streamline the [MongoDB C# driver](https://github.com/mongodb/mongo-csharp-driver) integration into your C# projects.
 
-* **Automatic indexes** creation, update and removal based on code changes
-* **Encryption at field level** with different scopes (per user, tenant, or application-wide)
-* **Dependency-injection** enabled using `IServiceCollection` and `IServiceProvider`
-* **Highly configurable** (custom serializers, conventions, multiple databases support)
-* Support for **multiple MongoDB connection strings** and MongoDB clients
-* Roslyn analyzers for increased awareness of **index usage**
-* `IAsyncEnumerable` support
+## Value proposition and features overview
 
+Integrating the MongoDB C# driver into your C# projects can often lead to several questions:
+
+* What's the optimal way to configure a MongoDB client from my app configuration? Should I use `appsettings.json`, environment variables, custom option classes, plain C# code?
+* How can I expose the MongoDB client to the rest of my code? Should I use dependency injection?
+* What are the best practices for configuring the MongoDB client? How should MongoDB C# driver static settings be handled?
+* If I want to support multiple MongoDB clusters and/or databases, won't that require a significant refactor of my existing code?
+* What's the most effective way to manage my indexes? Should they be created manually, or within my C# code? How can I ensure that indexes are synchronized with my code?
+* If I have multiple C# applications, how can I prevent MongoDB setup code duplication?
+* How can I instrument my code, considering the MongoDB C# driver doesn't natively support OpenTelemetry?
+* How can I execute integration tests in an isolated environment? Using a shared database requires cleanup, leading to unreliable test results.
+
+**GSoft.Extensions.Mongo** was developed to address these challenges. We offer a straightforward, flexible, and standard approach to adding and configuring the MongoDB C# driver in your C# projects. Here is an overview of the features of GSoft.Extensions.Mongo:
+
+* **Support for dependency injection**: We use [Microsoft's modern dependency injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection) (`IServiceCollection`) to expose MongoDB's classes and interfaces.
+* **Standardized configuration**: We leverage [Microsoft's configuration](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration), enabling easy configuration of MongoDB settings via diverse configuration providers of your choice. The [options pattern](https://learn.microsoft.com/en-us/dotnet/core/extensions/options) simplifies overriding and extending any setting, including static MongoDB settings (custom serializers and convention packs).
+* **Support for multiple MongoDB clusters and/or databases**: You won't need to refactor your entire codebase to support multiple MongoDB data sources - it's supported by default.
+* **Elimination of boilerplate and duplicated code**: Remove redundant, copy-pasted MongoDB C# code from your codebase, enabling you to focus on actually utilizing the driver.
+* **Built-in instrumentation**: We provide built-in support for OpenTelemetry instrumentation, adhering to  [OpenTelemetry's semantic conventions for MongoDB](https://opentelemetry.io/docs/specs/semconv/database/mongodb/). Additionally, we offer an extra NuGet package for Application Insights .NET SDK support.
+* **Optional index management**: Declare indexes in your C# code, and then use our C# API to automatically create and update indexes based on what's declared in your code. Built-in Roslyn analyzers will assist developers in considering new indexes.
+* **Optional async enumerables support**: You can simplify your code by using our extension methods that employ `IAsyncEnumerable` rather than more verbose MongoDB cursors.
+* **Optional field-level encryption**: Implement your own encrypt and decrypt methods, which can then automatically encrypt annotated MongoDB document fields for at-rest security.
+* **Optional ephemeral database for integration tests**: Each of your integration test methods can have its own new MongoDB database operating locally.
 
 ## Getting started
 
-Install the package `GSoft.Extensions.Mongo.Abstractions` in the project where you'll declare your documents.
-This package contains base classes and interfaces such as `IMongoDocument`, `MongoIndexProvider`, `MongoCollectionAttribute`.
-There's also a few extension methods of the MongoDB C# driver classes and interfaces that adds `IAsyncEnumerable` support to cursors.
+We offer three main NuGet packages:
 
-Install the package `GSoft.Extensions.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
-
-Install the package `GSoft.Extensions.Mongo.Ephemeral` whenever you want to use a real but ephemeral MongoDB cluster with a single node replica set.
-This is ideal for integration testing, as each `IServiceProvider` will have access to an unique and isolated database.
-
-
-## Example
+**Firstly**, [GSoft.Extensions.Mongo](https://www.nuget.org/packages/GSoft.Extensions.Mongo/), is the package that you'd ideally install in your *startup project*, where your main method resides. This is where you would incorporate our library into your dependency injection services and link your configuration to our option classes:
 
 ```csharp
-// In the project that contains the documents:
-// 1) Declare the collection name (camelCase) and the type responsible for providing indexes (optional)
+// Method 1: Directly set the options values with C# code
+services.AddMongo(options =>
+{
+    options.ConnectionString = "[...]";
+    options.DefaultDatabaseName = "marketing";
+});
+
+// Method 2: Bind the options values to a configuration section
+services.AddMongo(configuration.GetRequiredSection("Mongo").Bind);
+
+// Method 3: Lazily bind the options values to a configuration section
+services.AddMongo();
+services.AddOptions<MongoClientOptions>().BindConfiguration("Mongo");
+
+// appsettings.json (or any other configuration source such as environment variables or Azure KeyVault)
+{
+  "Mongo": {
+    "ConnectionString": "[...]",
+    "DefaultDatabaseName": "marketing"
+  }
+}
+
+// Method 4: Implement IConfigureNamedOptions<MongoClientOptions>:
+// https://learn.microsoft.com/en-us/dotnet/core/extensions/options#use-di-services-to-configure-options
+```
+
+**The second NuGet package**, [GSoft.Extensions.Mongo.Abstractions](https://www.nuget.org/packages/GSoft.Extensions.Mongo.Abstractions/), only provides abstractions and extension methods, aligning with the principles of Microsoft's extension libraries such as [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/) and [Microsoft.Extensions.Configuration.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Configuration.Abstractions/). You would typically install this package in your domain-specific .NET projects to avoid unnecessary NuGet dependencies. **This package already includes the MongoDB C# driver**, so there's no need to install it separately (unless you need a specific version).
+
+```csharp
+// 1) Directly inject a collection bound to the default database
+var people = serviceProvider.GetRequiredService<IMongoCollection<PersonDocument>>();
+
+// 2) You can inject the default database
+var people = serviceProvider.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>();
+
+// 3) You can inject the default client
+var people = serviceProvider.GetRequiredService<IMongoClient>()
+    .GetDatabase("marketing").GetCollection<PersonDocument>();
+
+// 4) Finally, you can inject a specific client for a specific registered MongoDB cluster
+// More on that later in this document
+var people = serviceProvider.GetRequiredService<IMongoClientProvider>()
+    .GetClient("mycluster").GetDatabase("marketing").GetCollection<PersonDocument>();
+
+[MongoCollection("people")]
+public class PersonDocument : IMongoDocument // IMongoDocument is an empty marker interface (required)
+{
+    // [...]
+}
+```
+
+**The third NuGet package**, [GSoft.Extensions.Mongo.Ephemeral](https://www.nuget.org/packages/GSoft.Extensions.Mongo.Ephemeral/), is designed for your integration tests. It can be utilized whenever you require a real yet ephemeral MongoDB cluster with a single node replica set. Through dependency injection, each integration test method can have access to a unique and isolated database.
+
+## Adding and configuring MongoDB clients
+
+When registering your dependency injection services, you can invoke `services.AddMongo(...)` as demonstrated in the previous section. This action registers MongoDB dependencies and the main MongoDB cluster by providing the connection string and default (primary) database name.
+
+It is also possible to register multiple additional MongoDB clusters:
+
+```csharp
+services.AddMongo(options => { /* [...] */ })
+    .AddNamedClient("anotherCluster", options => { /* [...] */ })
+    .AddNamedClient("andAnotherOne", options => { /* [...] */ });
+
+// There are many ways to configure these named options
+services.AddOptions<MongoClientOptions>("anotherCluster").BindConfiguration("Mongo:AnotherCluster");
+services.AddOptions<MongoClientOptions>("andAnotherOne").BindConfiguration("Mongo:AndAnotherOne");
+```
+
+The `MongoClientOptions` option class further permits you to configure the `MongoClientSettings` for a cluster:
+
+```csharp
+services.AddMongo(options =>
+{
+    options.MongoClientSettingsConfigurator = settings =>
+    {
+        settings.ApplicationName = "myapp";
+
+        settings.ClusterConfigurator = cluster =>
+        {
+            // [...]
+        };
+    };
+});
+```
+
+While `MongoClientOptions` is the option class for configuring a specific MongoDB cluster connection, `MongoStaticOptions` is available to customize MongoDB static options such as BSON serializers and convention packs for the entire application:
+
+```csharp
+services.AddMongo().ConfigureStaticOptions(options =>
+{
+    // There are built-in serializers and conventions registered, but you can remove or override them
+    // ⚠ Caution, these are objects that will live for the entire lifetime of the application (singleton) as the MongoDB C# driver
+    // uses static properties to configure its behavior and serialization
+    options.GuidRepresentationMode = GuidRepresentationMode.V2; // V3 is the default
+    options.BsonSerializers[typeof(Guid)] = new GuidSerializer(GuidRepresentation.Standard);
+    options.ConventionPacks.Add(new MyConventionPack());
+});
+```
+
+You can also use different options patterns to configure static options:
+
+```csharp
+services.AddOptions<MongoStaticOptions>().Configure(options => { /* [...] */ })
+```
+
+## Declaring and using MongoDB documents and collections
+
+The process doesn't deviate much from the standard way of declaring and using MongoDB collections in C#. However, there are two additional steps:
+
+* You must decorate the document class with the `MongoCollectionAttribute` to specify the collection name,
+* The document class must implement the empty marker interface `IMongoDocument` for generic constraints purposes.
+
+```csharp
+[MongoCollection("people")]
+public class PersonDocument : IMongoDocument
+{
+    // [...]
+}
+```
+
+Refer back to the [getting started section](#getting-started) to learn how to resolve `IMongoCollection<TDocument>` from the dependency injection services.
+
+We also provide `IAsyncEnumerable<TDocument>` extensions on `IAsyncCursor<TDocument>` and `IAsyncCursorSource<TDocument>`, eliminating the need to deal with cursors. For example:
+
+```csharp
+var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable();
+```
+
+## Logging and distributed tracing
+
+**GSoft.Extensions.Mongo** supports modern logging with `ILogger` and log level filtering. MongoDB commands can be logged at the `Debug` level and optionally with their BSON content only if you set `MongoClientOptions.Telemetry.CaptureCommandText` to `true`.
+
+**Distributed tracing** with OpenTelemetry is also integrated. We follow the [semantic conventions for MongoDB](https://opentelemetry.io/docs/specs/semconv/database/mongodb/). You can simply observe activities (traces) originating from our `GSoft.Extensions.Mongo` assembly.
+
+We also support distributed tracing with the [Application Insights .NET SDK](https://github.com/microsoft/ApplicationInsights-dotnet). To enable this feature, you need to install the additional [GSoft.Extensions.Mongo.ApplicationInsights NuGet package](https://www.nuget.org/packages/GSoft.Extensions.Mongo.ApplicationInsights/). Simply use the `.AddApplicationInsights()` on the builder object returned by `services.AddMongo()`:
+
+```csharp
+services.AddMongo().AddApplicationInsights();
+```
+
+By default, some commands such as `isMaster`, `buildInfo`, `saslStart`, etc., are ignored by our instrumentation. You can either ignore additional commands or undo the ignoring of commands by modifying the `MongoClientOptions.Telemetry.DefaultIgnoredCommandNames` collection.
+
+## Index management
+
+We provide a mechanism for you to declare your collection indexes and ensure they are applied to your database. To do this, declare your indexes by implementing a custom `MongoIndexProvider<TDocument>`:
+
+```csharp
 [MongoCollection("people", IndexProviderType = typeof(PersonDocumentIndexes))]
 public class PersonDocument : IMongoDocument
 {
@@ -53,89 +207,88 @@ public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
 }
 ```
 
-```csharp
-// 2) In the project that configures the application:
-var services = new ServiceCollection();
-services
-    .AddMongo(ConfigureDefaultMongoClient) // <-- register the default MongoDB client and database
-    .AddNamedClient("anotherClient", ConfigureAnotherMongoClient) // <-- (optional) register multiple MongoDB clients with different options and connection strings
-    .AddEncryptor<YourMongoValueEncryptor>() // (optional) <-- specify how to encrypt sensitive fields
-    .ConfigureStaticOptions(ConfigureMongoStatic); // (optional) <-- specify MongoDB C# driver static settings
-
-private static void ConfigureDefaultMongoClient(MongoClientOptions options)
-{
-    // Simplified for demo purposes, it is better to use appsettings.json, secret vaults
-    // and IConfigureOptions<> classes that can use dependency injection to access other options or dependencies
-    options.ConnectionString = "mongodb://localhost";
-    options.DefaultDatabaseName = "default";
-    options.EnableSensitiveInformationLogging = true;
-
-    // Used by the automatic index update feature
-    options.Indexing.LockMaxLifetimeInSeconds = 300;
-    options.Indexing.LockAcquisitionTimeoutInSeconds = 60;
-
-    // Modify MongoClientSettings (optional)
-    options.MongoClientSettingsConfigurator = settings => { };
-    
-    // EXPERIMENTAL, FOR LOCAL DEVELOPMENT ONLY:
-    // This will output a warning log when a collection scan is detected on a "find" command
-    options.CommandPerformanceAnalysis.EnableCollectionScanDetection = true;
-}
-
-private static void ConfigureAnotherMongoClient(MongoClientOptions options)
-{
-    // Define options relative to this non-default MongoDB client
-    // Ideally, use IConfigureNamedOptions<MongoClientOptions>
-}
-
-private static void ConfigureMongoStatic(MongoStaticOptions options)
-{    
-    // There are built-in serializers and conventions registered, but you can remove or override them
-    // ⚠ Careful, these are objects that will live for the entire lifetime of the application (singleton) as MongoDB C# driver
-    // uses static properties to configure its behavior and serialization
-    options.BsonSerializers[typeof(Foo)] = new MyFooBsonSerializer();
-    options.ConventionPacks.Add(new MyConventionPack());
-}
-
-// MongoDB document properties can be encrypted when decorated with the [SensitiveInformation(scope)] attribute
-// There is a convention pack that use this class to encrypt and decrypt values using a custom BsonSerializer.
-// This is not required if you never use the attribute.
-private sealed class YourMongoValueEncryptor : IMongoValueEncryptor
-{
-    // Encrypt and decrypt the bytes based on the sensitivity scope
-    // Use AsyncLocal<> to determine if the sensitivity scopes matches the current execution context.
-    // For instance, SensitivityScope.User should only work if there is actually an authenticated user detected through IHttpContextAccessor,
-    // or any other ambient mechanism that relies on AsyncLocal<>.
-    public byte[] Encrypt(byte[] bytes, SensitivityScope sensitivityScope) => bytes;
-    public byte[] Decrypt(byte[] bytes, SensitivityScope sensitivityScope) => bytes;
-}
-```
+At this stage, nothing will happen. To actually create or update the index, you need to inject our `IMongoIndexer` service and then call one of its `UpdateIndexesAsync()` method overloads, for example:
 
 ```csharp
-// 3) Consume the registered services
-// Automatically update indexes if their definition in the code has changed - a cryptographic hash is used to detect changes.
-// There's a distributed lock that prevents race conditions.
-// UpdateIndexesAsync() also accepts an optional registered MongoDB client name, database name and/or cancellation token. 
 var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) });
-await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument).Assembly }); // Assembly scanning alternative
-
-// No need to know the collection name, just use the document type which must be decorated with MongoCollectionAttribute
-var collection = this.Services.GetRequiredService<IMongoCollection<PersonDocument>>();
-// OR: var collection = this.Services.GetRequiredService<IMongoDatabase>().GetCollection<PersonDocument>();
-
-// No cursors handling needed, use IAsyncEnumerable
-var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable();
-
-// Access other registered MongoDB clients
-var anotherMongoClient = this.Services.GetRequiredService<IMongoClientProvider>().GetClient("anotherClient");
 ```
+
+**It is up to you to decide when and where to run the process of creating and updating the indexes**. You could do it at the start of your application, in a separate application that runs in a continuous delivery pipeline, etc.
+
+Our indexation engine handles:
+
+1. Discovering the `CreateIndexModel<TDocument>` declared in your code using reflection.
+2. Computing an **unique index name** based on the model (we append a hash to the provided index name, for example, `name_512cbbb935626e2b4b7c44972597c4a8`).
+3. Discovering existing indexes in the MongoDB collection.
+4. Comparing the names and hashes of both sides to determine if:
+   1. We need to create a missing index.
+   2. We need to drop and recreate an updated index (the hashes don't match).
+   3. We need to drop an index that is no longer declared in your code.
+5. Leaving any other index intact. We only manage the indexes that have a name ending with a generated hash.
+6. Handling distributed race conditions. If many instances of an application call `indexer.UpdateIndexesAsync()` at the same time, only one will actually succeed (we use a distributed lock).
+
+> We include a Roslyn analyzer, detailed in a section below, that encourages developers to adorn classes that consume MongoDB collections with attributes (`IndexByAttribute` or `NoIndexNeededAttribute`). The aim is to increase awareness about which indexes should be used (or created) when querying MongoDB collections.
+
+## Field encryption
+
+The GSoft.Extensions.Mongo library supports field-level encryption at rest, which means you can specify in your C# code which document fields should be encrypted in your MongoDB database. Any C# property can be encrypted, as long as you provide how data gets encrypted and decrypted. These properties then become binary data in your documents.
+
+To enable field-level encryption, simply decorate the sensitive properties with the `[SensitiveInformationAttribute]`:
 
 ```csharp
-// 4) Add the GSoft.Extensions.Mongo.Ephemeral package to use a ephemeral but real MongoDB database in your tests
-var services = new ServiceCollection();
+[MongoCollection("people")]
+public class PersonDocument : IMongoDocument
+{
+    // [...]
+
+    [SensitiveInformation(SensitivityScope.User)] // Other values are "Tenant" and "Application"
+    public string Address { get; set; } = string.Empty;
+}
+```
+
+Next, create a class that implements `IMongoValueEncryptor`:
+
+```csharp
+public class MyMongoalueEncryptor : IMongoValueEncryptor
+{
+    public byte[] Encrypt(byte[] bytes, SensitivityScope sensitivityScope)
+    {
+        // return protected bytes using the method of your choice
+    }
+
+    public byte[] Decrypt(byte[] bytes, SensitivityScope sensitivityScope)
+    {
+        // return unprotected bytes using the method of your choice
+    }
+}
+```
+
+Finally, register this class in the dependency injection services:
+
+```csharp
+// This ends up registered using the singleton service lifetime
+services.AddMongo().AddEncryptor<MyMongoalueEncryptor>();
+```
+
+Keep in mind that encrypted values become binary data, which can make querying them more difficult. You'll need to take this into account when designing your database schema and queries.
+
+## Ephemeral MongoDB databases for integration tests
+
+When creating integration tests, instead of using a shared MongoDB database for all your tests, you could assign a brand new ephemeral database for each individual test method. This approach reduces test flakiness, prevents the state of one test from impacting others and remove the need for manual or automatic cleanup.
+
+This is what our NuGet package [GSoft.Extensions.Mongo.Ephemeral](https://www.nuget.org/packages/GSoft.Extensions.Mongo.Ephemeral/) does when you invoke its `UseEphemeralRealServer()` method:
+
+```csharp
 services.AddMongo().UseEphemeralRealServer();
 ```
+
+When this method is called, each time a database or collection is requested within the scope of an individual `IServiceProvider`:
+* A MongoDB server starts (we use [EphemeralMongo](https://github.com/asimmon/ephemeral-mongo)),
+* A randomly named database is provided to your code.
+
+When you dispose of the `IServiceProvider`, the related resources are destroyed. We leverage internal caching to avoid running multiple instances of MongoDB servers concurrently, opting instead to reuse a single instance. This method allows you to run multiple concurrent tests, each with their own MongoDB database. If your test runner crashes, the MongoDB process will be terminated, preventing orphaned processes from consuming unnecessary resources.
+ 
 
 ## Included Roslyn analyzers
 
@@ -143,14 +296,15 @@ services.AddMongo().UseEphemeralRealServer();
 |---------|----------|----------|--------------------------------------------------------------------|
 | GMNG01  | Design   | Warning  | Add 'IndexBy' or 'NoIndexNeeded' attributes on the containing type |
 
-In order to change the severity of one of these diagnostic rules, use a `.editorconfig` file, for instance:
+To modify the severity of one of these diagnostic rules, you can use a `.editorconfig` file. For example:
+
 ```ini
 ## Disable analyzer for test files
 [**Tests*/**.cs]
 dotnet_diagnostic.GMNG01.severity = none
 ```
-To learn more about how to configure or suppress code analysis warnings, [read this documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/suppress-warnings).
 
+To learn more about configuring or suppressing code analysis warnings, refer to [this documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/suppress-warnings).
 
 ## License
 
