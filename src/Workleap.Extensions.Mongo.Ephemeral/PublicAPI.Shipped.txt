@@ -1,0 +1,3 @@
+#nullable enable
+Workleap.Extensions.Mongo.Ephemeral.EphemeralMongoBuilderExtensions
+static Workleap.Extensions.Mongo.Ephemeral.EphemeralMongoBuilderExtensions.UseEphemeralRealServer(this Workleap.Extensions.Mongo.MongoBuilder! builder) -> Workleap.Extensions.Mongo.MongoBuilder!

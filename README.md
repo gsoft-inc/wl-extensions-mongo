@@ -1,7 +1,7 @@
-# GSoft.Extensions.Mongo
+# Workleap.Extensions.Mongo
 
-[![nuget](https://img.shields.io/nuget/v/GSoft.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/GSoft.Extensions.Mongo/)
-[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/gsoft-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/gsoft-extensions-mongo/actions/workflows/publish.yml)
+[![nuget](https://img.shields.io/nuget/v/Workleap.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/Workleap.Extensions.Mongo/)
+[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/wl-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/wl-extensions-mongo/actions/workflows/publish.yml)
 
 Provides MongoDB access through **.NET dependency injection**, following `Microsoft.Extensions.*` library practices with several features:
 
@@ -16,13 +16,13 @@ Provides MongoDB access through **.NET dependency injection**, following `Micros
 
 ## Getting started
 
-Install the package `GSoft.Extensions.Mongo.Abstractions` in the project where you'll declare your documents.
+Install the package `Workleap.Extensions.Mongo.Abstractions` in the project where you'll declare your documents.
 This package contains base classes and interfaces such as `IMongoDocument`, `MongoIndexProvider`, `MongoCollectionAttribute`.
 There's also a few extension methods of the MongoDB C# driver classes and interfaces that adds `IAsyncEnumerable` support to cursors.
 
-Install the package `GSoft.Extensions.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
+Install the package `Workleap.Extensions.Mongo` at the application entry point level to register and configure the dependencies in a `IServiceCollection`.
 
-Install the package `GSoft.Extensions.Mongo.Ephemeral` whenever you want to use a real but ephemeral MongoDB cluster with a single node replica set.
+Install the package `Workleap.Extensions.Mongo.Ephemeral` whenever you want to use a real but ephemeral MongoDB cluster with a single node replica set.
 This is ideal for integration testing, as each `IServiceProvider` will have access to an unique and isolated database.
 
 
@@ -132,7 +132,7 @@ var anotherMongoClient = this.Services.GetRequiredService<IMongoClientProvider>(
 ```
 
 ```csharp
-// 4) Add the GSoft.Extensions.Mongo.Ephemeral package to use a ephemeral but real MongoDB database in your tests
+// 4) Add the Workleap.Extensions.Mongo.Ephemeral package to use a ephemeral but real MongoDB database in your tests
 var services = new ServiceCollection();
 services.AddMongo().UseEphemeralRealServer();
 ```
@@ -154,4 +154,4 @@ To learn more about how to configure or suppress code analysis warnings, [read t
 
 ## License
 
-Copyright © 2023, GSoft Group Inc. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/gsoft-inc/gsoft-license/blob/master/LICENSE.
+Copyright © 2023, Workleap. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/gsoft-inc/gsoft-license/blob/master/LICENSE.
