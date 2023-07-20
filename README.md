@@ -1,9 +1,9 @@
-# GSoft.Extensions.Mongo
+# Workleap.Extensions.Mongo
 
-[![nuget](https://img.shields.io/nuget/v/GSoft.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/GSoft.Extensions.Mongo/)
-[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/gsoft-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/gsoft-extensions-mongo/actions/workflows/publish.yml)
+[![nuget](https://img.shields.io/nuget/v/Workleap.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/Workleap.Extensions.Mongo/)
+[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/wl-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/wl-extensions-mongo/actions/workflows/publish.yml)
 
-GSoft.Extensions.Mongo is a convenient set of .NET libraries designed to enhance and streamline the [MongoDB C# driver](https://github.com/mongodb/mongo-csharp-driver) integration into your C# projects.
+Workleap.Extensions.Mongo is a convenient set of .NET libraries designed to enhance and streamline the [MongoDB C# driver](https://github.com/mongodb/mongo-csharp-driver) integration into your C# projects.
 
 ## Value proposition and features overview
 
@@ -18,7 +18,7 @@ Integrating the MongoDB C# driver into your C# projects can often lead to severa
 * How can I instrument my code, considering the MongoDB C# driver doesn't natively support OpenTelemetry?
 * How can I execute integration tests in an isolated environment? Using a shared database requires cleanup, leading to unreliable test results.
 
-**GSoft.Extensions.Mongo** was developed to address these challenges. We offer a straightforward, flexible, and standard approach to adding and configuring the MongoDB C# driver in your C# projects. Here is an overview of the features of GSoft.Extensions.Mongo:
+**Workleap.Extensions.Mongo** was developed to address these challenges. We offer a straightforward, flexible, and standard approach to adding and configuring the MongoDB C# driver in your C# projects. Here is an overview of the features of Workleap.Extensions.Mongo:
 
 * **Support for dependency injection**: We use [Microsoft's modern dependency injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection) (`IServiceCollection`) to expose MongoDB's classes and interfaces.
 * **Standardized configuration**: We leverage [Microsoft's configuration](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration), enabling easy configuration of MongoDB settings via diverse configuration providers of your choice. The [options pattern](https://learn.microsoft.com/en-us/dotnet/core/extensions/options) simplifies overriding and extending any setting, including static MongoDB settings (custom serializers and convention packs).
@@ -34,7 +34,7 @@ Integrating the MongoDB C# driver into your C# projects can often lead to severa
 
 We offer three main NuGet packages:
 
-**Firstly**, [GSoft.Extensions.Mongo](https://www.nuget.org/packages/GSoft.Extensions.Mongo/), is the package that you'd ideally install in your *startup project*, where your main method resides. This is where you would incorporate our library into your dependency injection services and link your configuration to our option classes:
+**Firstly**, [Workleap.Extensions.Mongo](https://www.nuget.org/packages/Workleap.Extensions.Mongo/), is the package that you'd ideally install in your *startup project*, where your main method resides. This is where you would incorporate our library into your dependency injection services and link your configuration to our option classes:
 
 ```csharp
 // Method 1: Directly set the options values with C# code
@@ -63,7 +63,7 @@ services.AddOptions<MongoClientOptions>().BindConfiguration("Mongo");
 // https://learn.microsoft.com/en-us/dotnet/core/extensions/options#use-di-services-to-configure-options
 ```
 
-**The second NuGet package**, [GSoft.Extensions.Mongo.Abstractions](https://www.nuget.org/packages/GSoft.Extensions.Mongo.Abstractions/), only provides abstractions and extension methods, aligning with the principles of Microsoft's extension libraries such as [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/) and [Microsoft.Extensions.Configuration.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Configuration.Abstractions/). You would typically install this package in your domain-specific .NET projects to avoid unnecessary NuGet dependencies. **This package already includes the MongoDB C# driver**, so there's no need to install it separately (unless you need a specific version).
+**The second NuGet package**, [Workleap.Extensions.Mongo.Abstractions](https://www.nuget.org/packages/Workleap.Extensions.Mongo.Abstractions/), only provides abstractions and extension methods, aligning with the principles of Microsoft's extension libraries such as [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/) and [Microsoft.Extensions.Configuration.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Configuration.Abstractions/). You would typically install this package in your domain-specific .NET projects to avoid unnecessary NuGet dependencies. **This package already includes the MongoDB C# driver**, so there's no need to install it separately (unless you need a specific version).
 
 ```csharp
 // 1) Directly inject a collection bound to the default database
@@ -88,7 +88,7 @@ public class PersonDocument : IMongoDocument // IMongoDocument is an empty marke
 }
 ```
 
-**The third NuGet package**, [GSoft.Extensions.Mongo.Ephemeral](https://www.nuget.org/packages/GSoft.Extensions.Mongo.Ephemeral/), is designed for your integration tests. It can be utilized whenever you require a real yet ephemeral MongoDB cluster with a single node replica set. Through dependency injection, each integration test method can have access to a unique and isolated database.
+**The third NuGet package**, [Workleap.Extensions.Mongo.Ephemeral](https://www.nuget.org/packages/Workleap.Extensions.Mongo.Ephemeral/), is designed for your integration tests. It can be utilized whenever you require a real yet ephemeral MongoDB cluster with a single node replica set. Through dependency injection, each integration test method can have access to a unique and isolated database.
 
 ## Adding and configuring MongoDB clients
 
@@ -168,11 +168,11 @@ var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsy
 
 ## Logging and distributed tracing
 
-**GSoft.Extensions.Mongo** supports modern logging with `ILogger` and log level filtering. MongoDB commands can be logged at the `Debug` level and optionally with their BSON content only if you set `MongoClientOptions.Telemetry.CaptureCommandText` to `true`.
+**Workleap.Extensions.Mongo** supports modern logging with `ILogger` and log level filtering. MongoDB commands can be logged at the `Debug` level and optionally with their BSON content only if you set `MongoClientOptions.Telemetry.CaptureCommandText` to `true`.
 
-**Distributed tracing** with OpenTelemetry is also integrated. We follow the [semantic conventions for MongoDB](https://opentelemetry.io/docs/specs/semconv/database/mongodb/). You can simply observe activities (traces) originating from our `GSoft.Extensions.Mongo` assembly.
+**Distributed tracing** with OpenTelemetry is also integrated. We follow the [semantic conventions for MongoDB](https://opentelemetry.io/docs/specs/semconv/database/mongodb/). You can simply observe activities (traces) originating from our `Workleap.Extensions.Mongo` assembly.
 
-We also support distributed tracing with the [Application Insights .NET SDK](https://github.com/microsoft/ApplicationInsights-dotnet). To enable this feature, you need to install the additional [GSoft.Extensions.Mongo.ApplicationInsights NuGet package](https://www.nuget.org/packages/GSoft.Extensions.Mongo.ApplicationInsights/). Simply use the `.AddApplicationInsights()` on the builder object returned by `services.AddMongo()`:
+We also support distributed tracing with the [Application Insights .NET SDK](https://github.com/microsoft/ApplicationInsights-dotnet). To enable this feature, you need to install the additional [Workleap.Extensions.Mongo.ApplicationInsights NuGet package](https://www.nuget.org/packages/Workleap.Extensions.Mongo.ApplicationInsights/). Simply use the `.AddApplicationInsights()` on the builder object returned by `services.AddMongo()`:
 
 ```csharp
 services.AddMongo().AddApplicationInsights();
@@ -232,7 +232,7 @@ Our indexation engine handles:
 
 ## Field encryption
 
-The GSoft.Extensions.Mongo library supports field-level encryption at rest, which means you can specify in your C# code which document fields should be encrypted in your MongoDB database. Any C# property can be encrypted, as long as you provide how data gets encrypted and decrypted. These properties then become binary data in your documents.
+The Workleap.Extensions.Mongo library supports field-level encryption at rest, which means you can specify in your C# code which document fields should be encrypted in your MongoDB database. Any C# property can be encrypted, as long as you provide how data gets encrypted and decrypted. These properties then become binary data in your documents.
 
 To enable field-level encryption, simply decorate the sensitive properties with the `[SensitiveInformationAttribute]`:
 
@@ -277,7 +277,7 @@ Keep in mind that encrypted values become binary data, which can make querying t
 
 When creating integration tests, instead of using a shared MongoDB database for all your tests, you could assign a brand new ephemeral database for each individual test method. This approach reduces test flakiness, prevents the state of one test from impacting others and remove the need for manual or automatic cleanup.
 
-This is what our NuGet package [GSoft.Extensions.Mongo.Ephemeral](https://www.nuget.org/packages/GSoft.Extensions.Mongo.Ephemeral/) does when you invoke its `UseEphemeralRealServer()` method:
+This is what our NuGet package [Workleap.Extensions.Mongo.Ephemeral](https://www.nuget.org/packages/Workleap.Extensions.Mongo.Ephemeral/) does when you invoke its `UseEphemeralRealServer()` method:
 
 ```csharp
 services.AddMongo().UseEphemeralRealServer();
@@ -308,4 +308,4 @@ To learn more about configuring or suppressing code analysis warnings, refer to 
 
 ## License
 
-Copyright © 2023, GSoft Group Inc. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/gsoft-inc/gsoft-license/blob/master/LICENSE.
+Copyright © 2023, Workleap. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/gsoft-inc/gsoft-license/blob/master/LICENSE.
