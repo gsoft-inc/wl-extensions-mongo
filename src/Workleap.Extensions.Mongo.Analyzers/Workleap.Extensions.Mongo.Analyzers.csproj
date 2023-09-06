@@ -22,7 +22,6 @@
     Right now, our Roslyn analyzers are simple enough to stick to 2021's 3.9.0 Roslyn APIs.
     -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" PrivateAssets="all" />
-    <PackageReference Include="MongoDB.Driver" Version="2.20.0" />
   </ItemGroup>
 
   <ItemGroup>
