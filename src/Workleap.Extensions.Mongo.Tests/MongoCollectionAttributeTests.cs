@@ -1,4 +1,4 @@
-﻿using GSoft.Extensions.Xunit;
+﻿using Workleap.Extensions.Xunit;
 
 namespace Workleap.Extensions.Mongo.Tests;
 

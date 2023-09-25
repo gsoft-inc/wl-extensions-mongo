@@ -1,4 +1,4 @@
-﻿using GSoft.Extensions.Xunit;
+﻿using Workleap.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;

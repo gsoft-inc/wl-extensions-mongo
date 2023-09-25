@@ -1,5 +1,5 @@
-﻿using GSoft.ComponentModel.DataAnnotations;
-using GSoft.Extensions.Xunit;
+﻿using Workleap.ComponentModel.DataAnnotations;
+using Workleap.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
