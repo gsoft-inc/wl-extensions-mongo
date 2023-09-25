@@ -1,4 +1,4 @@
-﻿using GSoft.ComponentModel.DataAnnotations;
+﻿using Workleap.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
