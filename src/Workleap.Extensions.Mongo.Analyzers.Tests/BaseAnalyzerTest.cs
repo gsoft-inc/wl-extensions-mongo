@@ -10,7 +10,7 @@ namespace Workleap.Extensions.Mongo.Analyzers.Tests;
 
 public class BaseAnalyzerTest<TAnalyzer> : CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
     where TAnalyzer : DiagnosticAnalyzer, new()
-{InMemoryActivityTracker
+{
     private const string CSharp10GlobalUsings = @"
 global using System;
 global using System.Collections.Generic;
