@@ -57,6 +57,6 @@ Workleap.Extensions.Mongo.MongoTelemetryOptions.MongoTelemetryOptions() -> void
 Workleap.Extensions.Mongo.NamedConventionPack
 Workleap.Extensions.Mongo.NamedConventionPack.NamedConventionPack() -> void
 Workleap.Extensions.Mongo.Security.IMongoValueEncryptor
-Workleap.Extensions.Mongo.Security.IMongoValueEncryptor.Decrypt(byte[]! bytes, GSoft.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
-Workleap.Extensions.Mongo.Security.IMongoValueEncryptor.Encrypt(byte[]! bytes, GSoft.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
+Workleap.Extensions.Mongo.Security.IMongoValueEncryptor.Decrypt(byte[]! bytes, Workleap.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
+Workleap.Extensions.Mongo.Security.IMongoValueEncryptor.Encrypt(byte[]! bytes, Workleap.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
 static Workleap.Extensions.Mongo.MongoServiceCollectionExtensions.AddMongo(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Workleap.Extensions.Mongo.MongoClientOptions!>? configure = null) -> Workleap.Extensions.Mongo.MongoBuilder!

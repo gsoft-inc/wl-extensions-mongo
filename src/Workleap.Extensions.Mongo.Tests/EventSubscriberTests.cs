@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using GSoft.Extensions.Xunit;
+using Workleap.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;

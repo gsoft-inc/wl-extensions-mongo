@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using GSoft.ComponentModel.DataAnnotations;
+using Workleap.ComponentModel.DataAnnotations;
 
 namespace Workleap.Extensions.Mongo.Security;
 
