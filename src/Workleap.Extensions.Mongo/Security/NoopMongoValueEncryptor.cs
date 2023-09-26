@@ -1,4 +1,4 @@
-using GSoft.ComponentModel.DataAnnotations;
+using Workleap.ComponentModel.DataAnnotations;
 
 namespace Workleap.Extensions.Mongo.Security;
 

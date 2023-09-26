@@ -49,7 +49,7 @@ services.AddMongo(configuration.GetRequiredSection("Mongo").Bind);
 
 // Method 3: Lazily bind the options values to a configuration section
 services.AddMongo();
-services.AddOptions<MongoClientOptions>().BindConfiguration("Mongo");
+services.AddOptions<MongoClientOptions>().Bind(configuration.GetRequiredSection("Mongo"));
 
 // appsettings.json (or any other configuration source such as environment variables or Azure KeyVault)
 {
@@ -102,8 +102,8 @@ services.AddMongo(options => { /* [...] */ })
     .AddNamedClient("andAnotherOne", options => { /* [...] */ });
 
 // There are many ways to configure these named options
-services.AddOptions<MongoClientOptions>("anotherCluster").BindConfiguration("Mongo:AnotherCluster");
-services.AddOptions<MongoClientOptions>("andAnotherOne").BindConfiguration("Mongo:AndAnotherOne");
+services.AddOptions<MongoClientOptions>("anotherCluster").Bind(configuration.GetRequiredSection("Mongo:AnotherCluster"));
+services.AddOptions<MongoClientOptions>("andAnotherOne").Bind(configuration.GetRequiredSection("Mongo:AndAnotherOne"));
 ```
 
 The `MongoClientOptions` option class further permits you to configure the `MongoClientSettings` for a cluster:

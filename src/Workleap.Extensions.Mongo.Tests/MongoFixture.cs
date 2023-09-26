@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
-using GSoft.ComponentModel.DataAnnotations;
-using GSoft.Extensions.Xunit;
+using Workleap.ComponentModel.DataAnnotations;
+using Workleap.Extensions.Xunit;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;

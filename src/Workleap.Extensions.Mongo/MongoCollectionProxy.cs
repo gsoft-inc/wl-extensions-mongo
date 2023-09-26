@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using MongoDB.Driver.Search;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -21,6 +22,8 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
     public IBsonSerializer<TDocument> DocumentSerializer => this._underlyingCollection.DocumentSerializer;
 
     public IMongoIndexManager<TDocument> Indexes => this._underlyingCollection.Indexes;
+
+    public IMongoSearchIndexManager SearchIndexes => this._underlyingCollection.SearchIndexes;
 
     public MongoCollectionSettings Settings => this._underlyingCollection.Settings;
 
