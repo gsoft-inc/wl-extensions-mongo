@@ -5,7 +5,7 @@ using Workleap.Extensions.Mongo.Indexing;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public sealed class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
+public partial class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
 {
     public MongoIndexerTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture, testOutputHelper)
