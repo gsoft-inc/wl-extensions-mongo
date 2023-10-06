@@ -6,8 +6,14 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// <summary>
 /// Associates a concrete <see cref="IMongoDocument"/> class with its single <see cref="MongoIndexProvider"/>.
 /// </summary>
-internal sealed class IndexRegistry : Dictionary<Type, Type>
+internal sealed class IndexRegistry : Dictionary<string, DocumentTypeEntry>
 {
+    // MongoDB collection names are case sensitive
+    public IndexRegistry()
+        : base(StringComparer.Ordinal)
+    {
+    }
+
     public IndexRegistry(IEnumerable<Type> documentTypes)
     {
         foreach (var documentType in documentTypes)
@@ -17,7 +23,13 @@ internal sealed class IndexRegistry : Dictionary<Type, Type>
                 throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
             }
 
-            var indexProviderType = documentType.GetCustomAttribute<MongoCollectionAttribute>()?.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+            var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
+            if (mongoCollectionAttribute == null)
+            {
+                throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
+            }
+
+            var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
 
             if (!HasPublicParameterlessConstructor(indexProviderType))
             {
@@ -31,7 +43,12 @@ internal sealed class IndexRegistry : Dictionary<Type, Type>
 
             if (documentType == indexProviderDocumentType)
             {
-                this.Add(documentType, indexProviderType);
+                if (this.ContainsKey(mongoCollectionAttribute.Name))
+                {
+                    throw new InvalidOperationException($"Only one document type for the collection '{mongoCollectionAttribute.Name}' can provide an index provider");
+                }
+
+                this.Add(mongoCollectionAttribute.Name, new DocumentTypeEntry(documentType, indexProviderType));
             }
             else
             {

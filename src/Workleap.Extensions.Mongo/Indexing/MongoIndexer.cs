@@ -34,8 +34,12 @@ internal sealed class MongoIndexer : IMongoIndexer
             throw new ArgumentNullException(nameof(assemblies));
         }
 
-        var types = assemblies.SelectMany(x => x.GetTypes()).Where(MongoReflectionCache.IsConcreteMongoDocumentType).ToArray();
-        return this.UpdateIndexesAsync(types, clientName, databaseName, cancellationToken);
+        var documentTypesWithExplicitMongoCollectionAttribute = assemblies.SelectMany(x => x.GetTypes())
+            .Where(MongoReflectionCache.IsConcreteMongoDocumentType)
+            .Where(x => x.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null)
+            .ToArray();
+
+        return this.UpdateIndexesAsync(documentTypesWithExplicitMongoCollectionAttribute, clientName, databaseName, cancellationToken);
     }
 
     public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
@@ -86,12 +90,12 @@ internal sealed class MongoIndexer : IMongoIndexer
     {
         var registry = new IndexRegistry(types);
 
-        foreach (var kvp in registry)
+        foreach (var entry in registry.Values)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var documentType = kvp.Key;
-            var indexProviderType = kvp.Value;
+            var documentType = entry.DocumentType;
+            var indexProviderType = entry.IndexProviderType;
 
             var indexProvider = Activator.CreateInstance(indexProviderType, Array.Empty<object>());
             if (indexProvider == null)
