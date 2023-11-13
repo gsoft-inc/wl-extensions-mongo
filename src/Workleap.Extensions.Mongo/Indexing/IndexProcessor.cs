@@ -25,8 +25,11 @@ internal sealed class IndexProcessor<TDocument>
 
     private readonly HashSet<UniqueIndexName> _existingIndexes;
     private readonly Dictionary<UniqueIndexName, CreateIndexModel<TDocument>> _indexModels;
+    
+    // TODO: Remove anything related to remove
     private readonly Dictionary<UniqueIndexName, RemoveReason> _indexesToRemove;
     private readonly Dictionary<UniqueIndexName, AddReason> _indexesToAdd;
+    private IndexProcessingResult _processingResult;
 
     private IndexProcessor(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
@@ -42,13 +45,18 @@ internal sealed class IndexProcessor<TDocument>
         this._indexesToAdd = new Dictionary<UniqueIndexName, AddReason>();
     }
 
-    public static Task ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
+    public static Task<IndexProcessingResult> ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
         return new IndexProcessor<TDocument>(provider, database, loggerFactory, cancellationToken).ProcessAsync();
     }
-
-    private async Task ProcessAsync()
+    
+    private async Task<IndexProcessingResult> ProcessAsync()
     {
+        this._processingResult = new IndexProcessingResult()
+        {
+            CollectionName = this._collectionName,
+        };
+        
         await this.EnsureCollectionExists().ConfigureAwait(false);
         this._cancellationToken.ThrowIfCancellationRequested();
 
@@ -62,10 +70,12 @@ internal sealed class IndexProcessor<TDocument>
         this._cancellationToken.ThrowIfCancellationRequested();
 
         // Index removal and creation should not be interrupted
-        await this.RemoveIndexes().ConfigureAwait(false);
+        //await this.RemoveIndexes().ConfigureAwait(false);
         await this.AddIndexes().ConfigureAwait(false);
-    }
 
+        return this._processingResult;
+    }
+    
     private async Task EnsureCollectionExists()
     {
         var filteringOptions = new ListCollectionNamesOptions
@@ -113,6 +123,7 @@ internal sealed class IndexProcessor<TDocument>
     {
         foreach (var newIndexName in this._indexModels.Keys)
         {
+            this._processingResult.ExpectedIndexes.Add(newIndexName);
             var existingIndexName = this._existingIndexes.FirstOrDefault(x => x.Prefix == newIndexName.Prefix);
             if (existingIndexName == null)
             {
@@ -139,28 +150,29 @@ internal sealed class IndexProcessor<TDocument>
         }
     }
 
-    private async Task RemoveIndexes()
-    {
-        foreach (var kvp in this._indexesToRemove)
-        {
-            var indexName = kvp.Key;
-            var reason = kvp.Value;
-
-            switch (reason)
-            {
-                case RemoveReason.Outdated:
-                    this._logger.DroppingOutdatedIndex(typeof(TDocument).Name, indexName.FullName);
-                    break;
-                case RemoveReason.Orphaned:
-                    this._logger.DroppingOrphanedIndex(typeof(TDocument).Name, indexName.FullName);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(reason));
-            }
-
-            await this._database.GetCollection<TDocument>().Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
-        }
-    }
+    // private async Task RemoveIndexes()
+    // {
+    //     foreach (var kvp in this._indexesToRemove)
+    //     {
+    //         var indexName = kvp.Key;
+    //         var reason = kvp.Value;
+    //
+    //         switch (reason)
+    //         {
+    //             case RemoveReason.Outdated:
+    //                 this._logger.DroppingOutdatedIndex(typeof(TDocument).Name, indexName.FullName);
+    //                 break;
+    //             case RemoveReason.Orphaned:
+    //                 this._logger.DroppingOrphanedIndex(typeof(TDocument).Name, indexName.FullName);
+    //                 break;
+    //             default:
+    //                 throw new ArgumentOutOfRangeException(nameof(reason));
+    //         }
+    //
+    //         await this._database.GetCollection<Object>("name").Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
+    //         await this._database.GetCollection<TDocument>().Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
+    //     }
+    // }
 
     private async Task AddIndexes()
     {

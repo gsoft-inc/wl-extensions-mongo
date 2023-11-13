@@ -6,11 +6,10 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// <summary>
 /// Associates a concrete <see cref="IMongoDocument"/> class with its single <see cref="MongoIndexProvider"/>.
 /// </summary>
-internal sealed class IndexRegistry : Dictionary<string, DocumentTypeEntry>
+internal sealed class IndexRegistry : List<DocumentTypeEntry>
 {
     // MongoDB collection names are case sensitive
     public IndexRegistry()
-        : base(StringComparer.Ordinal)
     {
     }
 
@@ -43,12 +42,7 @@ internal sealed class IndexRegistry : Dictionary<string, DocumentTypeEntry>
 
             if (documentType == indexProviderDocumentType)
             {
-                if (this.ContainsKey(mongoCollectionAttribute.Name))
-                {
-                    throw new InvalidOperationException($"Only one document type for the collection '{mongoCollectionAttribute.Name}' can provide an index provider");
-                }
-
-                this.Add(mongoCollectionAttribute.Name, new DocumentTypeEntry(documentType, indexProviderType));
+                this.Add( new DocumentTypeEntry(documentType, indexProviderType));
             }
             else
             {

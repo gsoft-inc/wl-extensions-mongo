@@ -31,6 +31,7 @@ public static class MongoServiceCollectionExtensions
 
         services.TryAddSingleton<MongoStaticInitializer>();
         services.TryAddSingleton<IMongoIndexer, MongoIndexer>();
+        services.TryAddSingleton<IndexDeleter>();
         services.TryAddSingleton<IMongoValueEncryptor, NoopMongoValueEncryptor>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IMongoEventSubscriberFactory, MongoEventSubscriberFactory>());
 
