@@ -42,7 +42,7 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
 
             if (documentType == indexProviderDocumentType)
             {
-                this.Add( new DocumentTypeEntry(documentType, indexProviderType));
+                this.Add(new DocumentTypeEntry(documentType, indexProviderType));
             }
             else
             {

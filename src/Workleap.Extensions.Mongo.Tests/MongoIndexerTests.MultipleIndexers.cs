@@ -79,14 +79,13 @@ public partial class MongoIndexerTests
     }
     
     [MongoCollection("multipleIndexProviders", IndexProviderType = typeof(SiblingMultipleIndexersProvider))]
-    private sealed class SiblingMultipleIndexersTestDocument: MongoDocument 
+    private sealed class SiblingMultipleIndexersTestDocument : MongoDocument 
     {
         [BsonElement("metadata")]
         public string Metadata { get; set; } = string.Empty;
     }
     
     // INDEXER
-    
     private sealed class BaseMultipleIndexersProvider : MongoIndexProvider<BaseMultipleIndexersTestDocument>
     {
         public override IEnumerable<CreateIndexModel<BaseMultipleIndexersTestDocument>> CreateIndexModels()

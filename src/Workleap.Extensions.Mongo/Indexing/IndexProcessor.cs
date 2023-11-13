@@ -43,6 +43,7 @@ internal sealed class IndexProcessor<TDocument>
         this._indexModels = new Dictionary<UniqueIndexName, CreateIndexModel<TDocument>>();
         this._indexesToRemove = new Dictionary<UniqueIndexName, RemoveReason>();
         this._indexesToAdd = new Dictionary<UniqueIndexName, AddReason>();
+        this._processingResult = new IndexProcessingResult();
     }
 
     public static Task<IndexProcessingResult> ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
@@ -52,10 +53,7 @@ internal sealed class IndexProcessor<TDocument>
     
     private async Task<IndexProcessingResult> ProcessAsync()
     {
-        this._processingResult = new IndexProcessingResult()
-        {
-            CollectionName = this._collectionName,
-        };
+        this._processingResult.CollectionName = this._collectionName;
         
         await this.EnsureCollectionExists().ConfigureAwait(false);
         this._cancellationToken.ThrowIfCancellationRequested();
@@ -69,8 +67,6 @@ internal sealed class IndexProcessor<TDocument>
         this.ComputeIndexesToAddAndRemove();
         this._cancellationToken.ThrowIfCancellationRequested();
 
-        // Index removal and creation should not be interrupted
-        //await this.RemoveIndexes().ConfigureAwait(false);
         await this.AddIndexes().ConfigureAwait(false);
 
         return this._processingResult;
@@ -173,7 +169,6 @@ internal sealed class IndexProcessor<TDocument>
     //         await this._database.GetCollection<TDocument>().Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
     //     }
     // }
-
     private async Task AddIndexes()
     {
         foreach (var kvp in this._indexesToAdd)

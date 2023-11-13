@@ -113,7 +113,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
             var processingResult = await task.ConfigureAwait(false);
             
-            if(expectedIndexes.TryGetValue(processingResult.CollectionName, out var expectedIndexesForCollection))
+            if (expectedIndexes.TryGetValue(processingResult.CollectionName, out var expectedIndexesForCollection))
             {
                 // Better way to support AddRange?
                 var concat = expectedIndexesForCollection.Concat(processingResult.ExpectedIndexes);
