@@ -59,23 +59,23 @@ internal sealed class IndexDeleter
         return existingIndexes;
     }
 
-    private static List<UniqueIndexName> ComputeIndexesToRemove(IList<UniqueIndexName> expectedIndexForCollection, List<UniqueIndexName> existingIndexesForCollection)
+    private static List<(UniqueIndexName, RemoveReason)> ComputeIndexesToRemove(IList<UniqueIndexName> expectedIndexForCollection, List<UniqueIndexName> existingIndexesForCollection)
     {
-        var indexesToDelete = new List<UniqueIndexName>();
+        var indexesToDelete = new List<(UniqueIndexName, RemoveReason)>();
         foreach (var existingIndexes in existingIndexesForCollection)
         {
             var matchedExpectedIndexes = expectedIndexForCollection.FirstOrDefault(x => x.Prefix == existingIndexes.Prefix);
             if (matchedExpectedIndexes == null)
             {
                 // Log: do orphaned
-                indexesToDelete.Add(existingIndexes);
+                indexesToDelete.Add((existingIndexes, RemoveReason.Orphaned));
                 continue;
             }
 
             if (matchedExpectedIndexes.Hash != existingIndexes.Hash)
             {
                 // Log: outdated
-                indexesToDelete.Add(existingIndexes);
+                indexesToDelete.Add((existingIndexes, RemoveReason.Outdated));
                 continue;
             }
         }
@@ -83,24 +83,23 @@ internal sealed class IndexDeleter
         return indexesToDelete;
     }
 
-    private async Task RemoveIndexes(string collectionName, List<UniqueIndexName> indexesToRemove)
+    private async Task RemoveIndexes(string collectionName, List<(UniqueIndexName, RemoveReason)> indexesToRemove)
     {
         foreach (var indexToRemove in indexesToRemove)
         {
-            var indexName = indexToRemove;
-            var reason = RemoveReason.Outdated; // TODO: really forward the reason
+            var indexName = indexToRemove.Item1;
+            var reason = indexToRemove.Item2; // TODO: really forward the reason
 
-            // switch (reason)
-            // {
-            //     case RemoveReason.Outdated:
-            //         // this._logger.DroppingOutdatedIndex(typeof(TDocument).Name, indexName.FullName);
-            //         break;
-            //     case RemoveReason.Orphaned:
-            //         // this._logger.DroppingOrphanedIndex(typeof(TDocument).Name, indexName.FullName);
-            //         break;
-            //     default:
-            //         throw new ArgumentOutOfRangeException(nameof(reason));
-            // }
+            switch (reason)
+            {
+                case RemoveReason.Outdated:
+                    this._logger.DroppingOutdatedIndex(collectionName, indexName.FullName);
+                    break;
+                case RemoveReason.Orphaned:
+                    this._logger.DroppingOrphanedIndex(collectionName, indexName.FullName);
+                    break;
+            }
+            
             await this._database.GetCollection<DocumentPlaceholder>(collectionName).Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
         }
     }

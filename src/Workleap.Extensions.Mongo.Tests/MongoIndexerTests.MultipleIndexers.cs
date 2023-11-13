@@ -103,7 +103,7 @@ public partial class MongoIndexerTests
             yield return new CreateIndexModel<ChildMultipleIndexersTestDocument>(
                 Builders<ChildMultipleIndexersTestDocument>
                     .IndexKeys.Ascending(x => x.CanadianAddresses),
-                new CreateIndexOptions { Name = "cad_addr" });
+                new CreateIndexOptions { Name = "addr" });
         }
     }
     
@@ -114,7 +114,7 @@ public partial class MongoIndexerTests
             yield return new CreateIndexModel<ChildMultipleIndexersTestDocument2>(
                 Builders<ChildMultipleIndexersTestDocument2>
                     .IndexKeys.Ascending(x => x.UsAddresses),
-                new CreateIndexOptions { Name = "us_addr" });
+                new CreateIndexOptions { Name = "addr" });
         }
     }
     
