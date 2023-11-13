@@ -59,7 +59,7 @@ internal sealed class IndexDeleter
         return existingIndexes;
     }
 
-    private static List<(UniqueIndexName, RemoveReason)> ComputeIndexesToRemove(IList<UniqueIndexName> expectedIndexForCollection, List<UniqueIndexName> existingIndexesForCollection)
+    private static List<(UniqueIndexName IndexName, RemoveReason RemoveReason)> ComputeIndexesToRemove(IList<UniqueIndexName> expectedIndexForCollection, List<UniqueIndexName> existingIndexesForCollection)
     {
         var indexesToDelete = new List<(UniqueIndexName, RemoveReason)>();
         foreach (var existingIndexes in existingIndexesForCollection)
@@ -83,12 +83,12 @@ internal sealed class IndexDeleter
         return indexesToDelete;
     }
 
-    private async Task RemoveIndexes(string collectionName, List<(UniqueIndexName, RemoveReason)> indexesToRemove)
+    private async Task RemoveIndexes(string collectionName, List<(UniqueIndexName IndexName, RemoveReason RemoveReason)> indexesToRemove)
     {
         foreach (var indexToRemove in indexesToRemove)
         {
-            var indexName = indexToRemove.Item1;
-            var reason = indexToRemove.Item2; // TODO: really forward the reason
+            var indexName = indexToRemove.IndexName;
+            var reason = indexToRemove.RemoveReason; // TODO: really forward the reason
 
             switch (reason)
             {
