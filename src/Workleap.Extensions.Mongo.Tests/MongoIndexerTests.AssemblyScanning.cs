@@ -29,7 +29,7 @@ public partial class MongoIndexerTests
     }
 
     [BsonDiscriminator("Children")]
-    private sealed class ChildWithoutIndexerAssemblyScanningTestDocument : BaseMultipleIndexersTestDocument
+    private sealed class ChildWithoutIndexerAssemblyScanningTestDocument : BaseAssemblyScanningTestDocument
     {
         [BsonElement("email")]
         public string Email { get; set; } = string.Empty;
