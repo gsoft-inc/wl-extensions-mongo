@@ -89,8 +89,6 @@ internal sealed class IndexDeleter
                 case RemoveReason.Orphaned:
                     this._logger.DroppingOrphanedIndex(collectionName, indexName.FullName);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(reason));
             }
             
             await this._database.GetCollection<BsonDocument>(collectionName).Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
