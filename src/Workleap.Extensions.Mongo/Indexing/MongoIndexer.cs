@@ -37,11 +37,15 @@ internal sealed class MongoIndexer : IMongoIndexer
         }
 
         var documentTypesWithExplicitMongoCollectionAttribute = assemblies.SelectMany(x => x.GetTypes())
-            .Where(MongoReflectionCache.IsConcreteMongoDocumentType)
-            .Where(x => x.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null)
+            .Where(IsDocumentTypesWithExplicitMongoCollectionAttribute)
             .ToArray();
 
         return this.UpdateIndexesAsync(documentTypesWithExplicitMongoCollectionAttribute, clientName, databaseName, cancellationToken);
+    }
+
+    internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)
+    {
+        return MongoReflectionCache.IsConcreteMongoDocumentType(typeCandidate) && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
     }
 
     public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
@@ -108,29 +112,30 @@ internal sealed class MongoIndexer : IMongoIndexer
             }
 
             var processAsyncMethod = ProcessAsyncMethod.MakeGenericMethod(documentType);
-            var task = (Task<IndexProcessingResult>?)processAsyncMethod.Invoke(this, new[] { indexProvider, database, cancellationToken })
+            var task = (Task<IndexCreationResult>?)processAsyncMethod.Invoke(this, new[] { indexProvider, database, cancellationToken })
                 ?? throw new InvalidOperationException($"'{nameof(MongoIndexer)}.{nameof(this.ProcessAsync)}(...)' should have returned a task");
 
             var processingResult = await task.ConfigureAwait(false);
             
-            if (expectedIndexes.TryGetValue(processingResult.CollectionName, out var expectedIndexesForCollection))
+            var collectionName = MongoReflectionCache.GetCollectionName(documentType);
+            if (expectedIndexes.TryGetValue(collectionName, out var expectedIndexesForCollection))
             {
                 // Better way to support AddRange?
                 var concat = expectedIndexesForCollection.Concat(processingResult.ExpectedIndexes);
-                expectedIndexes[processingResult.CollectionName] = concat.ToList();
+                expectedIndexes[collectionName] = concat.ToList();
             }
             else
             {
-                expectedIndexes.Add(processingResult.CollectionName, processingResult.ExpectedIndexes);
+                expectedIndexes.Add(collectionName, processingResult.ExpectedIndexes);
             }
         }
 
-        await this._indexDeleter.DeleteAsync(expectedIndexes).ConfigureAwait(false);
+        await this._indexDeleter.ProcessAsync(expectedIndexes, cancellationToken).ConfigureAwait(false);
     }
 
-    private Task<IndexProcessingResult> ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
+    private Task<IndexCreationResult> ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
         where TDocument : IMongoDocument
     {
-        return IndexProcessor<TDocument>.ProcessAsync(provider, database, this._loggerFactory, cancellationToken);
+        return IndexCreator<TDocument>.ProcessAsync(provider, database, this._loggerFactory, cancellationToken);
     }
 }

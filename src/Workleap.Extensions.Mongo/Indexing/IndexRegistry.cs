@@ -4,15 +4,10 @@ using System.Reflection;
 namespace Workleap.Extensions.Mongo.Indexing;
 
 /// <summary>
-/// Associates a concrete <see cref="IMongoDocument"/> class with its single <see cref="MongoIndexProvider"/>.
+/// Associates a concrete <see cref="IMongoDocument"/> class with its <see cref="MongoIndexProvider"/>.
 /// </summary>
 internal sealed class IndexRegistry : List<DocumentTypeEntry>
 {
-    // MongoDB collection names are case sensitive
-    public IndexRegistry()
-    {
-    }
-
     public IndexRegistry(IEnumerable<Type> documentTypes)
     {
         foreach (var documentType in documentTypes)

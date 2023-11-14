@@ -6,7 +6,7 @@ using MongoDB.Driver;
 namespace Workleap.Extensions.Mongo.Indexing;
 
 /// <summary>
-/// Create, update or delete indexes for a particular document type by comparing existing indexes in the database
+/// Ensures that indexes for a particular document type exist on the database
 /// with the desired indexes definitions declared in the code.
 /// </summary>
 /// <remarks>
@@ -14,7 +14,7 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// to create the index in another process (maybe the CI) on a secondary node, than switch the secondary node as primary and let the replication do its job:
 /// https://www.mongodb.com/docs/manual/tutorial/force-member-to-be-primary/
 /// </remarks>
-internal sealed class IndexProcessor<TDocument>
+internal sealed class IndexCreator<TDocument>
     where TDocument : IMongoDocument
 {
     private readonly MongoIndexProvider<TDocument> _provider;
@@ -26,35 +26,30 @@ internal sealed class IndexProcessor<TDocument>
     private readonly HashSet<UniqueIndexName> _existingIndexes;
     private readonly Dictionary<UniqueIndexName, CreateIndexModel<TDocument>> _indexModels;
     
-    // TODO: Remove anything related to remove
-    private readonly Dictionary<UniqueIndexName, RemoveReason> _indexesToRemove;
     private readonly Dictionary<UniqueIndexName, AddReason> _indexesToAdd;
-    private IndexProcessingResult _processingResult;
+    private readonly IndexCreationResult _creationResult;
 
-    private IndexProcessor(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
+    private IndexCreator(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
         this._provider = provider;
         this._database = database;
-        this._logger = loggerFactory.CreateLogger<IndexProcessor<TDocument>>();
+        this._logger = loggerFactory.CreateLogger<IndexCreator<TDocument>>();
         this._cancellationToken = cancellationToken;
         this._collectionName = database.GetCollectionName<TDocument>();
 
         this._existingIndexes = new HashSet<UniqueIndexName>();
         this._indexModels = new Dictionary<UniqueIndexName, CreateIndexModel<TDocument>>();
-        this._indexesToRemove = new Dictionary<UniqueIndexName, RemoveReason>();
         this._indexesToAdd = new Dictionary<UniqueIndexName, AddReason>();
-        this._processingResult = new IndexProcessingResult();
+        this._creationResult = new IndexCreationResult();
     }
 
-    public static Task<IndexProcessingResult> ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
+    public static Task<IndexCreationResult> ProcessAsync(MongoIndexProvider<TDocument> provider, IMongoDatabase database, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
-        return new IndexProcessor<TDocument>(provider, database, loggerFactory, cancellationToken).ProcessAsync();
+        return new IndexCreator<TDocument>(provider, database, loggerFactory, cancellationToken).ProcessAsync();
     }
     
-    private async Task<IndexProcessingResult> ProcessAsync()
+    private async Task<IndexCreationResult> ProcessAsync()
     {
-        this._processingResult.CollectionName = this._collectionName;
-        
         await this.EnsureCollectionExists().ConfigureAwait(false);
         this._cancellationToken.ThrowIfCancellationRequested();
 
@@ -64,12 +59,12 @@ internal sealed class IndexProcessor<TDocument>
         this.PopulateIndexDescriptors();
         this._cancellationToken.ThrowIfCancellationRequested();
 
-        this.ComputeIndexesToAddAndRemove();
+        this.ComputeIndexesToAdd();
         this._cancellationToken.ThrowIfCancellationRequested();
 
         await this.AddIndexes().ConfigureAwait(false);
 
-        return this._processingResult;
+        return this._creationResult;
     }
     
     private async Task EnsureCollectionExists()
@@ -115,11 +110,11 @@ internal sealed class IndexProcessor<TDocument>
         }
     }
 
-    private void ComputeIndexesToAddAndRemove()
+    private void ComputeIndexesToAdd()
     {
         foreach (var newIndexName in this._indexModels.Keys)
         {
-            this._processingResult.ExpectedIndexes.Add(newIndexName);
+            this._creationResult.ExpectedIndexes.Add(newIndexName);
             var existingIndexName = this._existingIndexes.FirstOrDefault(x => x.Prefix == newIndexName.Prefix);
             if (existingIndexName == null)
             {
@@ -133,42 +128,11 @@ internal sealed class IndexProcessor<TDocument>
             }
             else
             {
-                this._indexesToRemove.Add(existingIndexName, RemoveReason.Outdated);
                 this._indexesToAdd.Add(newIndexName, AddReason.Updated);
             }
-
-            this._existingIndexes.Remove(existingIndexName);
-        }
-
-        foreach (var existingIndex in this._existingIndexes)
-        {
-            this._indexesToRemove.Add(existingIndex, RemoveReason.Orphaned);
         }
     }
-
-    // private async Task RemoveIndexes()
-    // {
-    //     foreach (var kvp in this._indexesToRemove)
-    //     {
-    //         var indexName = kvp.Key;
-    //         var reason = kvp.Value;
-    //
-    //         switch (reason)
-    //         {
-    //             case RemoveReason.Outdated:
-    //                 this._logger.DroppingOutdatedIndex(typeof(TDocument).Name, indexName.FullName);
-    //                 break;
-    //             case RemoveReason.Orphaned:
-    //                 this._logger.DroppingOrphanedIndex(typeof(TDocument).Name, indexName.FullName);
-    //                 break;
-    //             default:
-    //                 throw new ArgumentOutOfRangeException(nameof(reason));
-    //         }
-    //
-    //         await this._database.GetCollection<Object>("name").Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
-    //         await this._database.GetCollection<TDocument>().Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
-    //     }
-    // }
+    
     private async Task AddIndexes()
     {
         foreach (var kvp in this._indexesToAdd)
@@ -201,12 +165,5 @@ internal sealed class IndexProcessor<TDocument>
     {
         New,
         Updated,
-    }
-
-    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "These are private enums")]
-    private enum RemoveReason
-    {
-        Outdated,
-        Orphaned,
     }
 }

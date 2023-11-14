@@ -1,8 +1,6 @@
 namespace Workleap.Extensions.Mongo.Indexing;
 
-internal class IndexProcessingResult
+internal class IndexCreationResult
 {
-    public string CollectionName { get; set; } = string.Empty;
-
     public IList<UniqueIndexName> ExpectedIndexes { get; } = new List<UniqueIndexName>();
 }
