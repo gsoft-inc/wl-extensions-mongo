@@ -230,6 +230,59 @@ Our indexation engine handles:
 
 > We include a Roslyn analyzer, detailed in a section below, that encourages developers to adorn classes that consume MongoDB collections with attributes (`IndexByAttribute` or `NoIndexNeededAttribute`). The aim is to increase awareness about which indexes should be used (or created) when querying MongoDB collections.
 
+### Support for inheritance
+
+The indexer mechanism support document inheritance and different indexer for a same collection. For example:
+
+```csharp 
+
+[BsonKnownTypes(typeof(DogPersonDocument), typeof(DogPersonDocument))]
+[MongoCollection("people", IndexProviderType = typeof(PersonDocumentIndexes))]
+public class PersonDocument : IMongoDocument
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
+{
+    public override IEnumerable<CreateIndexModel<PersonDocument>> CreateIndexModels()
+    {
+        yield return new CreateIndexModel<PersonDocument>(
+            Builders<PersonDocument>.IndexKeys.Combine().Ascending(x => x.Name),
+            new CreateIndexOptions { Name = "name" });
+    }
+}
+
+// No special indexer for this class
+[BsonDiscriminator("Dog")]
+public class DogPersonDocument : PersonDocument
+{
+    public int DogCount { get; set; } = string.Empty;
+}
+
+// Need to redefine MongoCollectionAttribute to use a different indexer
+[BsonDiscriminator("Cat")]
+[MongoCollection("people", IndexProviderType = typeof(CatDocumentIndexes))]
+public class CatPersonDocument : PersonDocument
+{
+    public int CatCount { get; set; }
+}
+
+public class CatDocumentIndexes : MongoIndexProvider<PersonDocument>
+{
+    public override IEnumerable<CreateIndexModel<PersonDocument>> CreateIndexModels()
+    {
+        yield return new CreateIndexModel<PersonDocument>(
+            Builders<PersonDocument>.IndexKeys.Combine().Ascending(x => x.CatCount),
+            new CreateIndexOptions { Name = "cat_count" });
+    }
+}
+```
+
 ## Field encryption
 
 The Workleap.Extensions.Mongo library supports field-level encryption at rest, which means you can specify in your C# code which document fields should be encrypted in your MongoDB database. Any C# property can be encrypted, as long as you provide how data gets encrypted and decrypted. These properties then become binary data in your documents.
