@@ -7,7 +7,7 @@ using Workleap.Extensions.Xunit;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public class MongoIndexerInheritanceTests: BaseIntegrationTest<MongoFixture>
+public class MongoIndexerInheritanceTests : BaseIntegrationTest<MongoFixture>
 {
     public MongoIndexerInheritanceTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture, testOutputHelper)
