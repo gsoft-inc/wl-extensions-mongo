@@ -35,14 +35,12 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
                 throw new InvalidOperationException($"Type '{indexProviderType} must derive from '{typeof(MongoIndexProvider<>)}");
             }
 
-            if (documentType == indexProviderDocumentType)
-            {
-                this.Add(new DocumentTypeEntry(documentType, indexProviderType));
-            }
-            else
+            if (documentType != indexProviderDocumentType)
             {
                 throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
             }
+            
+            this.Add(new DocumentTypeEntry(documentType, indexProviderType));
         }
     }
 

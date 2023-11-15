@@ -4,7 +4,7 @@ using Workleap.Extensions.Mongo.Indexing;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public partial class MongoIndexerTests
+public class MongoIndexerAssemblyScanningTests
 {
     [Fact]
     public async Task IsDocumentTypesWithExplicitMongoCollectionAttribute_Filter_Works()
@@ -37,7 +37,7 @@ public partial class MongoIndexerTests
     
     [BsonDiscriminator("Children")]
     [MongoCollection("assemblyScanner", IndexProviderType = typeof(ChildWithOwnIndexerAssemblyScanningTestProvider))]
-    private sealed class ChildWithOwnIndexerAssemblyScanningTestDocument : BaseMultipleIndexersTestDocument
+    private sealed class ChildWithOwnIndexerAssemblyScanningTestDocument : BaseAssemblyScanningTestDocument
     {
         [BsonElement("phone")]
         public string PhoneNumber { get; set; } = string.Empty;

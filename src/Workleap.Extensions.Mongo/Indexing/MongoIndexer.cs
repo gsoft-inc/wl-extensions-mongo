@@ -12,14 +12,12 @@ internal sealed class MongoIndexer : IMongoIndexer
         ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoIndexer)}.{nameof(ProcessAsync)}");
 
     private readonly IMongoClientProvider _mongoClientProvider;
-    private readonly IndexDeleter _indexDeleter;
     private readonly IOptionsMonitor<MongoClientOptions> _optionsMonitor;
     private readonly ILoggerFactory _loggerFactory;
 
-    public MongoIndexer(IMongoClientProvider mongoClientProvider, IndexDeleter indexDeleter,  IOptionsMonitor<MongoClientOptions> optionsMonitor, ILoggerFactory loggerFactory)
+    public MongoIndexer(IMongoClientProvider mongoClientProvider,  IOptionsMonitor<MongoClientOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
         this._mongoClientProvider = mongoClientProvider;
-        this._indexDeleter = indexDeleter;
         this._optionsMonitor = optionsMonitor;
         this._loggerFactory = loggerFactory;
     }
@@ -130,7 +128,7 @@ internal sealed class MongoIndexer : IMongoIndexer
             }
         }
 
-        await this._indexDeleter.ProcessAsync(expectedIndexes, cancellationToken).ConfigureAwait(false);
+        await IndexDeleter.ProcessAsync(database, expectedIndexes, this._loggerFactory, cancellationToken).ConfigureAwait(false);
     }
 
     private Task<IndexCreationResult> ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)

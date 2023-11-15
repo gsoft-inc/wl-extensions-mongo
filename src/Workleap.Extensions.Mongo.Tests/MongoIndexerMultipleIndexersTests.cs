@@ -2,11 +2,17 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Workleap.Extensions.Mongo.Indexing;
+using Workleap.Extensions.Xunit;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public partial class MongoIndexerTests
+public class MongoIndexerMultipleIndexersTests : BaseIntegrationTest<MongoFixture>
 {
+    public MongoIndexerMultipleIndexersTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture, testOutputHelper)
+    {
+    }
+    
     [Fact]
     public async Task UpdateIndexesAsync_Support_Creating_Indexes_When_Multiple_Indexers_For_Same_Collection()
     {

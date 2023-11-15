@@ -14,21 +14,33 @@ internal sealed class IndexDeleter
     private readonly IMongoDatabase _database;
     private readonly ILogger _logger;
     
-    public IndexDeleter(IMongoDatabase database, ILogger<IndexDeleter> logger)
+    private readonly Dictionary<string, IList<UniqueIndexName>> _expectedIndexes;
+    
+    private readonly CancellationToken _cancellationToken;
+    
+    public IndexDeleter(IMongoDatabase database, Dictionary<string, IList<UniqueIndexName>> expectedIndexes, ILogger<IndexDeleter> logger, CancellationToken cancellationToken)
     {
         this._database = database;
         this._logger = logger;
+        this._cancellationToken = cancellationToken;
+
+        this._expectedIndexes = expectedIndexes;
     }
     
-    public async Task ProcessAsync(Dictionary<string, IList<UniqueIndexName>> expectedIndexes, CancellationToken cancellationToken)
+    public static Task ProcessAsync(IMongoDatabase database, Dictionary<string, IList<UniqueIndexName>> expectedIndexes, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
-        foreach (var expectedIndexForCollection in expectedIndexes)
+        return new IndexDeleter(database, expectedIndexes, loggerFactory.CreateLogger<IndexDeleter>(), cancellationToken).ProcessAsync();
+    }
+    
+    private async Task ProcessAsync()
+    {
+        foreach (var expectedIndexForCollection in this._expectedIndexes)
         {
             var existingIndexesForCollection = await this.GetExistingIndexes(expectedIndexForCollection.Key).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
+            this._cancellationToken.ThrowIfCancellationRequested();
             
             var indexesToRemove = ComputeIndexesToRemove(expectedIndexForCollection.Value, existingIndexesForCollection);
-            cancellationToken.ThrowIfCancellationRequested();
+            this._cancellationToken.ThrowIfCancellationRequested();
             
             await this.RemoveIndexes(expectedIndexForCollection.Key, indexesToRemove).ConfigureAwait(false);
         }
