@@ -15,7 +15,7 @@ internal sealed class MongoIndexer : IMongoIndexer
     private readonly IOptionsMonitor<MongoClientOptions> _optionsMonitor;
     private readonly ILoggerFactory _loggerFactory;
 
-    public MongoIndexer(IMongoClientProvider mongoClientProvider, IOptionsMonitor<MongoClientOptions> optionsMonitor, ILoggerFactory loggerFactory)
+    public MongoIndexer(IMongoClientProvider mongoClientProvider,  IOptionsMonitor<MongoClientOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
         this._mongoClientProvider = mongoClientProvider;
         this._optionsMonitor = optionsMonitor;
@@ -35,11 +35,15 @@ internal sealed class MongoIndexer : IMongoIndexer
         }
 
         var documentTypesWithExplicitMongoCollectionAttribute = assemblies.SelectMany(x => x.GetTypes())
-            .Where(MongoReflectionCache.IsConcreteMongoDocumentType)
-            .Where(x => x.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null)
+            .Where(IsDocumentTypesWithExplicitMongoCollectionAttribute)
             .ToArray();
 
         return this.UpdateIndexesAsync(documentTypesWithExplicitMongoCollectionAttribute, clientName, databaseName, cancellationToken);
+    }
+
+    internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)
+    {
+        return MongoReflectionCache.IsConcreteMongoDocumentType(typeCandidate) && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
     }
 
     public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
@@ -90,7 +94,9 @@ internal sealed class MongoIndexer : IMongoIndexer
     {
         var registry = new IndexRegistry(types);
 
-        foreach (var entry in registry.Values)
+        var expectedIndexes = new Dictionary<string, IList<UniqueIndexName>>();
+
+        foreach (var entry in registry)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -104,16 +110,30 @@ internal sealed class MongoIndexer : IMongoIndexer
             }
 
             var processAsyncMethod = ProcessAsyncMethod.MakeGenericMethod(documentType);
-            var task = (Task?)processAsyncMethod.Invoke(this, new[] { indexProvider, database, cancellationToken })
+            var task = (Task<IndexCreationResult>?)processAsyncMethod.Invoke(this, new[] { indexProvider, database, cancellationToken })
                 ?? throw new InvalidOperationException($"'{nameof(MongoIndexer)}.{nameof(this.ProcessAsync)}(...)' should have returned a task");
 
-            await task.ConfigureAwait(false);
+            var processingResult = await task.ConfigureAwait(false);
+            
+            var collectionName = MongoReflectionCache.GetCollectionName(documentType);
+            if (expectedIndexes.TryGetValue(collectionName, out var expectedIndexesForCollection))
+            {
+                // Better way to support AddRange?
+                var concat = expectedIndexesForCollection.Concat(processingResult.ExpectedIndexes);
+                expectedIndexes[collectionName] = concat.ToList();
+            }
+            else
+            {
+                expectedIndexes.Add(collectionName, processingResult.ExpectedIndexes);
+            }
         }
+
+        await IndexDeleter.ProcessAsync(database, expectedIndexes, this._loggerFactory, cancellationToken).ConfigureAwait(false);
     }
 
-    private Task ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
+    private Task<IndexCreationResult> ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
         where TDocument : IMongoDocument
     {
-        return IndexProcessor<TDocument>.ProcessAsync(provider, database, this._loggerFactory, cancellationToken);
+        return IndexCreator<TDocument>.ProcessAsync(provider, database, this._loggerFactory, cancellationToken);
     }
 }
