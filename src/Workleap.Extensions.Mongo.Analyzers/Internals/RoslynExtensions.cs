@@ -41,8 +41,9 @@ internal static class RoslynExtensions
 
     public static void ReportDiagnostic(this OperationAnalysisContext context, DiagnosticDescriptor diagnosticDescriptor, IInvocationOperation operation)
     {
-        var containingTypeName = context.ContainingSymbol.ContainingType.Name;
+        var containingMethodName = context.ContainingSymbol.Name;
+        var containingClassName = context.ContainingSymbol.ContainingType.Name;
         var operationLocation = operation.Syntax.GetLocation();
-        context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, operationLocation, containingTypeName));
+        context.ReportDiagnostic(Diagnostic.Create(diagnosticDescriptor, operationLocation, containingMethodName, containingClassName));
     }
 }

@@ -12,8 +12,8 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
 {
     internal static readonly DiagnosticDescriptor UseIndexAttributeRule = new DiagnosticDescriptor(
         id: RuleIdentifiers.UseIndexAttribute,
-        title: "Add 'IndexBy' or 'NoIndexNeeded' attributes on the containing type",
-        messageFormat: "Add 'IndexBy' or 'NoIndexNeeded' attributes on '{0}' to specify required indexes",
+        title: "Add 'IndexBy' or 'NoIndexNeeded' attributes on the containing method or class",
+        messageFormat: "Add 'IndexBy' or 'NoIndexNeeded' attributes on the method '{0}' or the class '{1}' to specify required indexes",
         category: RuleCategories.Design,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
@@ -32,7 +32,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
     private static void OnCompilationStarted(CompilationStartAnalysisContext context)
     {
         var analyzer = new IndexAttributeUsageAnalyzerImplementation(context.Compilation);
-        if (analyzer.IsValid)
+        if (analyzer.ShouldScan)
         {
             context.RegisterOperationAction(analyzer.AnalyzeOperationInvocation, OperationKind.Invocation);
         }
@@ -40,10 +40,25 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
 
     private sealed class IndexAttributeUsageAnalyzerImplementation
     {
+        /// <summary>
+        /// Symbol representing the type MongoDB.Driver.IMongoCollectionExtensions, if we see this symbol trigger the validation
+        /// </summary>
         private readonly INamedTypeSymbol? _mongoCollectionExtensionsType;
+        
+        /// <summary>
+        /// Symbol representing the type MongoDB.Driver.IMongoCollection, if we see this symbol trigger the validation
+        /// </summary>
         private readonly INamedTypeSymbol? _mongoCollectionInterfaceType;
+        
+        /// <summary>
+        /// List of attribute that satisfy the requirement
+        /// </summary>
         private readonly ImmutableHashSet<INamedTypeSymbol> _mongoIndexAttributes;
-        private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _symbolsWithoutAttributes = new(SymbolEqualityComparer.Default);
+        
+        /// <summary>
+        /// Already known symbol with issues: prevent duplicate diagnostics
+        /// </summary>
+        private readonly ConcurrentDictionary<ISymbol, bool> _symbolsWithoutAttributes = new(SymbolEqualityComparer.Default);
 
         public IndexAttributeUsageAnalyzerImplementation(Compilation compilation)
         {
@@ -56,7 +71,10 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             this._mongoCollectionInterfaceType = compilation.FindTypeByMetadataName(KnownSymbolNames.MongoCollectionInterface, KnownSymbolNames.MongoAssembly);
         }
 
-        public bool IsValid => this._mongoIndexAttributes.Count == 2 &&
+        /// <summary>
+        /// We should only scan if the assembly(?) is referencing MongoDB.Driver and Workleap.Extension.Mongo
+        /// </summary>
+        public bool ShouldScan => this._mongoIndexAttributes.Count == 2 &&
                                this._mongoCollectionExtensionsType is not null &&
                                this._mongoCollectionInterfaceType is not null;
 
@@ -67,8 +85,8 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var containingClassSymbol = context.ContainingSymbol.ContainingType;
-            if (this._symbolsWithoutAttributes.ContainsKey(containingClassSymbol))
+            var containingMethodSymbol = context.ContainingSymbol;
+            if (this._symbolsWithoutAttributes.ContainsKey(containingMethodSymbol))
             {
                 return;
             }
@@ -78,14 +96,33 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var hasIndexAttribute = containingClassSymbol.GetAttributes()
-                .Any(x => x.AttributeClass != null && this._mongoIndexAttributes.Contains(x.AttributeClass));
-
+            var hasIndexAttribute = this.IsMethodOrClassContainingIndexAttribute(context);
             if (!hasIndexAttribute)
             {
                 context.ReportDiagnostic(UseIndexAttributeRule, operation);
-                this._symbolsWithoutAttributes.TryAdd(containingClassSymbol, true);
+                this._symbolsWithoutAttributes.TryAdd(containingMethodSymbol, true);
             }
+        }
+
+        private bool IsMethodOrClassContainingIndexAttribute(OperationAnalysisContext context)
+        {
+            var doesClassHaveAttribute = context.ContainingSymbol.ContainingType.GetAttributes()
+                .Any(this.IndexAttributePredicate());
+
+            if (doesClassHaveAttribute)
+            {
+                return true;
+            }
+
+            var doesMethodHaveAttribute = context.ContainingSymbol.GetAttributes()
+                .Any(this.IndexAttributePredicate());
+
+            return doesMethodHaveAttribute;
+        }
+
+        private Func<AttributeData, bool> IndexAttributePredicate()
+        {
+            return x => x.AttributeClass != null && this._mongoIndexAttributes.Contains(x.AttributeClass);
         }
 
         private bool IsMongoCollectionMethod(IInvocationOperation operation)
