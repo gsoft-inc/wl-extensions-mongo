@@ -13,7 +13,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor UseIndexAttributeRule = new DiagnosticDescriptor(
         id: RuleIdentifiers.UseIndexAttribute,
         title: "Add 'IndexBy' or 'NoIndexNeeded' attributes on the containing method or class",
-        messageFormat: "Add 'IndexBy' or 'NoIndexNeeded' attributes on the method '{0}' or the class '{1}' to specify required indexes",
+        messageFormat: "Add 'IndexBy' or 'NoIndexNeeded' attributes on either the following method '{0}' or class '{1}' to specify required indexes",
         category: RuleCategories.Design,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
