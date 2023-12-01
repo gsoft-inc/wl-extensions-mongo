@@ -70,70 +70,74 @@ public class MyWorker
             .RunAsync();
     }
     
-    [Fact]
-    public async Task Given_Missing_IndexAttribute_On_Some_Method_When_Analyze_Then_Diagnostic()
+    [Theory]
+    [InlineData("[IndexedBy(\"PrimaryKey\")]")]
+    [InlineData("[NoIndexNeeded(\"Default index used\")]")]
+    public async Task Given_No_IndexAttribute_On_Class_And_Missing_On_Some_Method_When_Analyze_Then_Diagnostic(string attribute)
     {
         const string source = @"
-public class PersonDocument : IMongoDocument { }
+public class PersonDocument : IMongoDocument {{ }}
 
 public class MyWorker
-{
+{{
     public void DoSomething()
-    {
+    {{
         var collection = (IMongoCollection<PersonDocument>)null!;
         _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
 
         var collection2 = (IMongoCollection<PersonDocument>)null!;
         _ = collection2.CountDocuments(FilterDefinition<PersonDocument>.Empty);
-    }
+    }}
 
     public void DoSomething2()
-    {
+    {{
         var collection = (IMongoCollection<PersonDocument>)null!;
         _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
 
         var collection2 = (IMongoCollection<PersonDocument>)null!;
         _ = collection2.CountDocuments(FilterDefinition<PersonDocument>.Empty);
-    }
+    }}
 
-    [NoIndexNeeded(""Default index used"")]
+    {0}
     public void DoSomething3()
-    {
+    {{
         var collection = (IMongoCollection<PersonDocument>)null!;
         _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
-    }
-}";
+    }}
+}}";
 
-        await this.WithSourceCode(source)
+        await this.WithSourceCode(string.Format(source, attribute))
             .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 78, TestMethodName, TestClassName)
             .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 18, startColumn: 13, endLine: 18, endColumn: 78, "DoSomething2", TestClassName)
             .RunAsync();
     }
     
-    [Fact]
-    public async Task Given_No_IndexAttribute_On_Not_All_Method_And_On_Class_When_Analyze_Then_No_Diagnostic()
+    [Theory]
+    [InlineData("[IndexedBy(\"PrimaryKey\")]")]
+    [InlineData("[NoIndexNeeded(\"Default index used\")]")]
+    public async Task Given_No_IndexAttribute_On_Not_All_Method_And_On_Class_When_Analyze_Then_No_Diagnostic(string attribute)
     {
         const string source = @"
-public class PersonDocument : IMongoDocument { }
+public class PersonDocument : IMongoDocument {{ }}
 
-[NoIndexNeeded(""Default index used"")]
+{0}
 public class MyWorker
-{
+{{
     public void DoSomething()
-    {
+    {{
         var collection = (IMongoCollection<PersonDocument>)null!;
         _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
-    }
+    }}
 
-    [NoIndexNeeded(""Default index used"")]
+    {0}
     public void DoSomething2()
-    {
+    {{
         var collection = (IMongoCollection<PersonDocument>)null!;
         _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
-    }
-}";
+    }}
+}}";
 
-        await this.WithSourceCode(source)
+        await this.WithSourceCode(string.Format(source, attribute))
             .RunAsync();
     }
 
