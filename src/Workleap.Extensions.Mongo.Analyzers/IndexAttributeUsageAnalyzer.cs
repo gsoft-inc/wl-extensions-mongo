@@ -32,7 +32,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
     private static void OnCompilationStarted(CompilationStartAnalysisContext context)
     {
         var analyzer = new IndexAttributeUsageAnalyzerImplementation(context.Compilation);
-        if (analyzer.ShouldScan)
+        if (analyzer.IsValid)
         {
             context.RegisterOperationAction(analyzer.AnalyzeOperationInvocation, OperationKind.Invocation);
         }
@@ -40,24 +40,9 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
 
     private sealed class IndexAttributeUsageAnalyzerImplementation
     {
-        /// <summary>
-        /// Symbol representing the type MongoDB.Driver.IMongoCollectionExtensions, if we see this symbol trigger the validation
-        /// </summary>
         private readonly INamedTypeSymbol? _mongoCollectionExtensionsType;
-        
-        /// <summary>
-        /// Symbol representing the type MongoDB.Driver.IMongoCollection, if we see this symbol trigger the validation
-        /// </summary>
         private readonly INamedTypeSymbol? _mongoCollectionInterfaceType;
-        
-        /// <summary>
-        /// List of attribute that satisfy the requirement
-        /// </summary>
         private readonly ImmutableHashSet<INamedTypeSymbol> _mongoIndexAttributes;
-        
-        /// <summary>
-        /// Already known symbol with issues: prevent duplicate diagnostics
-        /// </summary>
         private readonly ConcurrentDictionary<ISymbol, bool> _symbolsWithoutAttributes = new(SymbolEqualityComparer.Default);
 
         public IndexAttributeUsageAnalyzerImplementation(Compilation compilation)
@@ -70,11 +55,8 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             this._mongoCollectionExtensionsType = compilation.FindTypeByMetadataName(KnownSymbolNames.MongoCollectionExtensions, KnownSymbolNames.MongoAssembly);
             this._mongoCollectionInterfaceType = compilation.FindTypeByMetadataName(KnownSymbolNames.MongoCollectionInterface, KnownSymbolNames.MongoAssembly);
         }
-
-        /// <summary>
-        /// We should only scan if the assembly(?) is referencing MongoDB.Driver and Workleap.Extension.Mongo
-        /// </summary>
-        public bool ShouldScan => this._mongoIndexAttributes.Count == 2 &&
+        
+        public bool IsValid => this._mongoIndexAttributes.Count == 2 &&
                                this._mongoCollectionExtensionsType is not null &&
                                this._mongoCollectionInterfaceType is not null;
 

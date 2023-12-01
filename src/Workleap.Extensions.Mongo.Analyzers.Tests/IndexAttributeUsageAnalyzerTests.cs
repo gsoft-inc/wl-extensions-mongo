@@ -163,7 +163,7 @@ public class MyWorker
     }
 
     [Fact]
-    public async Task Given_No_IndexAttribute_And_Partial_Class_When_Analyze_Then_Diagnostic_On_Each_Class()
+    public async Task Given_No_IndexAttribute_And_Partial_Class_When_Analyze_Then_Diagnostic_Only_One_Class()
     {
         const string source = @"
 public class PersonDocument : IMongoDocument { }
