@@ -49,6 +49,60 @@ public class MyWorker
         await this.WithSourceCode(string.Format(source, attribute))
             .RunAsync();
     }
+    
+    [Theory]
+    [InlineData("[IndexedBy(\"PrimaryKey\")]")]
+    [InlineData("[NoIndexNeeded(\"Default index used\")]")]
+    public async Task Given_IndexAttribute_On_Class_And_Mongo_Reference_In_Local_Method_Method_When_Analyze_Then_No_Diagnostics(string attribute)
+    {
+        const string source = @"
+public class PersonDocument : IMongoDocument {{ }}
+
+{0}
+public class MyWorker
+{{
+    public void DoSomething()
+    {{
+        async Task LocalDoSomething()
+        {{
+            var collection = (IMongoCollection<PersonDocument>)null!;
+            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+        }}
+
+        LocalDoSomething();
+    }}
+}}";
+
+        await this.WithSourceCode(string.Format(source, attribute))
+            .RunAsync();
+    }
+    
+    [Theory]
+    [InlineData("[IndexedBy(\"PrimaryKey\")]")]
+    [InlineData("[NoIndexNeeded(\"Default index used\")]")]
+    public async Task Given_IndexAttribute_On_Method_And_Mongo_Reference_In_Local_Method_Method_When_Analyze_Then_No_Diagnostics(string attribute)
+    {
+        const string source = @"
+public class PersonDocument : IMongoDocument {{ }}
+
+public class MyWorker
+{{
+    {0}
+    public void DoSomething()
+    {{
+        async Task LocalDoSomething()
+        {{
+            var collection = (IMongoCollection<PersonDocument>)null!;
+            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+        }}
+
+        LocalDoSomething();
+    }}
+}}";
+
+        await this.WithSourceCode(string.Format(source, attribute))
+            .RunAsync();
+    }
 
     [Fact]
     public async Task Given_No_IndexAttribute_When_Analyze_Then_Diagnostic()
@@ -67,6 +121,31 @@ public class MyWorker
 
         await this.WithSourceCode(source)
             .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 78, TestMethodName, TestClassName)
+            .RunAsync();
+    }
+    
+    [Fact]
+    public async Task Given_No_IndexAttribute_And_Reference_In_Local_Method_When_Analyze_Then_Diagnostic()
+    {
+        const string source = @"
+public class PersonDocument : IMongoDocument { }
+
+public class MyWorker
+{
+    public void DoSomething()
+    {{
+        async Task LocalDoSomething()
+        {{
+            var collection = (IMongoCollection<PersonDocument>)null!;
+            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+        }}
+
+        LocalDoSomething();
+    }}
+}";
+
+        await this.WithSourceCode(source)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 11, startColumn: 17, endLine: 11, endColumn: 72, TestMethodName, TestClassName)
             .RunAsync();
     }
     
