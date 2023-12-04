@@ -1,6 +1,6 @@
 ﻿namespace Workleap.Extensions.Mongo;
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class IndexedByAttribute : Attribute
 {
     public IndexedByAttribute(params string[] indexes)
