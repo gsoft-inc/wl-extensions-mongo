@@ -43,7 +43,9 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
         private readonly INamedTypeSymbol? _mongoCollectionExtensionsType;
         private readonly INamedTypeSymbol? _mongoCollectionInterfaceType;
         private readonly ImmutableHashSet<INamedTypeSymbol> _mongoIndexAttributes;
-        private readonly ConcurrentDictionary<ISymbol, bool> _symbolsWithoutAttributes = new(SymbolEqualityComparer.Default);
+        
+        // We can skip class or method that we know have an attribute and already reported methods 
+        private readonly ConcurrentDictionary<ISymbol, bool> _containingSymbolToSkipAnalyzing = new(SymbolEqualityComparer.Default);
 
         public IndexAttributeUsageAnalyzerImplementation(Compilation compilation)
         {
@@ -66,9 +68,15 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             {
                 return;
             }
+            
+            var classSymbol = context.ContainingSymbol.ContainingType;
+            if (this._containingSymbolToSkipAnalyzing.ContainsKey(classSymbol))
+            {
+                return;
+            }
 
-            var containingMethodSymbol = context.ContainingSymbol;
-            if (this._symbolsWithoutAttributes.ContainsKey(containingMethodSymbol))
+            var methodSymbol = context.ContainingSymbol;
+            if (this._containingSymbolToSkipAnalyzing.ContainsKey(methodSymbol))
             {
                 return;
             }
@@ -82,29 +90,38 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             if (!hasIndexAttribute)
             {
                 context.ReportDiagnostic(UseIndexAttributeRule, operation);
-                this._symbolsWithoutAttributes.TryAdd(containingMethodSymbol, true);
+                this._containingSymbolToSkipAnalyzing.TryAdd(context.ContainingSymbol, true);
             }
         }
 
         private bool IsMethodOrClassContainingIndexAttribute(OperationAnalysisContext context)
         {
-            var doesClassHaveAttribute = context.ContainingSymbol.ContainingType.GetAttributes()
-                .Any(this.IndexAttributePredicate());
+            var classSymbol = context.ContainingSymbol.ContainingType;
+            var doesClassHaveAttribute = classSymbol.GetAttributes()
+                .Any(this.IndexAttributePredicate);
 
             if (doesClassHaveAttribute)
             {
+                this._containingSymbolToSkipAnalyzing.TryAdd(classSymbol.ContainingType, true);
                 return true;
             }
 
-            var doesMethodHaveAttribute = context.ContainingSymbol.GetAttributes()
-                .Any(this.IndexAttributePredicate());
+            var methodSymbol = context.ContainingSymbol;
+            var doesMethodHaveAttribute = methodSymbol.GetAttributes()
+                .Any(this.IndexAttributePredicate);
+            
+            if (doesMethodHaveAttribute)
+            {
+                this._containingSymbolToSkipAnalyzing.TryAdd(methodSymbol, true);
+                return true;
+            }
 
-            return doesMethodHaveAttribute;
+            return false;
         }
 
-        private Func<AttributeData, bool> IndexAttributePredicate()
+        private bool IndexAttributePredicate(AttributeData attributeData)
         {
-            return x => x.AttributeClass != null && this._mongoIndexAttributes.Contains(x.AttributeClass);
+            return attributeData.AttributeClass != null && this._mongoIndexAttributes.Contains(attributeData.AttributeClass);
         }
 
         private bool IsMongoCollectionMethod(IInvocationOperation operation)
