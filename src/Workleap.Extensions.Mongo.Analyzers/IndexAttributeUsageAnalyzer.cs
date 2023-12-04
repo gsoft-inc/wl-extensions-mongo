@@ -102,7 +102,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
 
             if (doesClassHaveAttribute)
             {
-                this._containingSymbolToSkipAnalyzing.TryAdd(classSymbol.ContainingType, true);
+                this._containingSymbolToSkipAnalyzing.TryAdd(classSymbol, true);
                 return true;
             }
 
