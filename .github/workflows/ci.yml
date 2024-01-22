@@ -19,3 +19,6 @@ jobs:
 
       - run: ./Build.ps1
         shell: pwsh
+        env:
+          NUGET_SOURCE: ${{ secrets.NUGET_DEV_SOURCE }}
+          NUGET_API_KEY: ${{ secrets.WORKLEAP_NUGET_DEV_API_KEY }}
