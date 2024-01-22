@@ -105,6 +105,7 @@ public sealed class CommandPerformanceTests : BaseIntegrationTest<CommandPerform
         }
 
         public IDisposable BeginScope<TState>(TState state)
+            where TState : notnull
         {
             return NoopDisposable.Instance;
         }
