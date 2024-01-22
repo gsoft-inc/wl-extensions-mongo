@@ -16,6 +16,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "6.0.x"
+          source-url: ${{ secrets.NUGET_DEV_SOURCE }}
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.WORKLEAP_NUGET_DEV_API_KEY}}
 
       - run: ./Build.ps1
         shell: pwsh
