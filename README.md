@@ -228,6 +228,28 @@ Our indexation engine handles:
 5. Leaving any other index intact. We only manage the indexes that have a name ending with a generated hash.
 6. Handling distributed race conditions. If many instances of an application call `indexer.UpdateIndexesAsync()` at the same time, only one will actually succeed (we use a distributed lock).
 
+**Note:**
+
+We do not recommend you try and run multiple `UpdateIndexesAsync` tasks at the same time given that only one process can update indexes at a time through the use of a distributed lock. 
+For example in the code below, once a task has acquired the distributed lock, the other will wait until the lock is released before acquiring it and running the index update process.
+In the end you're not saving any time by having multiple tasks run at the same time.
+
+```csharp
+var indexer = this.Services.GetRequiredService<IMongoIndexer>();
+await Task.WhenAll(
+    indexer.UpdateIndexesAsync(AssemblyHandle.Assembly),
+    indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) })
+);
+```
+
+The code above should be re-written to the following:
+```csharp
+var indexer = this.Services.GetRequiredService<IMongoIndexer>();
+await indexer.UpdateIndexesAsync(AssemblyHandle.Assembly);
+await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) })
+```
+
+
 > We include a Roslyn analyzer, detailed in a section below, that encourages developers to adorn classes that consume MongoDB collections with attributes (`IndexByAttribute` or `NoIndexNeededAttribute`). The aim is to increase awareness about which indexes should be used (or created) when querying MongoDB collections.
 
 ### Support for inheritance
