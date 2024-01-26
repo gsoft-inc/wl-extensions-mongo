@@ -219,7 +219,7 @@ await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) });
 Our indexation engine handles:
 
 1. Discovering the `CreateIndexModel<TDocument>` declared in your code using reflection.
-2. Computing an **unique index name** based on the model (we append a hash to the provided index name, for example, `name_512cbbb935626e2b4b7c44972597c4a8`).
+2. Computing a **unique index name** based on the model (we append a hash to the provided index name, for example, `name_512cbbb935626e2b4b7c44972597c4a8`).
 3. Discovering existing indexes in the MongoDB collection.
 4. Comparing the names and hashes of both sides to determine if:
    1. We need to create a missing index.
@@ -229,7 +229,6 @@ Our indexation engine handles:
 6. Handling distributed race conditions. If many instances of an application call `indexer.UpdateIndexesAsync()` at the same time, only one will actually succeed (we use a distributed lock).
 
 **Note:**
-
 We do not recommend you try and run multiple `UpdateIndexesAsync` tasks at the same time given that only one process can update indexes at a time through the use of a distributed lock. 
 For example in the code below, once a task has acquired the distributed lock, the other will wait until the lock is released before acquiring it and running the index update process.
 In the end you're not saving any time by having multiple tasks run at the same time.
@@ -248,7 +247,6 @@ var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await indexer.UpdateIndexesAsync(AssemblyHandle.Assembly);
 await indexer.UpdateIndexesAsync(new[] { typeof(PersonDocument) })
 ```
-
 
 > We include a Roslyn analyzer, detailed in a section below, that encourages developers to adorn classes that consume MongoDB collections with attributes (`IndexByAttribute` or `NoIndexNeededAttribute`). The aim is to increase awareness about which indexes should be used (or created) when querying MongoDB collections.
 
