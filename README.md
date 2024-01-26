@@ -234,6 +234,7 @@ For example in the code below, once a task has acquired the distributed lock, th
 In the end you're not saving any time by having multiple tasks run at the same time.
 
 ```csharp
+// ⚠️ Updating indexes in parallel is not recommended
 var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await Task.WhenAll(
     indexer.UpdateIndexesAsync(AssemblyHandle.Assembly),
