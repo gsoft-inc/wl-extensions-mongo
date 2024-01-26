@@ -241,7 +241,8 @@ await Task.WhenAll(
 );
 ```
 
-The code above should be re-written to the following:
+Ideally if all your indexes are in the same assembly then you only have to call `UpdateIndexesAsync` once.
+But if you really do need to call it multiple times, then the code above should be re-written to the following:
 ```csharp
 var indexer = this.Services.GetRequiredService<IMongoIndexer>();
 await indexer.UpdateIndexesAsync(AssemblyHandle.Assembly);
