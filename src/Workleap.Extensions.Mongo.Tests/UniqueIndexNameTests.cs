@@ -1,4 +1,4 @@
-﻿using Workleap.Extensions.Xunit;
+using Workleap.Extensions.Xunit;
 using MongoDB.Driver;
 using Workleap.Extensions.Mongo.Indexing;
 
@@ -37,6 +37,19 @@ public sealed class UniqueIndexNameTests : BaseUnitTest
 
         Assert.False(result);
         Assert.Null(uxIndexName);
+    }
+
+    [Fact]
+    public void UniqueIndex_ComputeDefaultName_When_IndexName_NotSpecified()
+    {
+        var index = new CreateIndexModel<SampleDocument>(
+            Builders<SampleDocument>.IndexKeys.Ascending(x => x.SampleField),
+            options: null);
+
+        var result = UniqueIndexName.TryCreate(index, out var uxIndexName);
+
+        Assert.True(result);
+        Assert.Equal("SampleField_1", uxIndexName!.Prefix);
     }
 
     private static CreateIndexModel<SampleDocument> CreateIndex(string indexName)

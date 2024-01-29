@@ -1,10 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Operations;
 
 namespace Workleap.Extensions.Mongo.Indexing;
 
@@ -37,8 +38,7 @@ internal sealed class UniqueIndexName
     public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, [MaybeNullWhen(false)] out UniqueIndexName indexName)
     {
         var options = indexModel.Options;
-
-        var prefix = options.Name?.Trim() ?? string.Empty;
+        var prefix = options?.Name?.Trim() ?? IndexNameHelper.GetIndexName(indexModel.Keys.Render(BsonSerializer.LookupSerializer<TDocument>(), BsonSerializer.SerializerRegistry));
         if (prefix.Length == 0)
         {
             indexName = null;
@@ -50,10 +50,10 @@ internal sealed class UniqueIndexName
 
         var bsonIndexFields = indexModel.Keys.Render(bsonSerializer, serializerRegistry).ToString();
         var indexDescription = new StringBuilder(bsonIndexFields)
-            .Append(options.Unique.HasValue && options.Unique.Value ? "unique" : string.Empty)
-            .Append(options.Sparse.HasValue && options.Sparse.Value ? "sparse" : string.Empty)
-            .Append(options.WildcardProjection is { } projection ? projection.Render(bsonSerializer, serializerRegistry) : string.Empty)
-            .Append(options.PartialFilterExpression is { } filter ? filter.Render(bsonSerializer, serializerRegistry) : string.Empty)
+            .Append(options?.Unique is true ? "unique" : string.Empty)
+            .Append(options?.Sparse is true ? "sparse" : string.Empty)
+            .Append(options?.WildcardProjection is { } projection ? projection.Render(bsonSerializer, serializerRegistry) : string.Empty)
+            .Append(options?.PartialFilterExpression is { } filter ? filter.Render(bsonSerializer, serializerRegistry) : string.Empty)
             .ToString();
 
         string hashHex;
