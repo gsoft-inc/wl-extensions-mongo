@@ -9,6 +9,7 @@
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>latest-All</AnalysisLevel>
     <Description>Provides MongoDB access through .NET dependency injection, following Microsoft.Extensions.* library practices.</Description>
   </PropertyGroup>
 
