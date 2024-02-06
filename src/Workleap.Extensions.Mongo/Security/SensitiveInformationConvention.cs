@@ -44,7 +44,7 @@ internal sealed class SensitiveInformationConvention : ConventionBase, IPostProc
 
     public static bool IsSensitiveType(Type type) => SensitiveTypesCache.HasSensitiveProperty(type);
 
-    private readonly struct SerializerKey
+    private readonly struct SerializerKey : IEquatable<SerializerKey>
     {
         public SerializerKey(Type valueType, SensitivityScope sensitivityScope)
         {
@@ -61,7 +61,7 @@ internal sealed class SensitiveInformationConvention : ConventionBase, IPostProc
             return obj is SerializerKey other && this.Equals(other);
         }
 
-        private bool Equals(SerializerKey other)
+        public bool Equals(SerializerKey other)
         {
             return this.ValueType == other.ValueType && this.SensitivityScope == other.SensitivityScope;
         }
