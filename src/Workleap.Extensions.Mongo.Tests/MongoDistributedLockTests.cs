@@ -62,7 +62,7 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
 
             var lockId = i % 2 == 0 ? lockId1 : lockId2;
 #pragma warning disable xUnit1031 // Deliberately trying to create deadlock for unit test
-            tasks[i] = Task.Factory.StartNew(() => AcquireAction(lockId).GetAwaiter().GetResult(), TaskCreationOptions.LongRunning);
+            tasks[i] = Task.Factory.StartNew(() => AcquireAction(lockId).GetAwaiter().GetResult(), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 #pragma warning restore xUnit1031
         }
 
@@ -107,9 +107,8 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
                     Interlocked.Increment(ref ocexCount);
                 }
             }
-
 #pragma warning disable xUnit1031 // Deliberately trying to create deadlock for unit test
-            tasks[i] = Task.Factory.StartNew(() => AcquireAction("foo").GetAwaiter().GetResult(), TaskCreationOptions.LongRunning);
+            tasks[i] = Task.Factory.StartNew(() => AcquireAction("foo").GetAwaiter().GetResult(), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 #pragma warning restore xUnit1031
         }
 
