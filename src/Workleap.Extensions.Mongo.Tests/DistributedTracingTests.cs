@@ -39,6 +39,7 @@ public sealed class DistributedTracingTests : BaseIntegrationTest<DistributedTra
         var activities = recorder.RecordedActivities.ToArray();
         Assert.NotEmpty(activities);
         var activity = Assert.Single(activities, x => x.DisplayName == "things.insert");
+        this.Logger.LogInformation("{Count}", activities.Length);
 
         Assert.Equal("MongoDB.Driver.Core.Events.Command", activity.OperationName);
         Assert.Equal(ActivityStatusCode.Ok, activity.Status);

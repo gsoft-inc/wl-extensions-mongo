@@ -20,6 +20,7 @@ public class EventSubscriberTests : BaseIntegrationTest<EventSubscriberTests.Eve
     {
         _ = await this.Services.GetRequiredService<IMongoCollection<DummyDocument>>().FindAsync(Builders<DummyDocument>.Filter.Empty);
         var actualOutput = this.Services.GetRequiredService<StringBuilder>().ToString();
+        this.Logger.LogInformation("Event subscribers call hierarchy: \r\n{Ouput}", actualOutput);
 
         const string expectedOutput = @"
 CommandTracingEventSubscriber.CommandStartedEvent(find)
