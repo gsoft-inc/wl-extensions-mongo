@@ -207,6 +207,26 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.DistinctAsync(session, field, filter, options, cancellationToken);
     }
 
+    public IAsyncCursor<TItem> DistinctMany<TItem>(FieldDefinition<TDocument, IEnumerable<TItem>> field, FilterDefinition<TDocument> filter, DistinctOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return this._underlyingCollection.DistinctMany(field, filter, options, cancellationToken);
+    }
+    
+    public IAsyncCursor<TItem> DistinctMany<TItem>(IClientSessionHandle session, FieldDefinition<TDocument, IEnumerable<TItem>> field, FilterDefinition<TDocument> filter, DistinctOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return this._underlyingCollection.DistinctMany(session, field, filter, options, cancellationToken);
+    }
+    
+    public Task<IAsyncCursor<TItem>> DistinctManyAsync<TItem>(FieldDefinition<TDocument, IEnumerable<TItem>> field, FilterDefinition<TDocument> filter, DistinctOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return this._underlyingCollection.DistinctManyAsync(field, filter, options, cancellationToken);
+    }
+    
+    public Task<IAsyncCursor<TItem>> DistinctManyAsync<TItem>(IClientSessionHandle session, FieldDefinition<TDocument, IEnumerable<TItem>> field, FilterDefinition<TDocument> filter, DistinctOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return this._underlyingCollection.DistinctManyAsync(session, field, filter, options, cancellationToken);
+    }
+
     public long EstimatedDocumentCount(EstimatedDocumentCountOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.EstimatedDocumentCount(options, cancellationToken);
