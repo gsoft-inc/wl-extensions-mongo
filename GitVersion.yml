@@ -66,6 +66,7 @@ branches:
     is-release-branch: false
     is-mainline: false
     pre-release-weight: 30000
+    assembly-informational-format: '{InformationalVersion}'
   pull-request:
     regex: ^(pull|pull\-requests|pr)[/-]
     mode: ContinuousDelivery
@@ -80,6 +81,7 @@ branches:
     is-release-branch: false
     is-mainline: false
     pre-release-weight: 30000
+    assembly-informational-format: '{InformationalVersion}'
   hotfix:
     regex: ^hotfix(es)?[/-]
     mode: ContinuousDelivery
