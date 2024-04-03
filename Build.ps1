@@ -25,9 +25,9 @@ Process {
         Exec { & dotnet tool restore }
 
         # Let GitVersion compute the NuGet package version
-        $uniqueId = Get-Date -Format "yyyyMMddHHmmss"
+        $shortSHA = Exec { & git rev-parse --short HEAD }
         $gitVersion = Exec { & dotnet dotnet-gitversion /output json /showvariable SemVer }
-        $version = "$gitVersion.$uniqueId"
+        $version = "$gitVersion.$shortSHA"
 
         Exec { & dotnet clean -c Release }
         Exec { & dotnet build -c Release }
