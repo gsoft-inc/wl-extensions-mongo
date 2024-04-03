@@ -20,8 +20,14 @@ Process {
         Push-Location $workingDir
         Remove-Item $outputDir -Force -Recurse -ErrorAction SilentlyContinue
 
+        # Install GitVersion which is specified in the .config/dotnet-tools.json
+        # https://learn.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use
+        Exec { & dotnet tool restore }
+
+        # Let GitVersion compute the NuGet package version
         $uniqueId = Get-Date -Format "yyyyMMddHHmmss"
-        $version = Exec { & dotnet dotnet-gitversion /output json /showvariable SemVer } + ".$uniqueId"
+        $gitVersion = Exec { & dotnet dotnet-gitversion /output json /showvariable SemVer }
+        $version = "$gitVersion.$uniqueId"
 
         Exec { & dotnet clean -c Release }
         Exec { & dotnet build -c Release }
