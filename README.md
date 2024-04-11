@@ -143,6 +143,11 @@ You can also use different options patterns to configure static options:
 services.AddOptions<MongoStaticOptions>().Configure(options => { /* [...] */ })
 ```
 
+When using the `AddMongo()` method, multiple conventions are added automatically:
+- `IgnoreExtraElementsConvention(ignoreExtraElements: true)`
+- `EnumRepresentationConvention(BsonType.String)`, so changing an enum member name is a breaking change
+- `DateTime` and `DateTimeOffset` are serialized as `DateTime` instead of the default Ticks or (Ticks, Offset). In MongoDB, DateTime only supports precision up to the milliseconds. If you need more precision, you need to set the serializer at property level.
+
 ## Declaring and using MongoDB documents and collections
 
 The process doesn't deviate much from the standard way of declaring and using MongoDB collections in C#. However, there are two additional steps:
@@ -307,7 +312,7 @@ public class CatDocumentIndexes : MongoIndexProvider<PersonDocument>
 
 ## Field encryption
 
-The Workleap.Extensions.Mongo library supports field-level encryption at rest, which means you can specify in your C# code which document fields should be encrypted in your MongoDB database. Any C# property can be encrypted, as long as you provide how data gets encrypted and decrypted. These properties then become binary data in your documents.
+The [Workleap.Extensions.Mongo](https://www.nuget.org/packages/Workleap.Extensions.Mongo/) library supports field-level encryption at rest, which means you can specify in your C# code which document fields should be encrypted in your MongoDB database. Any C# property can be encrypted, as long as you provide how data gets encrypted and decrypted. These properties then become binary data in your documents.
 
 To enable field-level encryption, simply decorate the sensitive properties with the `[SensitiveInformationAttribute]`:
 
