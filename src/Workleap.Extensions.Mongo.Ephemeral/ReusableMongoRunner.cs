@@ -33,12 +33,19 @@ internal sealed class ReusableMongoRunner
 
             // The lock and use count prevent multiple instances of local mongod processes for a same named MongoClient
             // that would degrade the overall performance.
-            this._runner ??= MongoRunner.Run(new MongoRunnerOptions
+            var options = new MongoRunnerOptions
             {
                 UseSingleNodeReplicaSet = true,
                 KillMongoProcessesWhenCurrentProcessExits = true,
-            });
+            };
 
+            var binaryPath = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_BINARYDIRECTORY")?.Trim();
+            if (!string.IsNullOrEmpty(binaryPath))
+            {
+                options.BinaryDirectory = binaryPath;
+            }
+
+            this._runner ??= MongoRunner.Run(options);
             this._useCount++;
             this._connectionString = this._runner.ConnectionString;
             this._renters.Add(renter);
