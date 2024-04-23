@@ -39,10 +39,10 @@ internal sealed class ReusableMongoRunner
                 KillMongoProcessesWhenCurrentProcessExits = true,
             };
 
-            var binaryPath = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_BINARYDIRECTORY")?.Trim();
-            if (!string.IsNullOrEmpty(binaryPath))
+            var binaryDirectory = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_BINARYDIRECTORY")?.Trim();
+            if (!string.IsNullOrEmpty(binaryDirectory))
             {
-                options.BinaryDirectory = binaryPath;
+                options.BinaryDirectory = binaryDirectory;
             }
 
             this._runner ??= MongoRunner.Run(options);
