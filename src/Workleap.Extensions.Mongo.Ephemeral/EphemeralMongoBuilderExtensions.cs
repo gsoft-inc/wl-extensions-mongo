@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 
 namespace Workleap.Extensions.Mongo.Ephemeral;
 
@@ -19,6 +20,31 @@ public static class EphemeralMongoBuilderExtensions
         {
             var defaultDatabaseNameHolder = serviceProvider.GetRequiredService<DefaultDatabaseNameHolder>();
             return new DisposableMongoClientProvider(underlyingMongoClientProvider, defaultDatabaseNameHolder);
+        });
+
+        return builder;
+    }
+
+    public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder, string connectionString)
+    {
+        builder.Services.AddSingleton<DefaultDatabaseNameHolder>();
+        builder.Services.AddSingleton<IMongoClientProvider>(serviceProvider =>
+        {
+            var client = new MongoClient(connectionString);
+            var defaultDatabaseNameHolder = serviceProvider.GetRequiredService<DefaultDatabaseNameHolder>();
+            return new DisposableMongoClientProvider(new SingletonMongoClientProvider(client), defaultDatabaseNameHolder);
+        });
+
+        return builder;
+    }
+
+    public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder, IMongoClient client)
+    {
+        builder.Services.AddSingleton<DefaultDatabaseNameHolder>();
+        builder.Services.AddSingleton<IMongoClientProvider>(serviceProvider =>
+        {
+            var defaultDatabaseNameHolder = serviceProvider.GetRequiredService<DefaultDatabaseNameHolder>();
+            return new DisposableMongoClientProvider(new SingletonMongoClientProvider(client), defaultDatabaseNameHolder);
         });
 
         return builder;
