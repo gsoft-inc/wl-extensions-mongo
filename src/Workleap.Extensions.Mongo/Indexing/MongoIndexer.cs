@@ -43,7 +43,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)
     {
-        return MongoReflectionCache.IsConcreteMongoDocumentType(typeCandidate) && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
+        return typeCandidate.IsConcreteMongoDocumentType() && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
     }
 
     public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
@@ -57,7 +57,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
         foreach (var type in types)
         {
-            if (!MongoReflectionCache.IsConcreteMongoDocumentType(type))
+            if (!type.IsConcreteMongoDocumentType())
             {
                 throw new ArgumentException($"Type '{type}' must implement {nameof(IMongoDocument)}");
             }
@@ -132,7 +132,7 @@ internal sealed class MongoIndexer : IMongoIndexer
     }
 
     private Task<IndexCreationResult> ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
-        where TDocument : IMongoDocument
+        where TDocument : class
     {
         return IndexCreator<TDocument>.ProcessAsync(provider, database, this._loggerFactory, cancellationToken);
     }

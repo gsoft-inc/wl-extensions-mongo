@@ -15,7 +15,7 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// https://www.mongodb.com/docs/manual/tutorial/force-member-to-be-primary/
 /// </remarks>
 internal sealed class IndexCreator<TDocument>
-    where TDocument : IMongoDocument
+    where TDocument : class
 {
     private readonly MongoIndexProvider<TDocument> _provider;
     private readonly IMongoDatabase _database;
