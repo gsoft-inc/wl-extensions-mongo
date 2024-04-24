@@ -36,9 +36,9 @@ internal sealed class MongoReflectionCacheConfigurationStrategy : IMongoReflecti
 
     public string GetCollectionName(Type documentType)
     {
-        return this._collectionNames.TryGetValue(documentType, out var collectionName) 
-            ? collectionName 
-            : throw new ArgumentException($"No {typeof(IMongoCollectionConfiguration<>)} registered for {documentType}.");
+        return this._collectionNames.TryGetValue(documentType, out var collectionName)
+            ? collectionName
+            : documentType.Name;
     }
     
     internal void SetCollectionName(Type documentType, string collectionName)
