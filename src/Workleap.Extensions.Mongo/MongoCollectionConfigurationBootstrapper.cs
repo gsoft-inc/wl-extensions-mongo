@@ -29,7 +29,7 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
             var builderType = typeof(IMongoCollectionBuilder<>).MakeGenericType(documentType);
 
             var configuration = this._serviceProvider.GetRequiredService(configurationType.Interface);
-            var builder = this._serviceProvider.GetRequiredService(builderType) as MongoCollectionBuilder;
+            var builder = Activator.CreateInstance(builderType) as MongoCollectionBuilder;
             
             if (configuration == null || builder == null)
             {
