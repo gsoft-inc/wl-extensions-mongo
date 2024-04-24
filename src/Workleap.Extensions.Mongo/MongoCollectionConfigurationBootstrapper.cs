@@ -26,7 +26,7 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
         foreach (var configurationType in configurationTypes)
         {
             var documentType = configurationType.Interface!.GetGenericArguments().Single();
-            var builderType = typeof(MongoCollectionBuilder<>).MakeGenericType(documentType);
+            var builderType = typeof(IMongoCollectionBuilder<>).MakeGenericType(documentType);
 
             var configuration = this._serviceProvider.GetRequiredService(configurationType.Interface);
             var builder = this._serviceProvider.GetRequiredService(builderType) as MongoCollectionBuilder;
