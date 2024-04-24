@@ -18,17 +18,17 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
     public void ApplyConfigurations(params Assembly[] assemblies)
     {
         var configurationCache = this._serviceProvider.GetRequiredService<MongoReflectionCacheConfigurationStrategy>();
-        
-        var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
-            .Select(t => new { ConcreteType = t, Interface = t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface()) })
-            .Where(t => t.Interface != null));
 
-        foreach (var configurationType in configurationTypes)
+        var configurationInterfaces = assemblies.SelectMany(assembly => assembly.GetTypes()
+            .Select(t => t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface()))
+            .Where(t => t != null));
+
+        foreach (var configurationInterface in configurationInterfaces)
         {
-            var documentType = configurationType.Interface!.GetGenericArguments().Single();
+            var documentType = configurationInterface!.GetGenericArguments().Single();
             var builderType = typeof(MongoCollectionBuilder<>).MakeGenericType(documentType);
 
-            var configuration = this._serviceProvider.GetRequiredService(configurationType.Interface);
+            var configuration = this._serviceProvider.GetRequiredService(configurationInterface);
             var builder = Activator.CreateInstance(builderType) as MongoCollectionBuilder;
             
             if (configuration == null || builder == null)
