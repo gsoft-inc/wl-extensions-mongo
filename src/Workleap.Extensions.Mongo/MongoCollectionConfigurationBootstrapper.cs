@@ -3,10 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Workleap.Extensions.Mongo;
 
-public class MongoCollectionConfigurationBootstrapper : IMongoCollectionConfigurationBootstrapper
+public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionConfigurationBootstrapper
 {
     private static readonly MethodInfo ConfigureMethod = typeof(MongoCollectionConfigurationBootstrapper).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Instance)
                                                             ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoCollectionConfigurationBootstrapper)}.{nameof(Configure)}");
+    
     private readonly IServiceProvider _serviceProvider;
 
     public MongoCollectionConfigurationBootstrapper(IServiceProvider serviceProvider)

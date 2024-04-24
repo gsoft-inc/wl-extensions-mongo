@@ -28,11 +28,6 @@ internal static class MongoReflectionCache
     internal static bool IsMongoCollectionConfigurationInterface(this Type t) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMongoCollectionConfiguration<>);
 }
 
-internal interface IMongoReflectionCacheStrategy
-{
-    string GetCollectionName(Type documentType);
-}
-
 internal sealed class MongoReflectionCacheConfigurationStrategy : IMongoReflectionCacheStrategy
 {
     private readonly ConcurrentDictionary<Type, string> _collectionNames = new();
