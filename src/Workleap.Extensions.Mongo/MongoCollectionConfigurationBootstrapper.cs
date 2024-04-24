@@ -42,6 +42,11 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
             var metadata = builder.Build(); // BsonClassMap registration happens here
             
             configurationCache.SetCollectionName(documentType, metadata.CollectionName);
+            
+            if (metadata.IndexProviderType != null)
+            {
+                configurationCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
+            }
         }
     }
     

@@ -13,12 +13,18 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     private readonly IMongoClientProvider _mongoClientProvider;
     private readonly IOptionsMonitor<MongoClientOptions> _optionsMonitor;
+    private readonly IIndexDetectionStrategy _indexDetectionStrategy;
     private readonly ILoggerFactory _loggerFactory;
 
-    public MongoIndexer(IMongoClientProvider mongoClientProvider,  IOptionsMonitor<MongoClientOptions> optionsMonitor, ILoggerFactory loggerFactory)
+    public MongoIndexer(
+        IMongoClientProvider mongoClientProvider,  
+        IOptionsMonitor<MongoClientOptions> optionsMonitor, 
+        IIndexDetectionStrategy indexDetectionStrategy,
+        ILoggerFactory loggerFactory)
     {
         this._mongoClientProvider = mongoClientProvider;
         this._optionsMonitor = optionsMonitor;
+        this._indexDetectionStrategy = indexDetectionStrategy;
         this._loggerFactory = loggerFactory;
     }
 
@@ -34,16 +40,9 @@ internal sealed class MongoIndexer : IMongoIndexer
             throw new ArgumentNullException(nameof(assemblies));
         }
 
-        var documentTypesWithExplicitMongoCollectionAttribute = assemblies.SelectMany(x => x.GetTypes())
-            .Where(IsDocumentTypesWithExplicitMongoCollectionAttribute)
-            .ToArray();
+        var documentTypes = this._indexDetectionStrategy.GetDocumentTypes(assemblies.SelectMany(x => x.GetTypes()));
 
-        return this.UpdateIndexesAsync(documentTypesWithExplicitMongoCollectionAttribute, clientName, databaseName, cancellationToken);
-    }
-
-    internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)
-    {
-        return typeCandidate.IsConcreteMongoDocumentType() && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
+        return this.UpdateIndexesAsync(documentTypes, clientName, databaseName, cancellationToken);
     }
 
     public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
@@ -57,10 +56,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
         foreach (var type in types)
         {
-            if (!type.IsConcreteMongoDocumentType())
-            {
-                throw new ArgumentException($"Type '{type}' must implement {nameof(IMongoDocument)}");
-            }
+            this._indexDetectionStrategy.ValidateType(type);
 
             enumeratedTypes.Add(type);
         }
@@ -92,7 +88,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     private async Task UpdateIndexesInternalAsync(IEnumerable<Type> types, IMongoDatabase database, CancellationToken cancellationToken = default)
     {
-        var registry = new IndexRegistry(types);
+        var registry = this._indexDetectionStrategy.CreateRegistry(types);
 
         var expectedIndexes = new Dictionary<string, IList<UniqueIndexName>>();
 

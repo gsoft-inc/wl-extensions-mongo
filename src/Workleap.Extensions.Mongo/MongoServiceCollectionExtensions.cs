@@ -32,6 +32,7 @@ public static class MongoServiceCollectionExtensions
 
         services.TryAddSingleton<MongoStaticInitializer>();
         services.TryAddSingleton<IMongoIndexer, MongoIndexer>();
+        services.TryAddSingleton<IIndexDetectionStrategy, AttributeIndexDetectionStrategy>();
         services.TryAddSingleton<IMongoValueEncryptor, NoopMongoValueEncryptor>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IMongoEventSubscriberFactory, MongoEventSubscriberFactory>());
 
@@ -45,6 +46,8 @@ public static class MongoServiceCollectionExtensions
         MongoReflectionCache.SetStrategy(configurationCache);
         
         builder.Services.AddSingleton(configurationCache);
+        builder.Services.AddSingleton<IMongoCollectionConfigurationBootstrapper, MongoCollectionConfigurationBootstrapper>();
+        builder.Services.AddSingleton<IIndexDetectionStrategy, ConfigurationIndexDetectionStrategy>();
 
         var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
             .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))

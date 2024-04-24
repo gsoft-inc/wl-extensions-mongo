@@ -9,10 +9,10 @@ public class MongoIndexerAssemblyScanningTests
     [Fact]
     public async Task IsDocumentTypesWithExplicitMongoCollectionAttribute_Filter_Works()
     {
-        Assert.False(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(RandomObject)));
-        Assert.True(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(BaseAssemblyScanningTestDocument)));
-        Assert.False(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(ChildWithoutIndexerAssemblyScanningTestDocument)));
-        Assert.True(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(ChildWithOwnIndexerAssemblyScanningTestDocument)));
+        Assert.False(AttributeIndexDetectionStrategy.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(RandomObject)));
+        Assert.True(AttributeIndexDetectionStrategy.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(BaseAssemblyScanningTestDocument)));
+        Assert.False(AttributeIndexDetectionStrategy.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(ChildWithoutIndexerAssemblyScanningTestDocument)));
+        Assert.True(AttributeIndexDetectionStrategy.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(ChildWithOwnIndexerAssemblyScanningTestDocument)));
     }
 
     private class RandomObject

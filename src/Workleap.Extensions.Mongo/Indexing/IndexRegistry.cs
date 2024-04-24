@@ -6,24 +6,14 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// <summary>
 /// Associates a concrete <see cref="IMongoDocument"/> class with its <see cref="MongoIndexProvider"/>.
 /// </summary>
-internal sealed class IndexRegistry : List<DocumentTypeEntry>
+internal abstract class IndexRegistry : List<DocumentTypeEntry>
 {
-    public IndexRegistry(IEnumerable<Type> documentTypes)
+    protected IndexRegistry(IEnumerable<DocumentTypeEntry> documentTypeEntries)
     {
-        foreach (var documentType in documentTypes)
+        foreach (var documentTypeEntry in documentTypeEntries)
         {
-            if (!MongoReflectionCache.IsConcreteMongoDocumentType(documentType))
-            {
-                throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
-            }
-
-            var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
-            if (mongoCollectionAttribute == null)
-            {
-                throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
-            }
-
-            var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+            var indexProviderType = documentTypeEntry.IndexProviderType;
+            var documentType = documentTypeEntry.DocumentType;
 
             if (!HasPublicParameterlessConstructor(indexProviderType))
             {
@@ -40,7 +30,7 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
                 throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
             }
             
-            this.Add(new DocumentTypeEntry(documentType, indexProviderType));
+            this.Add(documentTypeEntry);
         }
     }
 
@@ -71,5 +61,48 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
     private static bool HasPublicParameterlessConstructor(Type type)
     {
         return type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, binder: null, Type.EmptyTypes, modifiers: null) != null;
+    }
+}
+
+internal sealed class AttributeIndexRegistry : IndexRegistry
+{
+    public AttributeIndexRegistry(IEnumerable<Type> documentTypes)
+        : base(documentTypes.Select(CreateDocumentTypeEntry))
+    {
+    }
+    
+    private static DocumentTypeEntry CreateDocumentTypeEntry(Type documentType)
+    {
+        if (!documentType.IsConcreteMongoDocumentType())
+        {
+            throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
+        }
+
+        var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
+        if (mongoCollectionAttribute == null)
+        {
+            throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
+        }
+
+        var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+        
+        return new DocumentTypeEntry(documentType, indexProviderType);
+    }
+}
+
+internal sealed class ConfigurationIndexRegistry : IndexRegistry
+{
+    public ConfigurationIndexRegistry(IEnumerable<Type> documentTypes, IReadOnlyDictionary<Type, Type> indexProviderTypes) 
+        : base(documentTypes.Select(t => CreateDocumentTypeEntry(t, indexProviderTypes)))
+    {
+    }
+
+    private static DocumentTypeEntry CreateDocumentTypeEntry(Type documentType, IReadOnlyDictionary<Type, Type> indexProviderTypes)
+    {
+        var indexProviderType = indexProviderTypes.TryGetValue(documentType, out var concreteIndexProviderType)
+            ? concreteIndexProviderType 
+            : typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+
+        return new DocumentTypeEntry(documentType, indexProviderType);
     }
 }

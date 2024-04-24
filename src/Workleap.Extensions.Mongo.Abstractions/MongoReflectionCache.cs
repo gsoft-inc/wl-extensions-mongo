@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
+using Amazon.Runtime.Documents;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -31,6 +32,7 @@ internal static class MongoReflectionCache
 internal sealed class MongoReflectionCacheConfigurationStrategy : IMongoReflectionCacheStrategy
 {
     private readonly ConcurrentDictionary<Type, string> _collectionNames = new();
+    private readonly ConcurrentDictionary<Type, Type> _indexProviderTypes = new();
 
     public string GetCollectionName(Type documentType)
     {
@@ -46,6 +48,16 @@ internal sealed class MongoReflectionCacheConfigurationStrategy : IMongoReflecti
             throw new ArgumentException($"Collection name for {documentType} already set.");            
         }
     }
+
+    internal void AddIndexProviderType(Type documentType, Type indexProviderType)
+    {
+        if (!this._indexProviderTypes.TryAdd(documentType, indexProviderType))
+        {
+            throw new ArgumentException($"IndexProviderType for {documentType} already set.");
+        }
+    }
+
+    internal IReadOnlyDictionary<Type, Type> GetIndexProviderTypes() => this._indexProviderTypes;
 }
 
 internal sealed class MongoReflectionCacheAttributeStrategy : IMongoReflectionCacheStrategy
