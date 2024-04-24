@@ -11,8 +11,7 @@ internal sealed class ConfigurationIndexDetectionStrategy : IIndexDetectionStrat
     
     public IReadOnlyList<Type> GetDocumentTypes(IEnumerable<Type> allTypes)
     {
-        return allTypes.Where(t => t.GetInterfaces().Any(i => i.IsMongoCollectionConfigurationInterface()))
-            .ToArray();
+        return this._cache.GetIndexProviderTypes().Keys.ToList();
     }
 
     public void ValidateType(Type type)
