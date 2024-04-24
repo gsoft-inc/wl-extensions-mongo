@@ -5,7 +5,7 @@ namespace Workleap.Extensions.Mongo;
 
 public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionConfigurationBootstrapper
 {
-    private static readonly MethodInfo ConfigureMethod = typeof(MongoCollectionConfigurationBootstrapper).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Instance)
+    private static readonly MethodInfo ConfigureMethod = typeof(MongoCollectionConfigurationBootstrapper).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
                                                             ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoCollectionConfigurationBootstrapper)}.{nameof(Configure)}");
     
     private readonly IServiceProvider _serviceProvider;
@@ -37,7 +37,7 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
             }
 
             var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
-            configureMethod.Invoke(this, new[] { configuration, builder });
+            configureMethod.Invoke(null, new[] { configuration, builder });
 
             var metadata = builder.Build(); // BsonClassMap registration happens here
             
@@ -50,7 +50,7 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
         }
     }
     
-    private void Configure<TDocument>(IMongoCollectionConfiguration<TDocument> configuration, IMongoCollectionBuilder<TDocument> builder)
+    private static void Configure<TDocument>(IMongoCollectionConfiguration<TDocument> configuration, IMongoCollectionBuilder<TDocument> builder)
         where TDocument : class
     {
         configuration.Configure(builder);

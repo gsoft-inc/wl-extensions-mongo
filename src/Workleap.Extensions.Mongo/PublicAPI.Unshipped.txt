@@ -1,1 +1,12 @@
 #nullable enable
+static Workleap.Extensions.Mongo.MongoServiceCollectionExtensions.AddCollectionConfigurations(this Workleap.Extensions.Mongo.MongoBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Workleap.Extensions.Mongo.MongoBuilder!
+Workleap.Extensions.Mongo.MongoCollectionBuilder
+Workleap.Extensions.Mongo.MongoCollectionBuilder.MongoCollectionBuilder() -> void
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.BsonClassMap(System.Action<MongoDB.Bson.Serialization.BsonClassMap<TDocument!>!>! classMapInitializer) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.CollectionName(string! collectionName) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.IndexProvider<TIndexProvider>() -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.MongoCollectionBuilder() -> void
+Workleap.Extensions.Mongo.MongoCollectionConfigurationBootstrapper
+Workleap.Extensions.Mongo.MongoCollectionConfigurationBootstrapper.ApplyConfigurations(params System.Reflection.Assembly![]! assemblies) -> void
+Workleap.Extensions.Mongo.MongoCollectionConfigurationBootstrapper.MongoCollectionConfigurationBootstrapper(System.IServiceProvider! serviceProvider) -> void

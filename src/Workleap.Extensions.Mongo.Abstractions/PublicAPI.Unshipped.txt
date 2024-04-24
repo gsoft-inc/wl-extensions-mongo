@@ -1,1 +1,14 @@
 #nullable enable
+abstract Workleap.Extensions.Mongo.MongoIndexProvider<TDocument>.CreateIndexModels() -> System.Collections.Generic.IEnumerable<MongoDB.Driver.CreateIndexModel<TDocument!>!>!
+MongoDB.Driver.AsyncCursorExtensions
+static MongoDB.Driver.IMongoCollectionExtensions.GetName<TDocument>(this MongoDB.Driver.IMongoCollection<TDocument!>! collection) -> string!
+static MongoDB.Driver.IMongoDatabaseExtensions.GetCollection<TDocument>(this MongoDB.Driver.IMongoDatabase! database, MongoDB.Driver.MongoCollectionSettings? settings = null) -> MongoDB.Driver.IMongoCollection<TDocument!>!
+static readonly Workleap.Extensions.Mongo.MongoDefaults.ClientName -> string!
+Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument>
+Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument>.BsonClassMap(System.Action<MongoDB.Bson.Serialization.BsonClassMap<TDocument!>!>! classMapInitializer) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument>.CollectionName(string! collectionName) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument>.IndexProvider<TIndexProvider>() -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.IMongoCollectionConfiguration<TDocument>
+Workleap.Extensions.Mongo.IMongoCollectionConfiguration<TDocument>.Configure(Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>! builder) -> void
+Workleap.Extensions.Mongo.IMongoCollectionConfigurationBootstrapper
+Workleap.Extensions.Mongo.IMongoCollectionConfigurationBootstrapper.ApplyConfigurations(params System.Reflection.Assembly![]! assemblies) -> void

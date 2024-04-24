@@ -1,6 +1,4 @@
 #nullable enable
-abstract Workleap.Extensions.Mongo.MongoIndexProvider<TDocument>.CreateIndexModels() -> System.Collections.Generic.IEnumerable<MongoDB.Driver.CreateIndexModel<TDocument>!>!
-MongoDB.Driver.AsyncCursorExtensions
 MongoDB.Driver.IMongoCollectionExtensions
 MongoDB.Driver.IMongoDatabaseExtensions
 Workleap.Extensions.Mongo.IMongoClientProvider
@@ -26,9 +24,6 @@ Workleap.Extensions.Mongo.StringGuidIdGenerator.IsEmpty(object! id) -> bool
 Workleap.Extensions.Mongo.StringGuidIdGenerator.StringGuidIdGenerator() -> void
 static MongoDB.Driver.AsyncCursorExtensions.ToAsyncEnumerable<TDocument>(this MongoDB.Driver.IAsyncCursor<TDocument>! cursor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TDocument>!
 static MongoDB.Driver.AsyncCursorExtensions.ToAsyncEnumerable<TDocument>(this MongoDB.Driver.IAsyncCursorSource<TDocument>! source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TDocument>!
-static MongoDB.Driver.IMongoCollectionExtensions.GetName<TDocument>(this MongoDB.Driver.IMongoCollection<TDocument>! collection) -> string!
-static MongoDB.Driver.IMongoDatabaseExtensions.GetCollection<TDocument>(this MongoDB.Driver.IMongoDatabase! database, MongoDB.Driver.MongoCollectionSettings? settings = null) -> MongoDB.Driver.IMongoCollection<TDocument>!
 static MongoDB.Driver.IMongoDatabaseExtensions.GetCollectionName<TDocument>(this MongoDB.Driver.IMongoDatabase! database) -> string!
-static readonly Workleap.Extensions.Mongo.MongoDefaults.ClientName -> string!
 static Workleap.Extensions.Mongo.StringGuidIdGenerator.GenerateId() -> object!
 static Workleap.Extensions.Mongo.StringGuidIdGenerator.Instance.get -> MongoDB.Bson.Serialization.IIdGenerator!
