@@ -12,3 +12,4 @@ Workleap.Extensions.Mongo.IMongoCollectionConfiguration<TDocument>
 Workleap.Extensions.Mongo.IMongoCollectionConfiguration<TDocument>.Configure(Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>! builder) -> void
 Workleap.Extensions.Mongo.IMongoCollectionConfigurationBootstrapper
 Workleap.Extensions.Mongo.IMongoCollectionConfigurationBootstrapper.ApplyConfigurations(params System.Reflection.Assembly![]! assemblies) -> void
+Workleap.Extensions.Mongo.MongoIndexProvider<TDocument>.IndexKeys.get -> MongoDB.Driver.IndexKeysDefinitionBuilder<TDocument!>!
