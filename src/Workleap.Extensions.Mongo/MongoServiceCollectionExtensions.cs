@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -35,6 +36,26 @@ public static class MongoServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IMongoEventSubscriberFactory, MongoEventSubscriberFactory>());
 
         return new MongoBuilder(services);
+    }
+
+    public static MongoBuilder AddCollectionConfigurations(this MongoBuilder builder, params Assembly[] assemblies)
+    {
+        var configurationCache = new MongoReflectionCacheConfigurationStrategy();
+        
+        MongoReflectionCache.SetStrategy(configurationCache);
+        
+        builder.Services.AddSingleton(configurationCache);
+
+        var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
+            .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
+            .Where(t => t.Interface != null));
+
+        foreach (var configurationType in configurationTypes)
+        {
+            builder.Services.AddTransient(configurationType.Interface!, configurationType.ConcreteType);
+        }
+        
+        return builder;
     }
 
     private static IMongoClient CreateDefaultMongoClient(IServiceProvider serviceProvider)

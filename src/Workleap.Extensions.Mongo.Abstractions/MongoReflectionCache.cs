@@ -5,16 +5,66 @@ namespace Workleap.Extensions.Mongo;
 
 internal static class MongoReflectionCache
 {
-    private static readonly ConcurrentDictionary<Type, string> CollectionNames = new ConcurrentDictionary<Type, string>();
+    private static IMongoReflectionCacheStrategy _strategy = new MongoReflectionCacheAttributeStrategy();
 
     public static string GetCollectionName(Type documentType)
     {
-        if (!IsConcreteMongoDocumentType(documentType))
+        return _strategy.GetCollectionName(documentType);
+    }
+
+    public static string GetCollectionName<TDocument>()
+        where TDocument : class
+    {
+        return GetCollectionName(typeof(TDocument));
+    }
+    
+    internal static void SetStrategy(IMongoReflectionCacheStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+    
+    internal static bool IsConcreteMongoDocumentType(this Type type) => !type.IsAbstract && typeof(IMongoDocument).IsAssignableFrom(type);
+    
+    internal static bool IsMongoCollectionConfigurationInterface(this Type t) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMongoCollectionConfiguration<>);
+}
+
+internal interface IMongoReflectionCacheStrategy
+{
+    string GetCollectionName(Type documentType);
+}
+
+internal sealed class MongoReflectionCacheConfigurationStrategy : IMongoReflectionCacheStrategy
+{
+    private readonly ConcurrentDictionary<Type, string> _collectionNames = new();
+
+    public string GetCollectionName(Type documentType)
+    {
+        return this._collectionNames.TryGetValue(documentType, out var collectionName) 
+            ? collectionName 
+            : throw new ArgumentException($"No {typeof(IMongoCollectionConfiguration<>)} registered for {documentType}.");
+    }
+    
+    internal void SetCollectionName(Type documentType, string collectionName)
+    {
+        if (!this._collectionNames.TryAdd(documentType, collectionName))
+        {
+            throw new ArgumentException($"Collection name for {documentType} already set.");            
+        }
+    }
+}
+
+internal sealed class MongoReflectionCacheAttributeStrategy : IMongoReflectionCacheStrategy
+{
+    private readonly ConcurrentDictionary<Type, string> _collectionNames = new();
+
+    public string GetCollectionName(Type documentType)
+    {
+        if (!documentType.IsConcreteMongoDocumentType())
         {
             throw new ArgumentException(documentType + " must be a concrete type that implements " + nameof(IMongoDocument));
         }
 
-        return CollectionNames.GetOrAdd(documentType, static documentType =>
+        return this._collectionNames.GetOrAdd(documentType, static documentType =>
         {
             if (documentType.GetCustomAttribute<MongoCollectionAttribute>() is { } attribute)
             {
@@ -24,12 +74,4 @@ internal static class MongoReflectionCache
             throw new ArgumentException(documentType + " must be decorated with " + nameof(MongoCollectionAttribute));
         });
     }
-
-    public static string GetCollectionName<TDocument>()
-        where TDocument : IMongoDocument
-    {
-        return GetCollectionName(typeof(TDocument));
-    }
-
-    public static bool IsConcreteMongoDocumentType(Type type) => !type.IsAbstract && typeof(IMongoDocument).IsAssignableFrom(type);
 }
