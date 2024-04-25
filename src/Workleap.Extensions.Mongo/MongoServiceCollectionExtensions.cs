@@ -50,6 +50,7 @@ public static class MongoServiceCollectionExtensions
         builder.Services.AddSingleton<IIndexDetectionStrategy, ConfigurationIndexDetectionStrategy>();
 
         var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
+            .Where(t => !t.IsAbstract)
             .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
             .Where(t => t.Interface != null));
 

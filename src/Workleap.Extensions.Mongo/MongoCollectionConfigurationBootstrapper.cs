@@ -20,6 +20,7 @@ public sealed class MongoCollectionConfigurationBootstrapper : IMongoCollectionC
         var configurationCache = this._serviceProvider.GetRequiredService<MongoReflectionCacheConfigurationStrategy>();
 
         var configurationInterfaces = assemblies.SelectMany(assembly => assembly.GetTypes()
+            .Where(t => !t.IsAbstract)
             .Select(t => t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface()))
             .Where(t => t != null));
 
