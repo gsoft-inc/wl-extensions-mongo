@@ -27,15 +27,8 @@ public static class EphemeralMongoBuilderExtensions
 
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder, string connectionString)
     {
-        builder.Services.AddSingleton<DefaultDatabaseNameHolder>();
-        builder.Services.AddSingleton<IMongoClientProvider>(serviceProvider =>
-        {
-            var client = new MongoClient(connectionString);
-            var defaultDatabaseNameHolder = serviceProvider.GetRequiredService<DefaultDatabaseNameHolder>();
-            return new DisposableMongoClientProvider(new SingletonMongoClientProvider(client), defaultDatabaseNameHolder);
-        });
-
-        return builder;
+        var client = new MongoClient(connectionString);
+        return UseEphemeralRealServer(client);
     }
 
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder, IMongoClient client)
