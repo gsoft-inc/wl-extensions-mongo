@@ -353,6 +353,47 @@ services.AddMongo().AddEncryptor<MyMongoalueEncryptor>();
 
 Keep in mind that encrypted values become binary data, which can make querying them more difficult. You'll need to take this into account when designing your database schema and queries.
 
+## Using Configuration instead of Attributes
+
+In certain scenarios, like in Domain Driven Design (DDD), one would like to persist their Domain Aggregates as is in the Document Database. These Domain objects are not aware of how they are persisted. They cannot be decorated with Persistence level attributes (ie `[MongoCollection()]`).
+
+You can configure your Object to Database mapping throught `IMongoCollectionConfiguration<TDocument>` instead of decorating it with attributes.
+
+```csharp
+internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
+{
+    public void Configure(IMongoCollectionBuilder<Person> builder) 
+    {
+        builder.CollectionName("people")
+            .IndexProvider<PersonDocumentIndexes>()
+            .BsonClassMap(map => 
+            {
+                map.MapIdProperty(x => x.Id)
+                    .SetSerializer(new StringSerializer(BsonType.ObjectId));
+                
+                map.MapProperty(x => x.Name).SetElementName("n");
+            });
+    }
+}
+```
+
+For bootstrapping, there are two additional steps at startup. We have to tell the library that we opt-in the Configuration mode instead of the Attribute mode but calling AddCollectionConfigurations and passing it the Assemblies where you can locate your implementations of `IMongoCollectionConfiguration<T>`.
+
+```csharp
+services.AddMongo(configuration.GetRequiredSection("Mongo").Bind)
+    .AddCollectionConfigurations(InfrastructureAssemblyHandle.Assembly);
+```
+
+And sometime before the index creation and use of the database, we have to bootstrap the Configurations by using `IMongoCollectionConfigurationBootstrapper`.
+
+```csharp
+var bootstrapper = app.ApplicationServices.GetRequiredService<IMongoCollectionConfigurationBootstrapper>();
+
+bootstrapper.ApplyConfigurations(InfrastructureAssemblyHandle.Assembly);
+```
+
+Creating Indexes is the same as with the Attributes. Calling `UpdateIndexesAsync()` on `IMongoIndexer`. Indexes must be created after the bootstrapping of the configurations.
+
 ## Ephemeral MongoDB databases for integration tests
 
 When creating integration tests, instead of using a shared MongoDB database for all your tests, you could assign a brand new ephemeral database for each individual test method. This approach reduces test flakiness, prevents the state of one test from impacting others and remove the need for manual or automatic cleanup.
