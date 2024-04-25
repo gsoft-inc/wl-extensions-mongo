@@ -28,7 +28,7 @@ public static class EphemeralMongoBuilderExtensions
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder, string connectionString)
     {
         var client = new MongoClient(connectionString);
-        return UseEphemeralRealServer(client);
+        return UseEphemeralRealServer(builder, client);
     }
 
     public static MongoBuilder UseEphemeralRealServer(this MongoBuilder builder, IMongoClient client)
