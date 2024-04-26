@@ -15,10 +15,7 @@ internal abstract class IndexRegistry : List<DocumentTypeEntry>
             var indexProviderType = documentTypeEntry.IndexProviderType;
             var documentType = documentTypeEntry.DocumentType;
 
-            if (!HasPublicParameterlessConstructor(indexProviderType))
-            {
-                throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
-            }
+            indexProviderType.EnsureHasPublicParameterlessConstructor();
 
             if (!IsIndexProvider(indexProviderType, out var indexProviderDocumentType))
             {
@@ -56,11 +53,6 @@ internal abstract class IndexRegistry : List<DocumentTypeEntry>
 
         documentType = null;
         return false;
-    }
-
-    private static bool HasPublicParameterlessConstructor(Type type)
-    {
-        return type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, binder: null, Type.EmptyTypes, modifiers: null) != null;
     }
 }
 

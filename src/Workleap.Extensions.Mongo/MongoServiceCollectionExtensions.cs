@@ -10,14 +10,14 @@ namespace Workleap.Extensions.Mongo;
 
 public static class MongoServiceCollectionExtensions
 {
+    private static readonly MethodInfo ConfigureMethod = typeof(MongoCollectionConfigurationBootstrapper).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
+                                                         ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoCollectionConfigurationBootstrapper)}.{nameof(Configure)}");
+    
     public static MongoBuilder AddMongo(this IServiceCollection services, Action<MongoClientOptions>? configure = null)
     {
         services.ConfigureOptions<ConfigureMongoStaticOptions>();
 
-        if (configure != null)
-        {
-            services.Configure(MongoDefaults.ClientName, configure);
-        }
+        if (configure != null) services.Configure(MongoDefaults.ClientName, configure);
 
         services.TryAddSingleton<IMongoClientProvider, MongoClientProvider>();
 
@@ -42,11 +42,10 @@ public static class MongoServiceCollectionExtensions
     public static MongoBuilder AddCollectionConfigurations(this MongoBuilder builder, params Assembly[] assemblies)
     {
         var configurationCache = new MongoReflectionCacheConfigurationStrategy();
-        
+
         MongoReflectionCache.SetStrategy(configurationCache);
-        
+
         builder.Services.AddSingleton(configurationCache);
-        builder.Services.AddSingleton<IMongoCollectionConfigurationBootstrapper, MongoCollectionConfigurationBootstrapper>();
         builder.Services.AddSingleton<IIndexDetectionStrategy, ConfigurationIndexDetectionStrategy>();
 
         var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
@@ -56,9 +55,33 @@ public static class MongoServiceCollectionExtensions
 
         foreach (var configurationType in configurationTypes)
         {
-            builder.Services.AddTransient(configurationType.Interface!, configurationType.ConcreteType);
+            var (concreteType, configurationInterface) = configurationType;
+
+            concreteType.EnsureHasPublicParameterlessConstructor();
+            
+            var documentType = configurationInterface!.GetGenericArguments().Single();
+            var builderType = typeof(MongoCollectionBuilder<>).MakeGenericType(documentType);
+            
+            var configuration = Activator.CreateInstance(concreteType);
+
+            if (Activator.CreateInstance(builderType) is not MongoCollectionBuilder configurationBuilder)
+            {
+                throw new InvalidOperationException($"Cannot create MongoCollectionBuilder<{documentType}>");
+            }
+            
+            var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
+            configureMethod.Invoke(null, new[] { configuration, builder });
+
+            var metadata = configurationBuilder.Build(); // BsonClassMap registration happens here
+
+            configurationCache.SetCollectionName(documentType, metadata.CollectionName);
+
+            if (metadata.IndexProviderType != null)
+            {
+                configurationCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
+            }
         }
-        
+
         return builder;
     }
 
@@ -72,5 +95,11 @@ public static class MongoServiceCollectionExtensions
         var client = serviceProvider.GetRequiredService<IMongoClient>();
         var options = serviceProvider.GetRequiredService<IOptionsMonitor<MongoClientOptions>>().Get(MongoDefaults.ClientName);
         return client.GetDatabase(options.DefaultDatabaseName);
+    }
+    
+    private static void Configure<TDocument>(IMongoCollectionConfiguration<TDocument> configuration, IMongoCollectionBuilder<TDocument> builder)
+        where TDocument : class
+    {
+        configuration.Configure(builder);
     }
 }
