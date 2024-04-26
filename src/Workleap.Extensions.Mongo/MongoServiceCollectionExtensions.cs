@@ -65,7 +65,7 @@ public static class MongoServiceCollectionExtensions
             }
             
             var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
-            configureMethod.Invoke(null, new[] { configuration, builder });
+            configureMethod.Invoke(null, new[] { configuration, configurationBuilder });
 
             var metadata = configurationBuilder.Build(); // BsonClassMap registration happens here
 
@@ -97,9 +97,9 @@ public static class MongoServiceCollectionExtensions
         return client.GetDatabase(options.DefaultDatabaseName);
     }
     
-    private static void Configure<TDocument>(IMongoCollectionConfiguration<TDocument> configuration, IMongoCollectionBuilder<TDocument> builder)
+    private static void Configure<TDocument>(IMongoCollectionConfiguration<TDocument> configuration, IMongoCollectionBuilder<TDocument> configurationBuilder)
         where TDocument : class
     {
-        configuration.Configure(builder);
+        configuration.Configure(configurationBuilder);
     }
 }
