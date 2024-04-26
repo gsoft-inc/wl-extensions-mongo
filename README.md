@@ -182,18 +182,10 @@ internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
 
 #### Bootstrapping Configurations
 
-For bootstrapping, there are two additional steps at startup. We have to tell the library that we opt-in the Configuration mode instead of the Attribute mode but calling AddCollectionConfigurations and passing it the Assemblies where you can locate your implementations of `IMongoCollectionConfiguration<T>`.
+For bootstrapping, we have to tell the library that we opt-in the Configuration mode by calling AddCollectionConfigurations and passing it the Assemblies where you can locate your implementations of `IMongoCollectionConfiguration<T>`.
 
 ```csharp
 services.AddMongo().AddCollectionConfigurations(InfrastructureAssemblyHandle.Assembly);
-```
-
-And sometime before the index creation and use of the database, we have to bootstrap the Configurations by using `IMongoCollectionConfigurationBootstrapper`.
-
-```csharp
-var bootstrapper = app.ApplicationServices.GetRequiredService<IMongoCollectionConfigurationBootstrapper>();
-
-bootstrapper.ApplyConfigurations(InfrastructureAssemblyHandle.Assembly);
 ```
 
 ## Usage
