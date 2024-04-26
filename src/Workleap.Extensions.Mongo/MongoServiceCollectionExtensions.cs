@@ -74,7 +74,7 @@ public static class MongoServiceCollectionExtensions
                 throw new ArgumentNullException($"{builderType} must specify a CollectionName");
             }
             
-            MongoReflectionCache.SetCollectionName(documentType, metadata.CollectionName);
+            MongoReflectionCache.SetCollectionName(documentType, metadata.CollectionName!);
 
             if (metadata.IndexProviderType != null)
             {

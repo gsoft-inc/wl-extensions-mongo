@@ -8,6 +8,3 @@ Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.BsonClassMap(System.
 Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.CollectionName(string! collectionName) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
 Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.IndexProvider<TIndexProvider>() -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
 Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.MongoCollectionBuilder() -> void
-Workleap.Extensions.Mongo.MongoCollectionConfigurationBootstrapper
-Workleap.Extensions.Mongo.MongoCollectionConfigurationBootstrapper.ApplyConfigurations(params System.Reflection.Assembly![]! assemblies) -> void
-Workleap.Extensions.Mongo.MongoCollectionConfigurationBootstrapper.MongoCollectionConfigurationBootstrapper(System.IServiceProvider! serviceProvider) -> void
