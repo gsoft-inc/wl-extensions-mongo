@@ -1,5 +1,6 @@
 #nullable enable
 static Workleap.Extensions.Mongo.MongoServiceCollectionExtensions.AddCollectionConfigurations(this Workleap.Extensions.Mongo.MongoBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Workleap.Extensions.Mongo.MongoBuilder!
+Workleap.Extensions.Mongo.Indexing.IMongoIndexer.UpdateIndexesAsync(string? clientName = null, string? databaseName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Workleap.Extensions.Mongo.MongoCollectionBuilder
 Workleap.Extensions.Mongo.MongoCollectionBuilder.MongoCollectionBuilder() -> void
 Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>

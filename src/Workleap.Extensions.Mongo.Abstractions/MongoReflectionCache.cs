@@ -1,87 +1,26 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
-using Amazon.Runtime.Documents;
 
 namespace Workleap.Extensions.Mongo;
 
 internal static class MongoReflectionCache
 {
-    private static IMongoReflectionCacheStrategy _strategy = new MongoReflectionCacheAttributeStrategy();
+    private static readonly ConcurrentDictionary<Type, string> CollectionNames = new();
+    private static readonly ConcurrentDictionary<Type, Type> IndexProviderTypes = new();
 
     public static string GetCollectionName(Type documentType)
     {
-        return _strategy.GetCollectionName(documentType);
-    }
-
-    public static string GetCollectionName<TDocument>()
-        where TDocument : class
-    {
-        return GetCollectionName(typeof(TDocument));
-    }
-    
-    internal static void SetStrategy(IMongoReflectionCacheStrategy strategy)
-    {
-        _strategy = strategy;
-    }
-    
-    internal static bool IsConcreteMongoDocumentType(this Type type) => !type.IsAbstract && typeof(IMongoDocument).IsAssignableFrom(type);
-    
-    internal static bool IsMongoCollectionConfigurationInterface(this Type t) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IMongoCollectionConfiguration<>);
-    
-    internal static bool HasPublicParameterlessConstructor(this Type type) => type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, binder: null, Type.EmptyTypes, modifiers: null) != null;
-
-    internal static void EnsureHasPublicParameterlessConstructor(this Type type)
-    {
-        if (!type.HasPublicParameterlessConstructor())
+        if (CollectionNames.TryGetValue(documentType, out var collectionName))
         {
-            throw new InvalidOperationException($"Type {type}' must have a public parameterless constructor");
+            return collectionName;
         }
-    }
-}
-
-internal sealed class MongoReflectionCacheConfigurationStrategy : IMongoReflectionCacheStrategy
-{
-    private readonly ConcurrentDictionary<Type, string> _collectionNames = new();
-    private readonly ConcurrentDictionary<Type, Type> _indexProviderTypes = new();
-
-    public string GetCollectionName(Type documentType)
-    {
-        return this._collectionNames.TryGetValue(documentType, out var collectionName)
-            ? collectionName
-            : documentType.Name;
-    }
-    
-    internal void SetCollectionName(Type documentType, string collectionName)
-    {
-        if (!this._collectionNames.TryAdd(documentType, collectionName))
-        {
-            throw new ArgumentException($"Collection name for {documentType} already set.");            
-        }
-    }
-
-    internal void AddIndexProviderType(Type documentType, Type indexProviderType)
-    {
-        if (!this._indexProviderTypes.TryAdd(documentType, indexProviderType))
-        {
-            throw new ArgumentException($"IndexProviderType for {documentType} already set.");
-        }
-    }
-
-    internal IReadOnlyDictionary<Type, Type> GetIndexProviderTypes() => this._indexProviderTypes;
-}
-
-internal sealed class MongoReflectionCacheAttributeStrategy : IMongoReflectionCacheStrategy
-{
-    private readonly ConcurrentDictionary<Type, string> _collectionNames = new();
-
-    public string GetCollectionName(Type documentType)
-    {
+        
         if (!documentType.IsConcreteMongoDocumentType())
         {
             throw new ArgumentException(documentType + " must be a concrete type that implements " + nameof(IMongoDocument));
         }
 
-        return this._collectionNames.GetOrAdd(documentType, static documentType =>
+        return CollectionNames.GetOrAdd(documentType, static documentType =>
         {
             if (documentType.GetCustomAttribute<MongoCollectionAttribute>() is { } attribute)
             {
@@ -91,4 +30,28 @@ internal sealed class MongoReflectionCacheAttributeStrategy : IMongoReflectionCa
             throw new ArgumentException(documentType + " must be decorated with " + nameof(MongoCollectionAttribute));
         });
     }
+
+    public static string GetCollectionName<TDocument>()
+        where TDocument : class
+    {
+        return GetCollectionName(typeof(TDocument));
+    }
+    
+    internal static void SetCollectionName(Type documentType, string collectionName)
+    {
+        if (!CollectionNames.TryAdd(documentType, collectionName))
+        {
+            throw new ArgumentException($"Collection name for {documentType} already set.");            
+        }
+    }
+    
+    internal static void AddIndexProviderType(Type documentType, Type indexProviderType)
+    {
+        if (!IndexProviderTypes.TryAdd(documentType, indexProviderType))
+        {
+            throw new ArgumentException($"IndexProviderType for {documentType} already set.");
+        }
+    }
+
+    internal static IReadOnlyDictionary<Type, Type> GetIndexProviderTypes() => IndexProviderTypes;
 }

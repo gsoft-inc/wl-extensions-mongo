@@ -6,29 +6,47 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// <summary>
 /// Associates a concrete <see cref="IMongoDocument"/> class with its <see cref="MongoIndexProvider"/>.
 /// </summary>
-internal abstract class IndexRegistry : List<DocumentTypeEntry>
+internal sealed class IndexRegistry : List<DocumentTypeEntry>
 {
-    protected IndexRegistry(IEnumerable<DocumentTypeEntry> documentTypeEntries)
+    public IndexRegistry(IEnumerable<Type> documentTypes)
     {
-        foreach (var documentTypeEntry in documentTypeEntries)
+        foreach (var documentType in documentTypes)
         {
-            var indexProviderType = documentTypeEntry.IndexProviderType;
-            var documentType = documentTypeEntry.DocumentType;
-
-            indexProviderType.EnsureHasPublicParameterlessConstructor();
-
-            if (!IsIndexProvider(indexProviderType, out var indexProviderDocumentType))
+            if (!documentType.IsConcreteMongoDocumentType())
             {
-                throw new InvalidOperationException($"Type '{indexProviderType} must derive from '{typeof(MongoIndexProvider<>)}");
+                throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
             }
 
-            if (documentType != indexProviderDocumentType)
+            var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
+            if (mongoCollectionAttribute == null)
             {
-                throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
+                throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
             }
-            
-            this.Add(documentTypeEntry);
+
+            var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+
+            this.AddDocumentTypeEntry(documentType, indexProviderType);
         }
+    }
+
+    internal void AddDocumentTypeEntry(Type documentType, Type indexProviderType)
+    {
+        if (!HasPublicParameterlessConstructor(indexProviderType))
+        {
+            throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
+        }
+
+        if (!IsIndexProvider(indexProviderType, out var indexProviderDocumentType))
+        {
+            throw new InvalidOperationException($"Type '{indexProviderType} must derive from '{typeof(MongoIndexProvider<>)}");
+        }
+
+        if (documentType != indexProviderDocumentType)
+        {
+            throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
+        }
+            
+        this.Add(new DocumentTypeEntry(documentType, indexProviderType));
     }
 
     private static bool IsIndexProvider(Type? type, [MaybeNullWhen(false)] out Type documentType)
@@ -54,47 +72,9 @@ internal abstract class IndexRegistry : List<DocumentTypeEntry>
         documentType = null;
         return false;
     }
-}
 
-internal sealed class AttributeIndexRegistry : IndexRegistry
-{
-    public AttributeIndexRegistry(IEnumerable<Type> documentTypes)
-        : base(documentTypes.Select(CreateDocumentTypeEntry))
+    private static bool HasPublicParameterlessConstructor(Type type)
     {
-    }
-    
-    private static DocumentTypeEntry CreateDocumentTypeEntry(Type documentType)
-    {
-        if (!documentType.IsConcreteMongoDocumentType())
-        {
-            throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
-        }
-
-        var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
-        if (mongoCollectionAttribute == null)
-        {
-            throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
-        }
-
-        var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
-        
-        return new DocumentTypeEntry(documentType, indexProviderType);
-    }
-}
-
-internal sealed class ConfigurationIndexRegistry : IndexRegistry
-{
-    public ConfigurationIndexRegistry(IEnumerable<Type> documentTypes, IReadOnlyDictionary<Type, Type> indexProviderTypes) 
-        : base(documentTypes.Select(t => CreateDocumentTypeEntry(t, indexProviderTypes)))
-    {
-    }
-
-    private static DocumentTypeEntry CreateDocumentTypeEntry(Type documentType, IReadOnlyDictionary<Type, Type> indexProviderTypes)
-    {
-        var indexProviderType = indexProviderTypes.TryGetValue(documentType, out var concreteIndexProviderType)
-            ? concreteIndexProviderType 
-            : typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
-
-        return new DocumentTypeEntry(documentType, indexProviderType);
+        return type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, binder: null, Type.EmptyTypes, modifiers: null) != null;
     }
 }

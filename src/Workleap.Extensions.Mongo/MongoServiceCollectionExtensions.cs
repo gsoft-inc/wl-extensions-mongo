@@ -10,14 +10,17 @@ namespace Workleap.Extensions.Mongo;
 
 public static class MongoServiceCollectionExtensions
 {
-    private static readonly MethodInfo ConfigureMethod = typeof(MongoCollectionConfigurationBootstrapper).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
-                                                         ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoCollectionConfigurationBootstrapper)}.{nameof(Configure)}");
+    private static readonly MethodInfo ConfigureMethod = typeof(MongoServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
+                                                         ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoServiceCollectionExtensions)}.{nameof(Configure)}");
     
     public static MongoBuilder AddMongo(this IServiceCollection services, Action<MongoClientOptions>? configure = null)
     {
         services.ConfigureOptions<ConfigureMongoStaticOptions>();
 
-        if (configure != null) services.Configure(MongoDefaults.ClientName, configure);
+        if (configure != null)
+        {
+            services.Configure(MongoDefaults.ClientName, configure);
+        }
 
         services.TryAddSingleton<IMongoClientProvider, MongoClientProvider>();
 
@@ -32,7 +35,6 @@ public static class MongoServiceCollectionExtensions
 
         services.TryAddSingleton<MongoStaticInitializer>();
         services.TryAddSingleton<IMongoIndexer, MongoIndexer>();
-        services.TryAddSingleton<IIndexDetectionStrategy, AttributeIndexDetectionStrategy>();
         services.TryAddSingleton<IMongoValueEncryptor, NoopMongoValueEncryptor>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IMongoEventSubscriberFactory, MongoEventSubscriberFactory>());
 
@@ -41,13 +43,6 @@ public static class MongoServiceCollectionExtensions
 
     public static MongoBuilder AddCollectionConfigurations(this MongoBuilder builder, params Assembly[] assemblies)
     {
-        var configurationCache = new MongoReflectionCacheConfigurationStrategy();
-
-        MongoReflectionCache.SetStrategy(configurationCache);
-
-        builder.Services.AddSingleton(configurationCache);
-        builder.Services.AddSingleton<IIndexDetectionStrategy, ConfigurationIndexDetectionStrategy>();
-
         var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
             .Where(t => !t.IsAbstract)
             .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
@@ -66,7 +61,7 @@ public static class MongoServiceCollectionExtensions
 
             if (Activator.CreateInstance(builderType) is not MongoCollectionBuilder configurationBuilder)
             {
-                throw new InvalidOperationException($"Cannot create MongoCollectionBuilder<{documentType}>");
+                throw new InvalidOperationException($"Cannot create {builderType}");
             }
             
             var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
@@ -74,11 +69,16 @@ public static class MongoServiceCollectionExtensions
 
             var metadata = configurationBuilder.Build(); // BsonClassMap registration happens here
 
-            configurationCache.SetCollectionName(documentType, metadata.CollectionName);
+            if (string.IsNullOrWhiteSpace(metadata.CollectionName))
+            {
+                throw new ArgumentNullException($"{builderType} must specify a CollectionName");
+            }
+            
+            MongoReflectionCache.SetCollectionName(documentType, metadata.CollectionName);
 
             if (metadata.IndexProviderType != null)
             {
-                configurationCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
+                MongoReflectionCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
             }
         }
 

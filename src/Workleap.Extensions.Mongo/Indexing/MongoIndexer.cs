@@ -13,24 +13,26 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     private readonly IMongoClientProvider _mongoClientProvider;
     private readonly IOptionsMonitor<MongoClientOptions> _optionsMonitor;
-    private readonly IIndexDetectionStrategy _indexDetectionStrategy;
     private readonly ILoggerFactory _loggerFactory;
 
     public MongoIndexer(
         IMongoClientProvider mongoClientProvider,  
         IOptionsMonitor<MongoClientOptions> optionsMonitor, 
-        IIndexDetectionStrategy indexDetectionStrategy,
         ILoggerFactory loggerFactory)
     {
         this._mongoClientProvider = mongoClientProvider;
         this._optionsMonitor = optionsMonitor;
-        this._indexDetectionStrategy = indexDetectionStrategy;
         this._loggerFactory = loggerFactory;
     }
 
     public Task UpdateIndexesAsync(Assembly assembly, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
     {
         return this.UpdateIndexesAsync(new[] { assembly }, clientName, databaseName, cancellationToken);
+    }
+
+    public Task UpdateIndexesAsync(string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
+    {
+        return this.UpdateIndexesAsync(Enumerable.Empty<Assembly>(), clientName, databaseName, cancellationToken);
     }
 
     public Task UpdateIndexesAsync(IEnumerable<Assembly> assemblies, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
@@ -40,8 +42,9 @@ internal sealed class MongoIndexer : IMongoIndexer
             throw new ArgumentNullException(nameof(assemblies));
         }
 
-        var documentTypes = this._indexDetectionStrategy.GetDocumentTypes(assemblies.SelectMany(x => x.GetTypes()));
-
+        var documentTypes = assemblies.SelectMany(x => x.GetTypes().Where(IsDocumentTypesWithExplicitMongoCollectionAttribute))
+            .ToArray();
+        
         return this.UpdateIndexesAsync(documentTypes, clientName, databaseName, cancellationToken);
     }
 
@@ -56,7 +59,10 @@ internal sealed class MongoIndexer : IMongoIndexer
 
         foreach (var type in types)
         {
-            this._indexDetectionStrategy.ValidateType(type);
+            if (!type.IsConcreteMongoDocumentType())
+            {
+                throw new ArgumentException($"Type '{type}' must implement {nameof(IMongoDocument)}");
+            }
 
             enumeratedTypes.Add(type);
         }
@@ -88,7 +94,12 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     private async Task UpdateIndexesInternalAsync(IEnumerable<Type> types, IMongoDatabase database, CancellationToken cancellationToken = default)
     {
-        var registry = this._indexDetectionStrategy.CreateRegistry(types);
+        var registry = new IndexRegistry(types);
+
+        foreach (var cachedIndexType in MongoReflectionCache.GetIndexProviderTypes())
+        {
+            registry.AddDocumentTypeEntry(cachedIndexType.Key, cachedIndexType.Value);
+        }
 
         var expectedIndexes = new Dictionary<string, IList<UniqueIndexName>>();
 
@@ -125,6 +136,11 @@ internal sealed class MongoIndexer : IMongoIndexer
         }
 
         await IndexDeleter.ProcessAsync(database, expectedIndexes, this._loggerFactory, cancellationToken).ConfigureAwait(false);
+    }
+    
+    internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)
+    {
+        return typeCandidate.IsConcreteMongoDocumentType() && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
     }
 
     private Task<IndexCreationResult> ProcessAsync<TDocument>(MongoIndexProvider<TDocument> provider, IMongoDatabase database, CancellationToken cancellationToken)
