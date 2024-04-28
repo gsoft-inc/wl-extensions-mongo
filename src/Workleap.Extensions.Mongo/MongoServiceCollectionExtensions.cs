@@ -76,10 +76,7 @@ public static class MongoServiceCollectionExtensions
             
             MongoReflectionCache.SetCollectionName(documentType, metadata.CollectionName!);
 
-            if (metadata.IndexProviderType != null)
-            {
-                MongoReflectionCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
-            }
+            MongoReflectionCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
         }
 
         return builder;

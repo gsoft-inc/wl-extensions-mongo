@@ -6,7 +6,7 @@ namespace Workleap.Extensions.Mongo;
 internal static class MongoReflectionCache
 {
     private static readonly ConcurrentDictionary<Type, string> CollectionNames = new();
-    private static readonly ConcurrentDictionary<Type, Type> IndexProviderTypes = new();
+    private static readonly ConcurrentDictionary<Type, Type?> IndexProviderTypes = new();
 
     public static string GetCollectionName(Type documentType)
     {
@@ -45,7 +45,7 @@ internal static class MongoReflectionCache
         }
     }
     
-    internal static void AddIndexProviderType(Type documentType, Type indexProviderType)
+    internal static void AddIndexProviderType(Type documentType, Type? indexProviderType)
     {
         if (!IndexProviderTypes.TryAdd(documentType, indexProviderType))
         {
@@ -53,5 +53,5 @@ internal static class MongoReflectionCache
         }
     }
 
-    internal static IReadOnlyDictionary<Type, Type> GetIndexProviderTypes() => IndexProviderTypes;
+    internal static IReadOnlyDictionary<Type, Type?> GetIndexProviderTypes() => IndexProviderTypes;
 }

@@ -23,14 +23,14 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
                 throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
             }
 
-            var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
-
-            this.AddDocumentTypeEntry(documentType, indexProviderType);
+            this.AddDocumentTypeEntry(documentType, mongoCollectionAttribute.IndexProviderType);
         }
     }
 
-    internal void AddDocumentTypeEntry(Type documentType, Type indexProviderType)
+    internal void AddDocumentTypeEntry(Type documentType, Type? indexProviderType)
     {
+        indexProviderType ??= typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+        
         if (!HasPublicParameterlessConstructor(indexProviderType))
         {
             throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
