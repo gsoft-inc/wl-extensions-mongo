@@ -32,7 +32,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     public Task UpdateIndexesAsync(string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
     {
-        return this.UpdateIndexesAsync(Enumerable.Empty<Assembly>(), clientName, databaseName, cancellationToken);
+        return this.UpdateIndexesAsync(Enumerable.Empty<Type>(), clientName, databaseName, cancellationToken);
     }
 
     public Task UpdateIndexesAsync(IEnumerable<Assembly> assemblies, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
