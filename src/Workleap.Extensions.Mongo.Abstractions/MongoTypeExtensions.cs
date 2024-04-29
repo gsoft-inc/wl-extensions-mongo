@@ -2,7 +2,7 @@
 
 namespace Workleap.Extensions.Mongo;
 
-internal static class TypeExtensions
+internal static class MongoTypeExtensions
 {
     internal static bool IsConcreteMongoDocumentType(this Type type) => !type.IsAbstract && typeof(IMongoDocument).IsAssignableFrom(type);
     
