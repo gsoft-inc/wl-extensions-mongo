@@ -42,10 +42,10 @@ internal sealed class MongoIndexer : IMongoIndexer
             throw new ArgumentNullException(nameof(assemblies));
         }
 
-        var documentTypes = assemblies.SelectMany(x => x.GetTypes().Where(IsDocumentTypesWithExplicitMongoCollectionAttribute))
+        var documentTypesWithExplicitMongoCollectionAttribute = assemblies.SelectMany(x => x.GetTypes().Where(IsDocumentTypesWithExplicitMongoCollectionAttribute))
             .ToArray();
         
-        return this.UpdateIndexesAsync(documentTypes, clientName, databaseName, cancellationToken);
+        return this.UpdateIndexesAsync(documentTypesWithExplicitMongoCollectionAttribute, clientName, databaseName, cancellationToken);
     }
 
     public async Task UpdateIndexesAsync(IEnumerable<Type> types, string? clientName = null, string? databaseName = null, CancellationToken cancellationToken = default)
