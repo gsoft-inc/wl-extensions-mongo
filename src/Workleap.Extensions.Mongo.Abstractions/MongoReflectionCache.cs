@@ -15,6 +15,8 @@ internal static class MongoReflectionCache
             return collectionName;
         }
         
+        // Configuration based CollectionNames are set manually by calling SetCollectionName.
+        // When we reach here, we can validate the Attribute flow because it was not a document from the Configuration flow.
         if (!documentType.IsConcreteMongoDocumentType())
         {
             throw new ArgumentException(documentType + " must be a concrete type that implements " + nameof(IMongoDocument));
