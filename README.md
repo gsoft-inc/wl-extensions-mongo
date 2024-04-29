@@ -189,7 +189,7 @@ internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
 
 #### Bootstrapping Configurations
 
-For bootstrapping, we have to tell the library that we opt-in the Configuration mode by calling AddCollectionConfigurations and passing it the Assemblies where you can locate your implementations of `IMongoCollectionConfiguration<T>`.
+Since the Configuration approach uses reflection to find the implementations of `IMongoCollectionConfiguration<T>` during the startup, we have to tell the library that we opt-in the Configuration mode by calling AddCollectionConfigurations and pass it the Assemblies where you can locate the Configurations.
 
 ```csharp
 services.AddMongo().AddCollectionConfigurations(InfrastructureAssemblyHandle.Assembly);
