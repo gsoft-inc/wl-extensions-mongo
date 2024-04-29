@@ -205,20 +205,6 @@ We also provide `IAsyncEnumerable<TDocument>` extensions on `IAsyncCursor<TDocum
 var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable();
 ```
 
-## Logging and distributed tracing
-
-**Workleap.Extensions.Mongo** supports modern logging with `ILogger` and log level filtering. MongoDB commands can be logged at the `Debug` level and optionally with their BSON content only if you set `MongoClientOptions.Telemetry.CaptureCommandText` to `true`.
-
-**Distributed tracing** with OpenTelemetry is also integrated. We follow the [semantic conventions for MongoDB](https://opentelemetry.io/docs/specs/semconv/database/mongodb/). You can simply observe activities (traces) originating from our `Workleap.Extensions.Mongo` assembly.
-
-We also support distributed tracing with the [Application Insights .NET SDK](https://github.com/microsoft/ApplicationInsights-dotnet). To enable this feature, you need to install the additional [Workleap.Extensions.Mongo.ApplicationInsights NuGet package](https://www.nuget.org/packages/Workleap.Extensions.Mongo.ApplicationInsights/). Simply use the `.AddApplicationInsights()` on the builder object returned by `services.AddMongo()`:
-
-```csharp
-services.AddMongo().AddApplicationInsights();
-```
-
-By default, some commands such as `isMaster`, `buildInfo`, `saslStart`, etc., are ignored by our instrumentation. You can either ignore additional commands or undo the ignoring of commands by modifying the `MongoClientOptions.Telemetry.DefaultIgnoredCommandNames` collection.
-
 ## Property Mapping
 
 You can use Mongo Attributes for Property Mapping, or BsonClassMaps. However, if you are using Configuration, you probably do not want to use Attributes on your Models.
@@ -260,6 +246,20 @@ internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
 ```
 
 [Mapping Models with ClassMaps](https://www.mongodb.com/docs/drivers/csharp/v2.19/fundamentals/serialization/class-mapping/)
+
+## Logging and distributed tracing
+
+**Workleap.Extensions.Mongo** supports modern logging with `ILogger` and log level filtering. MongoDB commands can be logged at the `Debug` level and optionally with their BSON content only if you set `MongoClientOptions.Telemetry.CaptureCommandText` to `true`.
+
+**Distributed tracing** with OpenTelemetry is also integrated. We follow the [semantic conventions for MongoDB](https://opentelemetry.io/docs/specs/semconv/database/mongodb/). You can simply observe activities (traces) originating from our `Workleap.Extensions.Mongo` assembly.
+
+We also support distributed tracing with the [Application Insights .NET SDK](https://github.com/microsoft/ApplicationInsights-dotnet). To enable this feature, you need to install the additional [Workleap.Extensions.Mongo.ApplicationInsights NuGet package](https://www.nuget.org/packages/Workleap.Extensions.Mongo.ApplicationInsights/). Simply use the `.AddApplicationInsights()` on the builder object returned by `services.AddMongo()`:
+
+```csharp
+services.AddMongo().AddApplicationInsights();
+```
+
+By default, some commands such as `isMaster`, `buildInfo`, `saslStart`, etc., are ignored by our instrumentation. You can either ignore additional commands or undo the ignoring of commands by modifying the `MongoClientOptions.Telemetry.DefaultIgnoredCommandNames` collection.
 
 ## Index management
 
