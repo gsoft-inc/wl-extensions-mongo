@@ -11,7 +11,7 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
 
     public MongoCollectionProxy(IMongoDatabase database)
     {
-        var collectionName = MongoReflectionCache.GetCollectionName(typeof(TDocument));
+        var collectionName = MongoCollectionNameCache.GetCollectionName(typeof(TDocument));
         this._underlyingCollection = database.GetCollection<TDocument>(collectionName);
     }
 

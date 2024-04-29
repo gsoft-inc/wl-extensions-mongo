@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Workleap.Extensions.Mongo;
 
-internal static class MongoReflectionCache
+internal static class MongoCollectionNameCache
 {
     private static readonly ConcurrentDictionary<Type, string> CollectionNames = new();
     private static readonly ConcurrentDictionary<Type, Type?> IndexProviderTypes = new();

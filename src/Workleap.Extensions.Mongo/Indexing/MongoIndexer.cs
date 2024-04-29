@@ -96,7 +96,7 @@ internal sealed class MongoIndexer : IMongoIndexer
     {
         var registry = new IndexRegistry(types);
 
-        foreach (var cachedIndexType in MongoReflectionCache.GetIndexProviderTypes())
+        foreach (var cachedIndexType in MongoCollectionNameCache.GetIndexProviderTypes())
         {
             registry.AddDocumentTypeEntry(cachedIndexType.Key, cachedIndexType.Value);
         }
@@ -122,7 +122,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
             var processingResult = await task.ConfigureAwait(false);
             
-            var collectionName = MongoReflectionCache.GetCollectionName(documentType);
+            var collectionName = MongoCollectionNameCache.GetCollectionName(documentType);
             if (expectedIndexes.TryGetValue(collectionName, out var expectedIndexesForCollection))
             {
                 // Better way to support AddRange?

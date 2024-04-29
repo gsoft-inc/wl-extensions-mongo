@@ -8,12 +8,12 @@ public static class IMongoDatabaseExtensions
     public static IMongoCollection<TDocument> GetCollection<TDocument>(this IMongoDatabase database, MongoCollectionSettings? settings = null)
         where TDocument : class
     {
-        return database.GetCollection<TDocument>(MongoReflectionCache.GetCollectionName<TDocument>(), settings);
+        return database.GetCollection<TDocument>(MongoCollectionNameCache.GetCollectionName<TDocument>(), settings);
     }
 
     public static string GetCollectionName<TDocument>(this IMongoDatabase database)
         where TDocument : class
     {
-        return MongoReflectionCache.GetCollectionName<TDocument>();
+        return MongoCollectionNameCache.GetCollectionName<TDocument>();
     }
 }
