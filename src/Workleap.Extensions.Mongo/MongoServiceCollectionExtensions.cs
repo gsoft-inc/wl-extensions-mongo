@@ -52,10 +52,7 @@ public static class MongoServiceCollectionExtensions
     /// <exception cref="ArgumentNullException"></exception>
     public static MongoBuilder AddCollectionConfigurations(this MongoBuilder builder, params Assembly[] assemblies)
     {
-        var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
-            .Where(t => !t.IsAbstract)
-            .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
-            .Where(t => t.Interface != null));
+        var configurationTypes = GetMongoCollectionConfigurationTypes(assemblies);
 
         foreach (var configurationType in configurationTypes)
         {
@@ -73,10 +70,7 @@ public static class MongoServiceCollectionExtensions
                 throw new InvalidOperationException($"Cannot create {builderType}");
             }
             
-            var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
-            configureMethod.Invoke(null, new[] { configuration, configurationBuilder });
-
-            var metadata = configurationBuilder.Build(); // BsonClassMap registration happens here
+            var metadata = GetMongoCollectionMetadata(documentType, configuration, configurationBuilder);
 
             if (string.IsNullOrWhiteSpace(metadata.CollectionName))
             {
@@ -89,6 +83,26 @@ public static class MongoServiceCollectionExtensions
         }
 
         return builder;
+    }
+
+    private static MongoCollectionMetadata GetMongoCollectionMetadata(Type documentType, object configuration, MongoCollectionBuilder configurationBuilder)
+    {
+        var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
+        
+        configureMethod.Invoke(null, new[] { configuration, configurationBuilder });
+
+        var metadata = configurationBuilder.Build(); // BsonClassMap registration happens here
+        
+        return metadata;
+    }
+
+    private static IEnumerable<(Type ConcreteType, Type Interface)> GetMongoCollectionConfigurationTypes(Assembly[] assemblies)
+    {
+        var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
+            .Where(t => !t.IsAbstract)
+            .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
+            .Where(t => t.Interface != null));
+        return configurationTypes;
     }
 
     private static IMongoClient CreateDefaultMongoClient(IServiceProvider serviceProvider)
