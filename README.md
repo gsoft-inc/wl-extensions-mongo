@@ -171,6 +171,13 @@ In certain scenarios, like in Domain Driven Design (DDD), one would like to pers
 You can configure your Object to Database mapping throught `IMongoCollectionConfiguration<TDocument>` instead.
 
 ```csharp
+public sealed class Person
+{
+    // [...]
+}
+```
+
+```csharp
 internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
 {
     public void Configure(IMongoCollectionBuilder<Person> builder) 
