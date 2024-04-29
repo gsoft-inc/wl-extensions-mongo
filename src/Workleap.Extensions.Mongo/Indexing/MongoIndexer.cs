@@ -98,7 +98,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
         foreach (var cachedIndexType in MongoConfigurationIndexStore.GetIndexProviderTypes())
         {
-            registry.AddDocumentTypeEntry(cachedIndexType.Key, cachedIndexType.Value);
+            registry.RegisterIndexType(cachedIndexType.Key, cachedIndexType.Value);
         }
 
         var expectedIndexes = new Dictionary<string, IList<UniqueIndexName>>();

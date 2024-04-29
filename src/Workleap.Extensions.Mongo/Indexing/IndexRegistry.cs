@@ -23,11 +23,11 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
                 throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
             }
 
-            this.AddDocumentTypeEntry(documentType, mongoCollectionAttribute.IndexProviderType);
+            this.RegisterIndexType(documentType, mongoCollectionAttribute.IndexProviderType);
         }
     }
 
-    internal void AddDocumentTypeEntry(Type documentType, Type? indexProviderType)
+    internal void RegisterIndexType(Type documentType, Type? indexProviderType)
     {
         indexProviderType ??= typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
         
