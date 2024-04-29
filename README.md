@@ -368,7 +368,12 @@ When this method is called, each time a database or collection is requested with
 * A randomly named database is provided to your code.
 
 When you dispose of the `IServiceProvider`, the related resources are destroyed. We leverage internal caching to avoid running multiple instances of MongoDB servers concurrently, opting instead to reuse a single instance. This method allows you to run multiple concurrent tests, each with their own MongoDB database. If your test runner crashes, the MongoDB process will be terminated, preventing orphaned processes from consuming unnecessary resources.
- 
+
+Available environment variables:
+- `WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_BINARYDIRECTORY`: Specify the path of the MongoDB binaries
+- `WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_DATADIRECTORY`: Specify the path to store data
+- `WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_CONNECTIONTIMEOUT`: Specify the timeout to connect to the database
+- `WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_USESINGLENODEREPLICASET`: Configure the replicaset
 
 ## Included Roslyn analyzers
 

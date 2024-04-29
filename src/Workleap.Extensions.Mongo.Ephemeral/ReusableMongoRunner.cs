@@ -1,3 +1,4 @@
+using System.Globalization;
 using EphemeralMongo;
 
 namespace Workleap.Extensions.Mongo.Ephemeral;
@@ -33,12 +34,43 @@ internal sealed class ReusableMongoRunner
 
             // The lock and use count prevent multiple instances of local mongod processes for a same named MongoClient
             // that would degrade the overall performance.
-            this._runner ??= MongoRunner.Run(new MongoRunnerOptions
+            var options = new MongoRunnerOptions
             {
                 UseSingleNodeReplicaSet = true,
                 KillMongoProcessesWhenCurrentProcessExits = true,
-            });
+            };
 
+            var binaryDirectory = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_BINARYDIRECTORY")?.Trim();
+            if (!string.IsNullOrEmpty(binaryDirectory))
+            {
+                options.BinaryDirectory = binaryDirectory;
+            }
+
+            var dataDirectory = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_DATADIRECTORY")?.Trim();
+            if (!string.IsNullOrEmpty(dataDirectory))
+            {
+                options.DataDirectory = dataDirectory;
+            }
+
+            var additionalArguments = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_ADDITIONALARGUMENTS")?.Trim();
+            if (!string.IsNullOrEmpty(additionalArguments))
+            {
+                options.AdditionalArguments = additionalArguments;
+            }
+
+            var connectionTimeout = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_CONNECTIONTIMEOUT")?.Trim();
+            if (TimeSpan.TryParse(connectionTimeout, CultureInfo.InvariantCulture, out var parsedConnectionTimeout))
+            {
+                options.ConnectionTimeout = parsedConnectionTimeout;
+            }
+
+            var useSingleNodeReplicaSet = Environment.GetEnvironmentVariable("WORKLEAP_EXTENSIONS_MONGO_EPHEMERAL_USESINGLENODEREPLICASET")?.Trim();
+            if (bool.TryParse(useSingleNodeReplicaSet, out var parsedUseSingleNodeReplicaSet))
+            {
+                options.UseSingleNodeReplicaSet = parsedUseSingleNodeReplicaSet;
+            }
+
+            this._runner ??= MongoRunner.Run(options);
             this._useCount++;
             this._connectionString = this._runner.ConnectionString;
             this._renters.Add(renter);
