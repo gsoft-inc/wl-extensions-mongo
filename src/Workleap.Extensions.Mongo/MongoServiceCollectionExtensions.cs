@@ -41,6 +41,15 @@ public static class MongoServiceCollectionExtensions
         return new MongoBuilder(services);
     }
 
+    /// <summary>
+    /// Adds Configuration based support for Mongo Collection Names, Index Providers and Class maps.
+    /// Each Collection requires a name. Index Providers are optional, as are Class maps.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="assemblies">Assemblies in which we can find the implementations of IMongoCollectionConfiguration</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentNullException"></exception>
     public static MongoBuilder AddCollectionConfigurations(this MongoBuilder builder, params Assembly[] assemblies)
     {
         var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
