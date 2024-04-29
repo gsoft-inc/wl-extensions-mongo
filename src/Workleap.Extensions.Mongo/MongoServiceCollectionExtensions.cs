@@ -85,7 +85,7 @@ public static class MongoServiceCollectionExtensions
             
             MongoCollectionNameCache.SetCollectionName(documentType, metadata.CollectionName!);
 
-            MongoCollectionNameCache.AddIndexProviderType(documentType, metadata.IndexProviderType);
+            MongoConfigurationIndexStore.AddIndexProviderType(documentType, metadata.IndexProviderType);
         }
 
         return builder;
