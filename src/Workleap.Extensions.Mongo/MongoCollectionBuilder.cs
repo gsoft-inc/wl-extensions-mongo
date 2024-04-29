@@ -35,8 +35,6 @@ public sealed class MongoCollectionBuilder<TDocument> : MongoCollectionBuilder, 
     {
         if (this._metadata.ClassMapInitializer != null)
         {
-            // It is very important that the registration of class maps occur prior to them being needed.
-            // The best place to register them is at app startup prior to initializing a connection with MongoDB.
             MongoDB.Bson.Serialization.BsonClassMap.RegisterClassMap(this._metadata.ClassMapInitializer);
         }
 
