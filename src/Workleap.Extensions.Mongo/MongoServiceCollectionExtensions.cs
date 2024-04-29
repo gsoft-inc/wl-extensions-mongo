@@ -58,12 +58,10 @@ public static class MongoServiceCollectionExtensions
         {
             var (concreteType, configurationInterface) = configurationType;
 
-            concreteType.EnsureHasPublicParameterlessConstructor();
-            
-            var documentType = configurationInterface!.GetGenericArguments().Single();
+            var configuration = GetMongoCollectionConfiguration(concreteType);
+
+            var documentType = configurationInterface.GetGenericArguments().Single();
             var builderType = typeof(MongoCollectionBuilder<>).MakeGenericType(documentType);
-            
-            var configuration = Activator.CreateInstance(concreteType);
 
             if (Activator.CreateInstance(builderType) is not MongoCollectionBuilder configurationBuilder)
             {
@@ -85,6 +83,15 @@ public static class MongoServiceCollectionExtensions
         return builder;
     }
 
+    private static object GetMongoCollectionConfiguration(Type concreteType)
+    {
+        concreteType.EnsureHasPublicParameterlessConstructor();
+        
+        var configuration = Activator.CreateInstance(concreteType);
+        
+        return configuration ?? throw new InvalidOperationException($"Cannot create {concreteType}");
+    }
+
     private static MongoCollectionMetadata GetMongoCollectionMetadata(Type documentType, object configuration, MongoCollectionBuilder configurationBuilder)
     {
         var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
@@ -101,7 +108,9 @@ public static class MongoServiceCollectionExtensions
         var configurationTypes = assemblies.SelectMany(assembly => assembly.GetTypes()
             .Where(t => !t.IsAbstract)
             .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
-            .Where(t => t.Interface != null));
+            .Where(t => t.Interface != null))
+            .OfType<(Type, Type)>();
+        
         return configurationTypes;
     }
 
