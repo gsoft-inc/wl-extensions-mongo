@@ -58,6 +58,11 @@ public static class MongoServiceCollectionExtensions
         {
             var (concreteType, configurationInterface) = configurationType;
 
+            if (RegisteredConfigurations.Contains(concreteType))
+            {
+                continue;
+            }
+
             var configuration = GetMongoCollectionConfiguration(concreteType);
 
             var documentType = configurationInterface.GetGenericArguments().Single();
@@ -78,10 +83,14 @@ public static class MongoServiceCollectionExtensions
             MongoCollectionNameCache.SetCollectionName(documentType, metadata.CollectionName!);
 
             MongoConfigurationIndexStore.AddIndexProviderType(documentType, metadata.IndexProviderType);
+
+            RegisteredConfigurations.Add(concreteType);
         }
 
         return builder;
     }
+    
+    private static HashSet<Type> RegisteredConfigurations { get; } = new();
 
     private static object GetMongoCollectionConfiguration(Type concreteType)
     {
