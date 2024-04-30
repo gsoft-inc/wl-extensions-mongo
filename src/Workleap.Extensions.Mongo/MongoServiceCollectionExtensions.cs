@@ -13,6 +13,8 @@ public static class MongoServiceCollectionExtensions
     private static readonly MethodInfo ConfigureMethod = typeof(MongoServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
                                                          ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoServiceCollectionExtensions)}.{nameof(Configure)}");
     
+    private static HashSet<Type> RegisteredConfigurations { get; } = new();
+    
     public static MongoBuilder AddMongo(this IServiceCollection services, Action<MongoClientOptions>? configure = null)
     {
         services.ConfigureOptions<ConfigureMongoStaticOptions>();
@@ -89,8 +91,6 @@ public static class MongoServiceCollectionExtensions
 
         return builder;
     }
-    
-    private static HashSet<Type> RegisteredConfigurations { get; } = new();
 
     private static object GetMongoCollectionConfiguration(Type concreteType)
     {
