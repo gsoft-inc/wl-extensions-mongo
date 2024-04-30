@@ -35,7 +35,7 @@ public sealed class MongoCollectionBuilder<TDocument> : MongoCollectionBuilder, 
     {
         if (this._metadata.ClassMapInitializer != null)
         {
-            MongoDB.Bson.Serialization.BsonClassMap.RegisterClassMap(this._metadata.ClassMapInitializer);
+            MongoDB.Bson.Serialization.BsonClassMap.TryRegisterClassMap(this._metadata.ClassMapInitializer);
         }
 
         return this._metadata;
