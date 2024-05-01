@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver.Core.Events;
 using Workleap.Extensions.Mongo.Performance;
@@ -25,6 +25,12 @@ internal sealed class MongoEventSubscriberFactory : IMongoEventSubscriberFactory
 
         // Command distributed tracing (Open Telemetry)
         yield return new CommandTracingEventSubscriber(options);
+
+        // Additional diagnostic events distributed tracing (Open Telemetry)
+        if (options.Telemetry.CaptureDiagnosticEvents)
+        {
+            yield return new DiagnosticsTracingEventSubscriber(options);
+        }
 
         // Command logging
         yield return new CommandLoggingEventSubscriber(options, this._loggerFactory);

@@ -1,1 +1,3 @@
 #nullable enable
+Workleap.Extensions.Mongo.MongoTelemetryOptions.CaptureDiagnosticEvents.get -> bool
+Workleap.Extensions.Mongo.MongoTelemetryOptions.CaptureDiagnosticEvents.set -> void

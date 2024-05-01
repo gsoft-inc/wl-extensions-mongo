@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
 
@@ -62,6 +62,8 @@ public sealed class MongoTelemetryOptions
     public bool CaptureCommandText { get; set; }
 
     public ISet<string> IgnoredCommandNames { get; }
+
+    public bool CaptureDiagnosticEvents { get; set; }
 }
 
 public sealed class MongoCommandPerformanceAnalysisOptions
