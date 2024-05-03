@@ -37,6 +37,14 @@ public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<AddCol
         Assert.NotNull(personMap.AllMemberMaps.SingleOrDefault(m => m.ElementName == "n"));
     }
     
+    [Fact]
+    public void MultipleAddCollectionConfigurations_DoesNotCrash()
+    {
+        var services = new ServiceCollection();
+        services.AddMongo().AddCollectionConfigurations(typeof(AddCollectionConfigurationTests).Assembly);
+        services.AddMongo().AddCollectionConfigurations(typeof(AddCollectionConfigurationTests).Assembly);
+    }
+    
     public sealed class AddCollectionConfigurationTestsFixture : MongoFixture
     {
         public override IServiceCollection ConfigureServices(IServiceCollection services)
