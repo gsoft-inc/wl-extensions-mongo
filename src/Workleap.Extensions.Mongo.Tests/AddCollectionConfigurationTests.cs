@@ -1,16 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using Workleap.Extensions.Mongo.Indexing;
 using Workleap.Extensions.Xunit;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<AddCollectionConfigurationTests.AddCollectionConfigurationTestsFixture> 
+public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<ConfigurationMongoFixture> 
 {
-    public AddCollectionConfigurationTests(AddCollectionConfigurationTestsFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture, testOutputHelper)
+    public AddCollectionConfigurationTests(ConfigurationMongoFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture, testOutputHelper)
     {
     }
 
@@ -21,7 +19,7 @@ public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<AddCol
         
         await indexer.UpdateIndexesAsync();
         
-        var collection = this.Services.GetRequiredService<IMongoCollection<AddCollectionConfigurationTestsFixture.Person>>();
+        var collection = this.Services.GetRequiredService<IMongoCollection<ConfigurationMongoFixture.Person>>();
 
         Assert.Equal("People", collection.CollectionNamespace.CollectionName);
 
@@ -29,7 +27,7 @@ public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<AddCol
         Assert.Equal(2, indexes.Count);
         Assert.NotNull(indexes.SingleOrDefault(i => i.GetElement("name").Value.AsString.StartsWith("IX_name")));
 
-        var personMap = BsonClassMap.GetRegisteredClassMaps().SingleOrDefault(map => map.ClassType == typeof(AddCollectionConfigurationTestsFixture.Person));
+        var personMap = BsonClassMap.GetRegisteredClassMaps().SingleOrDefault(map => map.ClassType == typeof(ConfigurationMongoFixture.Person));
         
         Assert.NotNull(personMap);
         Assert.Equal(2, personMap.AllMemberMaps.Count);
@@ -43,49 +41,5 @@ public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<AddCol
         var services = new ServiceCollection();
         services.AddMongo().AddCollectionConfigurations(typeof(AddCollectionConfigurationTests).Assembly);
         services.AddMongo().AddCollectionConfigurations(typeof(AddCollectionConfigurationTests).Assembly);
-    }
-    
-    public sealed class AddCollectionConfigurationTestsFixture : MongoFixture
-    {
-        public override IServiceCollection ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-
-            services.AddMongo().AddCollectionConfigurations(typeof(AddCollectionConfigurationTests).Assembly);
-
-            return services;
-        }
-
-        public sealed class Person
-        {
-            public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
-
-            public string Name { get; set; } = string.Empty;
-        }
-
-        public sealed class PersonConfiguration : IMongoCollectionConfiguration<Person>
-        {
-            public void Configure(IMongoCollectionBuilder<Person> builder)
-            {
-                builder.CollectionName("People")
-                    .IndexProvider<PersonIndexProvider>()
-                    .BsonClassMap(map =>
-                    {
-                        map.MapIdProperty(x => x.Id).SetSerializer(new StringSerializer(BsonType.ObjectId));
-                        map.MapProperty(x => x.Name).SetElementName("n");
-                    });
-            }
-        }
-
-        public sealed class PersonIndexProvider : MongoIndexProvider<Person>
-        {
-            public override IEnumerable<CreateIndexModel<Person>> CreateIndexModels()
-            {
-                yield return new CreateIndexModel<Person>(this.IndexKeys.Ascending(x => x.Name), new CreateIndexOptions
-                {
-                    Name = "IX_name",
-                });
-            }
-        }
     }
 }
