@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -13,7 +14,9 @@ public static class MongoServiceCollectionExtensions
     private static readonly MethodInfo ConfigureMethod = typeof(MongoServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
                                                          ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoServiceCollectionExtensions)}.{nameof(Configure)}");
     
-    private static HashSet<Type> RegisteredConfigurations { get; } = new();
+    private static readonly object AddConfigurationLockObject = new();
+    
+    private static ConcurrentBag<Type> RegisteredConfigurations { get; } = new();
     
     public static MongoBuilder AddMongo(this IServiceCollection services, Action<MongoClientOptions>? configure = null)
     {
@@ -56,37 +59,48 @@ public static class MongoServiceCollectionExtensions
     {
         var configurationTypes = GetMongoCollectionConfigurationTypes(assemblies);
 
-        foreach (var configurationType in configurationTypes)
+        var registeredDocumentTypes = new HashSet<Type>();
+
+        lock (AddConfigurationLockObject)
         {
-            var (concreteType, configurationInterface) = configurationType;
-
-            if (RegisteredConfigurations.Contains(concreteType))
+            foreach (var configurationType in configurationTypes)
             {
-                continue;
+                var (concreteType, configurationInterface) = configurationType;
+
+                if (RegisteredConfigurations.Contains(concreteType))
+                {
+                    continue;
+                }
+
+                var configuration = GetMongoCollectionConfiguration(concreteType);
+
+                var documentType = configurationInterface.GetGenericArguments().Single();
+
+                if (!registeredDocumentTypes.Add(documentType))
+                {
+                    throw new InvalidOperationException($"Cannot register multiple configurations for the same document type {documentType}");
+                }
+
+                var builderType = typeof(MongoCollectionBuilder<>).MakeGenericType(documentType);
+
+                if (Activator.CreateInstance(builderType) is not MongoCollectionBuilder configurationBuilder)
+                {
+                    throw new InvalidOperationException($"Cannot create {builderType}");
+                }
+
+                var metadata = GetMongoCollectionMetadata(documentType, configuration, configurationBuilder);
+
+                if (string.IsNullOrWhiteSpace(metadata.CollectionName))
+                {
+                    throw new ArgumentNullException($"{builderType} must specify a CollectionName");
+                }
+
+                MongoCollectionNameCache.SetCollectionName(documentType, metadata.CollectionName!);
+
+                MongoConfigurationIndexStore.AddIndexProviderType(documentType, metadata.IndexProviderType);
+
+                RegisteredConfigurations.Add(concreteType);
             }
-
-            var configuration = GetMongoCollectionConfiguration(concreteType);
-
-            var documentType = configurationInterface.GetGenericArguments().Single();
-            var builderType = typeof(MongoCollectionBuilder<>).MakeGenericType(documentType);
-
-            if (Activator.CreateInstance(builderType) is not MongoCollectionBuilder configurationBuilder)
-            {
-                throw new InvalidOperationException($"Cannot create {builderType}");
-            }
-            
-            var metadata = GetMongoCollectionMetadata(documentType, configuration, configurationBuilder);
-
-            if (string.IsNullOrWhiteSpace(metadata.CollectionName))
-            {
-                throw new ArgumentNullException($"{builderType} must specify a CollectionName");
-            }
-            
-            MongoCollectionNameCache.SetCollectionName(documentType, metadata.CollectionName!);
-
-            MongoConfigurationIndexStore.AddIndexProviderType(documentType, metadata.IndexProviderType);
-
-            RegisteredConfigurations.Add(concreteType);
         }
 
         return builder;
