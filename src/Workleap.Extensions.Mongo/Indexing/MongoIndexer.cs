@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -94,12 +95,10 @@ internal sealed class MongoIndexer : IMongoIndexer
 
     private async Task UpdateIndexesInternalAsync(IEnumerable<Type> types, IMongoDatabase database, CancellationToken cancellationToken = default)
     {
-        var registry = new IndexRegistry(types);
-
-        foreach (var cachedIndexType in MongoConfigurationIndexStore.GetIndexProviderTypes())
-        {
-            registry.RegisterIndexType(cachedIndexType.Key, cachedIndexType.Value);
-        }
+        var registry = new IndexRegistry();
+        
+        AddAttributeIndexes(types, registry);
+        AddConfigurationIndexes(registry);
 
         var expectedIndexes = new Dictionary<string, IList<UniqueIndexName>>();
 
@@ -136,6 +135,33 @@ internal sealed class MongoIndexer : IMongoIndexer
         }
 
         await IndexDeleter.ProcessAsync(database, expectedIndexes, this._loggerFactory, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void AddConfigurationIndexes(IndexRegistry registry)
+    {
+        foreach (var cachedIndexType in MongoConfigurationIndexStore.GetIndexProviderTypes())
+        {
+            registry.RegisterIndexType(cachedIndexType.Key, cachedIndexType.Value);
+        }
+    }
+
+    private static void AddAttributeIndexes(IEnumerable<Type> documentTypes, IndexRegistry registry)
+    {
+        foreach (var documentType in documentTypes)
+        {
+            if (!documentType.IsConcreteMongoDocumentType())
+            {
+                throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
+            }
+
+            var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
+            if (mongoCollectionAttribute == null)
+            {
+                throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
+            }
+
+            registry.RegisterIndexType(documentType, mongoCollectionAttribute.IndexProviderType);
+        }
     }
     
     internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)

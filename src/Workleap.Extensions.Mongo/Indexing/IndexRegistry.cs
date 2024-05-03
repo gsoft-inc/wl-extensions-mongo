@@ -8,25 +8,6 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// </summary>
 internal sealed class IndexRegistry : List<DocumentTypeEntry>
 {
-    public IndexRegistry(IEnumerable<Type> documentTypes)
-    {
-        foreach (var documentType in documentTypes)
-        {
-            if (!documentType.IsConcreteMongoDocumentType())
-            {
-                throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
-            }
-
-            var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
-            if (mongoCollectionAttribute == null)
-            {
-                throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
-            }
-
-            this.RegisterIndexType(documentType, mongoCollectionAttribute.IndexProviderType);
-        }
-    }
-
     internal void RegisterIndexType(Type documentType, Type? indexProviderType)
     {
         indexProviderType ??= typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
