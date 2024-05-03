@@ -60,3 +60,12 @@ Workleap.Extensions.Mongo.Security.IMongoValueEncryptor
 Workleap.Extensions.Mongo.Security.IMongoValueEncryptor.Decrypt(byte[]! bytes, Workleap.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
 Workleap.Extensions.Mongo.Security.IMongoValueEncryptor.Encrypt(byte[]! bytes, Workleap.ComponentModel.DataAnnotations.SensitivityScope sensitivityScope) -> byte[]!
 static Workleap.Extensions.Mongo.MongoServiceCollectionExtensions.AddMongo(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Workleap.Extensions.Mongo.MongoClientOptions!>? configure = null) -> Workleap.Extensions.Mongo.MongoBuilder!
+static Workleap.Extensions.Mongo.MongoServiceCollectionExtensions.AddCollectionConfigurations(this Workleap.Extensions.Mongo.MongoBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Workleap.Extensions.Mongo.MongoBuilder!
+Workleap.Extensions.Mongo.Indexing.IMongoIndexer.UpdateIndexesAsync(string? clientName = null, string? databaseName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Workleap.Extensions.Mongo.MongoCollectionBuilder
+Workleap.Extensions.Mongo.MongoCollectionBuilder.MongoCollectionBuilder() -> void
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.BsonClassMap(System.Action<MongoDB.Bson.Serialization.BsonClassMap<TDocument!>!>! classMapInitializer) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.CollectionName(string! collectionName) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.IndexProvider<TIndexProvider>() -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.MongoCollectionBuilder() -> void
