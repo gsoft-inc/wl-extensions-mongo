@@ -45,8 +45,8 @@ internal static class TracingHelper
         }
     }
 
-    public static void AddSpanEventWithTags(string spanEventName, IEnumerable<KeyValuePair<string, object?>> tags)
+    public static void AddSpanEventWithTags(Activity currentActivity, string spanEventName, IEnumerable<KeyValuePair<string, object?>> tags)
     {
-        Activity.Current?.AddEvent(new ActivityEvent(spanEventName, tags: new ActivityTagsCollection(tags)));
+        currentActivity.AddEvent(new ActivityEvent(spanEventName, tags: new ActivityTagsCollection(tags)));
     }
 }

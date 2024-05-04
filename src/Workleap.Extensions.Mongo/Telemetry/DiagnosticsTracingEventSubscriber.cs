@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
 using MongoDB.Driver.Core.Events;
@@ -11,6 +12,7 @@ internal sealed class DiagnosticsTracingEventSubscriber : IEventSubscriber
     private const string MongoDbPrefix = "db.mongodb";
     private readonly MongoClientOptions _options;
     private readonly ReflectionEventSubscriber _subscriber;
+    private readonly ConcurrentDictionary<Type, PropertyInfo[]> _propertyInfoCache = new();
 
     public DiagnosticsTracingEventSubscriber(MongoClientOptions options)
     {
@@ -129,14 +131,14 @@ internal sealed class DiagnosticsTracingEventSubscriber : IEventSubscriber
 
     private void HandleDiagnosticEvent(object diagnosticEvent)
     {
-        if (!this._options.Telemetry.CaptureDiagnosticEvents || Activity.Current is null)
+        Activity? currentActivity = Activity.Current;
+        if (!this._options.Telemetry.CaptureDiagnosticEvents || currentActivity is null)
         {
             return;
         }
 
         Type t = diagnosticEvent.GetType();
-        string activityEventName = t.Name;
-        PropertyInfo[] props = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        PropertyInfo[] props = this._propertyInfoCache.GetOrAdd(t, x => x.GetProperties(BindingFlags.Instance | BindingFlags.Public));
 
         var tags = new List<KeyValuePair<string, object?>>(props.Length);
         foreach (var prop in props)
@@ -147,6 +149,6 @@ internal sealed class DiagnosticsTracingEventSubscriber : IEventSubscriber
             tags.Add(new KeyValuePair<string, object?>($"{MongoDbPrefix}.{prop.Name}", val));
         }
 
-        TracingHelper.AddSpanEventWithTags(activityEventName, tags);
+        TracingHelper.AddSpanEventWithTags(currentActivity, t.Name, tags);
     }
 }
