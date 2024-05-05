@@ -5,9 +5,9 @@ using Workleap.Extensions.Mongo.Indexing;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
+public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
 {
-    public MongoIndexerTests(MongoFixture fixture, ITestOutputHelper testOutputHelper)
+    public MongoIndexerTests(ConfigurationMongoFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture, testOutputHelper)
     {
     }
@@ -28,13 +28,19 @@ public class MongoIndexerTests : BaseIntegrationTest<MongoFixture>
 
     private async Task AssertPersonDocumentIndexes()
     {
-        using var indexCursor = await this.Services.GetRequiredService<IMongoCollection<PersonDocument>>().Indexes.ListAsync();
-        var indexNames = await indexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
+        using var personDocumentIndexCursor = await this.Services.GetRequiredService<IMongoCollection<PersonDocument>>().Indexes.ListAsync();
+        var personDocumentIndexNames = await personDocumentIndexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
 
-        Assert.Equal(3, indexNames.Count);
-        Assert.Contains("_id_", indexNames);
-        Assert.Contains("fn_ln_15cfbc3bcdc8c4f800adf1709115006a", indexNames);
-        Assert.Contains("age_7c4afaa70df651e198675bca5bcb6ad2", indexNames);
+        Assert.Equal(3, personDocumentIndexNames.Count);
+        Assert.Contains("_id_", personDocumentIndexNames);
+        Assert.Contains("fn_ln_15cfbc3bcdc8c4f800adf1709115006a", personDocumentIndexNames);
+        Assert.Contains("age_7c4afaa70df651e198675bca5bcb6ad2", personDocumentIndexNames);
+        
+        using var personIndexCursor = await this.Services.GetRequiredService<IMongoCollection<ConfigurationMongoFixture.Person>>().Indexes.ListAsync();
+        var personIndexNames = await personIndexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
+        Assert.Equal(2, personIndexNames.Count);
+        Assert.Contains("_id_", personIndexNames);
+        Assert.Contains("IX_name_7bf595dc01e7866161710b1f448f5183", personIndexNames);
     }
 
     [MongoCollection("person", IndexProviderType = typeof(PersonDocumentIndexes))]
