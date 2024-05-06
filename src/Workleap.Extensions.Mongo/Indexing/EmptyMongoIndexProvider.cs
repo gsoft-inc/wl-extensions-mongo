@@ -3,7 +3,7 @@
 namespace Workleap.Extensions.Mongo.Indexing;
 
 internal sealed class EmptyMongoIndexProvider<TDocument> : MongoIndexProvider<TDocument>
-    where TDocument : IMongoDocument
+    where TDocument : class
 {
     public override IEnumerable<CreateIndexModel<TDocument>> CreateIndexModels()
     {

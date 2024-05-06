@@ -8,40 +8,26 @@ namespace Workleap.Extensions.Mongo.Indexing;
 /// </summary>
 internal sealed class IndexRegistry : List<DocumentTypeEntry>
 {
-    public IndexRegistry(IEnumerable<Type> documentTypes)
+    internal void RegisterIndexType(Type documentType, Type? indexProviderType)
     {
-        foreach (var documentType in documentTypes)
+        indexProviderType ??= typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
+        
+        if (!HasPublicParameterlessConstructor(indexProviderType))
         {
-            if (!MongoReflectionCache.IsConcreteMongoDocumentType(documentType))
-            {
-                throw new ArgumentException($"Type '{documentType}' must implement {nameof(IMongoDocument)}");
-            }
-
-            var mongoCollectionAttribute = documentType.GetCustomAttribute<MongoCollectionAttribute>(inherit: false);
-            if (mongoCollectionAttribute == null)
-            {
-                throw new InvalidOperationException($"Type '{documentType}' must be decorated with '{nameof(MongoCollectionAttribute)}'");
-            }
-
-            var indexProviderType = mongoCollectionAttribute.IndexProviderType ?? typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
-
-            if (!HasPublicParameterlessConstructor(indexProviderType))
-            {
-                throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
-            }
-
-            if (!IsIndexProvider(indexProviderType, out var indexProviderDocumentType))
-            {
-                throw new InvalidOperationException($"Type '{indexProviderType} must derive from '{typeof(MongoIndexProvider<>)}");
-            }
-
-            if (documentType != indexProviderDocumentType)
-            {
-                throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
-            }
-            
-            this.Add(new DocumentTypeEntry(documentType, indexProviderType));
+            throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
         }
+
+        if (!IsIndexProvider(indexProviderType, out var indexProviderDocumentType))
+        {
+            throw new InvalidOperationException($"Type '{indexProviderType} must derive from '{typeof(MongoIndexProvider<>)}");
+        }
+
+        if (documentType != indexProviderDocumentType)
+        {
+            throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
+        }
+            
+        this.Add(new DocumentTypeEntry(documentType, indexProviderType));
     }
 
     private static bool IsIndexProvider(Type? type, [MaybeNullWhen(false)] out Type documentType)

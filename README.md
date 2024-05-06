@@ -148,7 +148,8 @@ When using the `AddMongo()` method, multiple conventions are added automatically
 - `EnumRepresentationConvention(BsonType.String)`, so changing an enum member name is a breaking change
 - `DateTime` and `DateTimeOffset` are serialized as `DateTime` instead of the default Ticks or (Ticks, Offset). In MongoDB, DateTime only supports precision up to the milliseconds. If you need more precision, you need to set the serializer at property level.
 
-## Declaring and using MongoDB documents and collections
+## Declaring Mongo Documents
+### With Attributes Decoration
 
 The process doesn't deviate much from the standard way of declaring and using MongoDB collections in C#. However, there are two additional steps:
 
@@ -163,13 +164,88 @@ public class PersonDocument : IMongoDocument
 }
 ```
 
+### With Configuration
+
+In certain scenarios, like in Domain Driven Design (DDD), one would like to persist their Domain Aggregates as is in the Document Database. These Domain objects are not aware of how they are persisted. They cannot be decorated with Persistence level attributes (ie `[MongoCollection()]`), nor can they implement `IMongoDocument`.
+
+You can configure your Object to Database mapping throught `IMongoCollectionConfiguration<TDocument>` instead.
+
+```csharp
+public sealed class Person
+{
+    // [...]
+}
+```
+
+```csharp
+internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
+{
+    public void Configure(IMongoCollectionBuilder<Person> builder) 
+    {
+        builder.CollectionName("people");
+    }
+}
+```
+
+#### Bootstrapping Configurations
+
+Since the Configuration approach uses reflection to find the implementations of `IMongoCollectionConfiguration<T>` during the startup, we have to tell the library that we opt-in the Configuration mode by calling AddCollectionConfigurations and pass it the Assemblies where you can locate the Configurations.
+
+```csharp
+services.AddMongo().AddCollectionConfigurations(InfrastructureAssemblyHandle.Assembly);
+```
+
+## Usage
 Refer back to the [getting started section](#getting-started) to learn how to resolve `IMongoCollection<TDocument>` from the dependency injection services.
 
+## Extensions
 We also provide `IAsyncEnumerable<TDocument>` extensions on `IAsyncCursor<TDocument>` and `IAsyncCursorSource<TDocument>`, eliminating the need to deal with cursors. For example:
 
 ```csharp
 var people = await collection.Find(FilterDefinition<PersonDocument>.Empty).ToAsyncEnumerable();
 ```
+
+## Property Mapping
+
+You can use Mongo Attributes for Property Mapping, or BsonClassMaps. However, if you are using Configuration, you probably do not want to use Attributes on your Models.
+
+### With Attributes
+
+```csharp
+[MongoCollection("people")]
+public class PersonDocument : IMongoDocument
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
+
+    [BsonElement("n")]
+    public string Name { get; set; } = string.Empty;
+}
+```
+
+[Mapping Models with Attributes](https://www.mongodb.com/docs/drivers/csharp/v2.19/fundamentals/serialization/poco/)
+
+### With Configuration
+
+```csharp
+internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
+{
+    public void Configure(IMongoCollectionBuilder<Person> builder) 
+    {
+        builder.CollectionName("people")
+            .BsonClassMap(map => 
+            {
+                map.MapIdProperty(x => x.Id)
+                    .SetSerializer(new StringSerializer(BsonType.ObjectId));
+                
+                map.MapProperty(x => x.Name).SetElementName("n");
+            });
+    }
+}
+```
+
+[Mapping Models with ClassMaps](https://www.mongodb.com/docs/drivers/csharp/v2.19/fundamentals/serialization/class-mapping/)
 
 ## Logging and distributed tracing
 
@@ -190,16 +266,6 @@ By default, some commands such as `isMaster`, `buildInfo`, `saslStart`, etc., ar
 We provide a mechanism for you to declare your collection indexes and ensure they are applied to your database. To do this, declare your indexes by implementing a custom `MongoIndexProvider<TDocument>`:
 
 ```csharp
-[MongoCollection("people", IndexProviderType = typeof(PersonDocumentIndexes))]
-public class PersonDocument : IMongoDocument
-{
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-}
-
 public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
 {
     public override IEnumerable<CreateIndexModel<PersonDocument>> CreateIndexModels()
@@ -211,6 +277,34 @@ public class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>
     }
 }
 ```
+
+### With Attributes Decoration
+
+```csharp
+[MongoCollection("people", IndexProviderType = typeof(PersonDocumentIndexes))]
+public class PersonDocument : IMongoDocument
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+```
+
+### With Configuration
+
+```csharp
+internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
+{
+    public void Configure(IMongoCollectionBuilder<Person> builder) 
+    {
+        builder.IndexProvider<PersonDocumentIndexes>();
+    }
+}
+```
+
+### Updating Indexes
 
 At this stage, nothing will happen. To actually create or update the index, you need to inject our `IMongoIndexer` service and then call one of its `UpdateIndexesAsync()` method overloads, for example:
 
