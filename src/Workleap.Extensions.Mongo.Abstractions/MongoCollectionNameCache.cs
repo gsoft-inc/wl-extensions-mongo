@@ -28,7 +28,7 @@ internal static class MongoCollectionNameCache
                 return attribute.Name;
             }
 
-            throw new ArgumentException(documentType + " must be decorated with " + nameof(MongoCollectionAttribute));
+            throw new ArgumentException(documentType + " must be decorated with " + nameof(MongoCollectionAttribute) + " or be registered by a " + typeof(IMongoCollectionConfiguration<>).MakeGenericType(documentType).Name);
         });
     }
 
