@@ -260,6 +260,7 @@ services.AddMongo().AddApplicationInsights();
 ```
 
 By default, some commands such as `isMaster`, `buildInfo`, `saslStart`, etc., are ignored by our instrumentation. You can either ignore additional commands or undo the ignoring of commands by modifying the `MongoClientOptions.Telemetry.DefaultIgnoredCommandNames` collection.
+Additionally, subscribing to more granular driver diagnostic events can be done by setting `MongoClientOptions.Telemetry.CaptureDiagnosticEvents` to `true`.
 
 ## Index management
 

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -43,5 +43,10 @@ internal static class TracingHelper
         {
             Activity.Current = existingActivity;
         }
+    }
+
+    public static void AddSpanEventWithTags(Activity currentActivity, string spanEventName, IEnumerable<KeyValuePair<string, object?>> tags)
+    {
+        currentActivity.AddEvent(new ActivityEvent(spanEventName, tags: new ActivityTagsCollection(tags)));
     }
 }

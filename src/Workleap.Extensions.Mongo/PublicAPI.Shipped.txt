@@ -52,6 +52,8 @@ Workleap.Extensions.Mongo.MongoStaticOptions.MongoStaticOptions() -> void
 Workleap.Extensions.Mongo.MongoTelemetryOptions
 Workleap.Extensions.Mongo.MongoTelemetryOptions.CaptureCommandText.get -> bool
 Workleap.Extensions.Mongo.MongoTelemetryOptions.CaptureCommandText.set -> void
+Workleap.Extensions.Mongo.MongoTelemetryOptions.CaptureDiagnosticEvents.get -> bool
+Workleap.Extensions.Mongo.MongoTelemetryOptions.CaptureDiagnosticEvents.set -> void
 Workleap.Extensions.Mongo.MongoTelemetryOptions.IgnoredCommandNames.get -> System.Collections.Generic.ISet<string!>!
 Workleap.Extensions.Mongo.MongoTelemetryOptions.MongoTelemetryOptions() -> void
 Workleap.Extensions.Mongo.NamedConventionPack
