@@ -14,11 +14,17 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
     // https://github.com/mongodb/mongo-csharp-driver/blob/v2.17.1/src/MongoDB.Driver/MongoDefaults.cs#L32
     private static readonly TimeSpan DefaultThirtySecondsConnectTimeout = TimeSpan.FromSeconds(30);
 
+    // https://github.com/mongodb/mongo-csharp-driver/blob/v2.25.0/src/MongoDB.Driver/MongoDefaults.cs#L34
+    private static readonly TimeSpan DefaultTenMinutesMaxConnectionIdleTime = TimeSpan.FromMinutes(10);
+
     // Officevibe also uses a 60 seconds socket timeout, it's better than the infinite default
     private static readonly TimeSpan ReasonableSocketTimeout = TimeSpan.FromSeconds(60);
 
     // Officevibe also uses a 10 seconds connect timeout
     private static readonly TimeSpan ReasonableConnectTimeout = TimeSpan.FromSeconds(10);
+
+    // Officevibe also uses a one minute max connection idle time
+    private static readonly TimeSpan ReasonableMaxConnectionIdleTime = TimeSpan.FromMinutes(1);
 
     private readonly IServiceProvider _serviceProvider;
     private readonly List<IDisposable> _disposableDependencies;
@@ -64,6 +70,11 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
         if (settings.ConnectTimeout == DefaultThirtySecondsConnectTimeout)
         {
             settings.ConnectTimeout = ReasonableConnectTimeout;
+        }
+
+        if (settings.MaxConnectionIdleTime == DefaultTenMinutesMaxConnectionIdleTime)
+        {
+            settings.MaxConnectionIdleTime = ReasonableMaxConnectionIdleTime;
         }
 
         var eventSubscriberFactories = this._serviceProvider.GetServices<IMongoEventSubscriberFactory>();
