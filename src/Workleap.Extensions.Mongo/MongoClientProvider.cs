@@ -23,8 +23,8 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
     // Officevibe also uses a 10 seconds connect timeout
     private static readonly TimeSpan ReasonableConnectTimeout = TimeSpan.FromSeconds(10);
 
-    // Officevibe also uses a one minute max connection idle time
-    private static readonly TimeSpan ReasonableMaxConnectionIdleTime = TimeSpan.FromMinutes(1);
+    // Officevibe also uses a 60 seconds max connection idle time
+    private static readonly TimeSpan ReasonableMaxConnectionIdleTime = TimeSpan.FromSeconds(60);
 
     private readonly IServiceProvider _serviceProvider;
     private readonly List<IDisposable> _disposableDependencies;
