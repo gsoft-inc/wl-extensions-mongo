@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -91,10 +93,17 @@ internal sealed class MongoClientProvider : IMongoClientProvider, IDisposable
         settings.ClusterConfigurator = builder =>
         {
             userDefinedClusterConfiguration?.Invoke(builder);
+            builder.ConfigureTcp(EnableKeepAlives);
             builder.Subscribe(new OrderedAggregatorEventSubscriber(eventSubscribers));
         };
 
         return new MongoClient(settings);
+    }
+
+    private static TcpStreamSettings EnableKeepAlives(TcpStreamSettings tcpStreamSettings)
+    {
+        return tcpStreamSettings.With(socketConfigurator: (Action<Socket>)SocketConfigurator);
+        static void SocketConfigurator(Socket s) => s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
     }
 
     public void Dispose()
