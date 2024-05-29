@@ -50,6 +50,14 @@ global using MongoDB.Driver;";
         return this;
     }
 
+    public BaseAnalyzerTest<TAnalyzer> WithExpectedDiagnostic(DiagnosticDescriptor descriptor, int locationIndex, params object[] args)
+    {
+        this.TestState.ExpectedDiagnostics.Add(new DiagnosticResult(descriptor)
+            .WithLocation(locationIndex)
+            .WithArguments(args));
+        return this;
+    }
+
     protected BaseAnalyzerTest<TAnalyzer> WithSourceCode(string sourceCode)
     {
         this.TestState.Sources.Add((SourceFileName, sourceCode));
