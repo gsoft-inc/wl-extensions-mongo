@@ -3,7 +3,7 @@
 public class IndexAttributeUsageAnalyzerTests : BaseAnalyzerTest<IndexAttributeUsageAnalyzer>
 {
     private const string TestClassName = "MyWorker";
-    
+
     private const string TestMethodName = "DoSomething";
 
     [Theory]
@@ -27,7 +27,7 @@ public class MyWorker
         await this.WithSourceCode(string.Format(source, attribute))
             .RunAsync();
     }
-    
+
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
     [InlineData("[NoIndexNeeded(\"Default index used\")]")]
@@ -49,7 +49,7 @@ public class MyWorker
         await this.WithSourceCode(string.Format(source, attribute))
             .RunAsync();
     }
-    
+
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
     [InlineData("[NoIndexNeeded(\"Default index used\")]")]
@@ -76,7 +76,7 @@ public class MyWorker
         await this.WithSourceCode(string.Format(source, attribute))
             .RunAsync();
     }
-    
+
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
     [InlineData("[NoIndexNeeded(\"Default index used\")]")]
@@ -115,15 +115,15 @@ public class MyWorker
     public void DoSomething()
     {
         var collection = (IMongoCollection<PersonDocument>)null!;
-        _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
+        _ = {|#0:collection.CountDocuments(FilterDefinition<PersonDocument>.Empty)|};
     }
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 78, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
             .RunAsync();
     }
-    
+
     [Fact]
     public async Task Given_No_IndexAttribute_And_Reference_In_Local_Method_When_Analyze_Then_Diagnostic()
     {
@@ -137,7 +137,7 @@ public class MyWorker
         async Task LocalDoSomething()
         {{
             var collection = (IMongoCollection<PersonDocument>)null!;
-            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+            _ = {|#0:collection.Find(FilterDefinition<PersonDocument>.Empty)|};
         }}
 
         LocalDoSomething();
@@ -145,10 +145,10 @@ public class MyWorker
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 11, startColumn: 17, endLine: 11, endColumn: 72, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
             .RunAsync();
     }
-    
+
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
     [InlineData("[NoIndexNeeded(\"Default index used\")]")]
@@ -162,7 +162,7 @@ public class MyWorker
     public void DoSomething()
     {{
         var collection = (IMongoCollection<PersonDocument>)null!;
-        _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
+        _ = {{|#0:collection.CountDocuments(FilterDefinition<PersonDocument>.Empty)|}};
 
         var collection2 = (IMongoCollection<PersonDocument>)null!;
         _ = collection2.CountDocuments(FilterDefinition<PersonDocument>.Empty);
@@ -171,7 +171,7 @@ public class MyWorker
     public void DoSomething2()
     {{
         var collection = (IMongoCollection<PersonDocument>)null!;
-        _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
+        _ = {{|#1:collection.CountDocuments(FilterDefinition<PersonDocument>.Empty)|}};
 
         var collection2 = (IMongoCollection<PersonDocument>)null!;
         _ = collection2.CountDocuments(FilterDefinition<PersonDocument>.Empty);
@@ -186,11 +186,11 @@ public class MyWorker
 }}";
 
         await this.WithSourceCode(string.Format(source, attribute))
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 78, TestMethodName, TestClassName)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 18, startColumn: 13, endLine: 18, endColumn: 78, "DoSomething2", TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 1, "DoSomething2", TestClassName)
             .RunAsync();
     }
-    
+
     [Theory]
     [InlineData("[IndexedBy(\"PrimaryKey\")]")]
     [InlineData("[NoIndexNeeded(\"Default index used\")]")]
@@ -231,13 +231,13 @@ public class MyWorker
     public void DoSomething()
     {
         var collection = (IMongoCollection<PersonDocument>)null!;
-        _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+        _ = {|#0:collection.Find(FilterDefinition<PersonDocument>.Empty)|};
         _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
     }
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 9, startColumn: 13, endLine: 9, endColumn: 68, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
             .RunAsync();
     }
 
@@ -259,12 +259,12 @@ public partial class MyWorker
     public void DoSomething()
     {
         var collection = (IMongoCollection<PersonDocument>)null!;
-        _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+        _ = {|#0:collection.Find(FilterDefinition<PersonDocument>.Empty)|};
     }
 }";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 16, startColumn: 13, endLine: 16, endColumn: 68, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
             .RunAsync();
     }
 
@@ -293,14 +293,14 @@ namespace SecondClass
         public void DoSomething()
         {
             var collection = (IMongoCollection<PersonDocument>)null!;
-            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+            _ = {|#0:collection.Find(FilterDefinition<PersonDocument>.Empty)|};
         }
     }
 }
 ";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 23, startColumn: 17, endLine: 23, endColumn: 72, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
             .RunAsync();
     }
 
@@ -332,14 +332,14 @@ namespace SecondClass
         public void DoSomething()
         {
             var collection = (IMongoCollection<PersonDocument>)null!;
-            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+            _ = {|#0:collection.Find(FilterDefinition<PersonDocument>.Empty)|};
         }
     }
 }
 ";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 26, startColumn: 17, endLine: 26, endColumn: 72, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
             .RunAsync();
     }
 
@@ -356,7 +356,7 @@ namespace FirstClass
         public void DoSomething()
         {
             var collection = (IMongoCollection<PersonDocument>)null!;
-            _ = collection.CountDocuments(FilterDefinition<PersonDocument>.Empty);
+            _ = {|#0:collection.CountDocuments(FilterDefinition<PersonDocument>.Empty)|};
         }
     }
 }
@@ -370,15 +370,15 @@ namespace SecondClass
         public void DoSomething()
         {
             var collection = (IMongoCollection<PersonDocument>)null!;
-            _ = collection.Find(FilterDefinition<PersonDocument>.Empty);
+            _ = {|#1:collection.Find(FilterDefinition<PersonDocument>.Empty)|};
         }
     }
 }
 ";
 
         await this.WithSourceCode(source)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 11, startColumn: 17, endLine: 11, endColumn: 82, TestMethodName, TestClassName)
-            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, startLine: 25, startColumn: 17, endLine: 25, endColumn: 72, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 0, TestMethodName, TestClassName)
+            .WithExpectedDiagnostic(IndexAttributeUsageAnalyzer.UseIndexAttributeRule, 1, TestMethodName, TestClassName)
             .RunAsync();
     }
 
