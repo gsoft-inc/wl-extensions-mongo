@@ -59,7 +59,6 @@ internal static class MongoCollectionInformationCache
             this.DatabaseName = databaseName;
             this.DocumentType = documentType;
             this.IsRegisteredByConfiguration = isRegisteredByConfiguration;
-
         }
 
         public string CollectionName { get; set; } = string.Empty;
