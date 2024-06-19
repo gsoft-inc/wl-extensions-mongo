@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
@@ -6,36 +6,51 @@ namespace Workleap.Extensions.Mongo.Tests;
 
 public sealed class MongoCollectionBuilderTests
 {
-    private readonly MongoCollectionBuilder<TestDocument> _builder = new();
-
     [Fact]
     public async Task Builder_Builds_Correctly()
     {
-        var collectionName = "collection1";
+        const string collectionName = "collection1";
+        const string otherDatabaseName = "otherDatabaseName";
 
         Action<BsonClassMap<TestDocument>> classMapInitializer = map =>
         {
             map.MapIdProperty(x => x.Id);
         };
-        
-        this._builder.CollectionName(collectionName)
+
+        var builder = new MongoCollectionBuilder<TestDocument>();
+        builder
+            .CollectionName(collectionName)
             .IndexProvider<TestDocumentIndexProvider>()
             .BsonClassMap(classMapInitializer);
-            
-        var metadata = this._builder.Build() as MongoCollectionMetadata<TestDocument>;
+
+        var otherDatabaseBuilder = new MongoCollectionBuilder<TestDocument>();
+        otherDatabaseBuilder
+            .CollectionName(collectionName)
+            .DatabaseName(otherDatabaseName)
+            .IndexProvider<TestDocumentIndexProvider>()
+            .BsonClassMap(classMapInitializer);
+
+        AssertMetadata(builder.Build() as MongoCollectionMetadata<TestDocument>, collectionName, null, classMapInitializer);
+        AssertMetadata(otherDatabaseBuilder.Build() as MongoCollectionMetadata<TestDocument>, collectionName, otherDatabaseName, classMapInitializer);
+    }
+
+    private static void AssertMetadata<TDocument>(MongoCollectionMetadata<TDocument>? metadata, string expectedCollectionName, string? expectedDatabaseName, Action<BsonClassMap<TDocument>> expectedClassMapInitializer)
+        where TDocument : class
+    {
         Assert.NotNull(metadata);
-        Assert.Equal(collectionName, metadata.CollectionName);
+        Assert.Equal(expectedCollectionName, metadata.CollectionName);
+        Assert.Equal(expectedDatabaseName, metadata.DatabaseName);
         Assert.Equal(typeof(TestDocumentIndexProvider), metadata.IndexProviderType);
-        Assert.Equal(classMapInitializer, metadata.ClassMapInitializer);
+        Assert.Equal(expectedClassMapInitializer, metadata.ClassMapInitializer);
     }
 
     public sealed class TestDocument
     {
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
-        
+
         public string Name { get; set; } = string.Empty;
     }
-    
+
     public sealed class TestDocumentIndexProvider : MongoIndexProvider<TestDocument>
     {
         public override IEnumerable<CreateIndexModel<TestDocument>> CreateIndexModels()

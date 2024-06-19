@@ -1,1 +1,2 @@
 #nullable enable
+Workleap.Extensions.Mongo.MongoCollectionBuilder<TDocument>.DatabaseName(string! databaseName) -> Workleap.Extensions.Mongo.IMongoCollectionBuilder<TDocument!>!

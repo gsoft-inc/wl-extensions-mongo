@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -7,20 +7,20 @@ namespace Workleap.Extensions.Mongo;
 internal static partial class LoggingExtensions
 {
     // IndexProcessor
-    [LoggerMessage(1, LogLevel.Information, "Skipping {DocumentType} index {IndexName} as it is already up-to-date")]
-    public static partial void SkippingUpToDateIndex(this ILogger logger, string documentType, string indexName);
+    [LoggerMessage(1, LogLevel.Information, "Skipping {DocumentType} index {IndexName} as it is already up-to-date on the database {DatabaseName}")]
+    public static partial void SkippingUpToDateIndex(this ILogger logger, string documentType, string indexName, string databaseName);
 
-    [LoggerMessage(2, LogLevel.Information, "Dropping {DocumentType} index {IndexName} as its definition has changed")]
-    public static partial void DroppingOutdatedIndex(this ILogger logger, string documentType, string indexName);
+    [LoggerMessage(2, LogLevel.Information, "Dropping {DocumentType} index {IndexName} as its definition has changed on the database {DatabaseName}")]
+    public static partial void DroppingOutdatedIndex(this ILogger logger, string documentType, string indexName, string databaseName);
 
-    [LoggerMessage(3, LogLevel.Information, "Dropping {DocumentType} index {IndexName} as it is not referenced in the code anymore")]
-    public static partial void DroppingOrphanedIndex(this ILogger logger, string documentType, string indexName);
+    [LoggerMessage(3, LogLevel.Information, "Dropping {DocumentType} index {IndexName} as it is not referenced in the code anymore on the database {DatabaseName}")]
+    public static partial void DroppingOrphanedIndex(this ILogger logger, string documentType, string indexName, string databaseName);
 
-    [LoggerMessage(4, LogLevel.Information, "Creating {DocumentType} index {IndexName} for the first time")]
-    public static partial void CreatingCompletelyNewIndex(this ILogger logger, string documentType, string indexName);
+    [LoggerMessage(4, LogLevel.Information, "Creating {DocumentType} index {IndexName} for the first time on the database {DatabaseName}")]
+    public static partial void CreatingCompletelyNewIndex(this ILogger logger, string documentType, string indexName, string databaseName);
 
-    [LoggerMessage(5, LogLevel.Information, "Creating {DocumentType} index {IndexName} after dropping an older version")]
-    public static partial void CreatingUpdatedIndex(this ILogger logger, string documentType, string indexName);
+    [LoggerMessage(5, LogLevel.Information, "Creating {DocumentType} index {IndexName} after dropping an older version on the database {DatabaseName}")]
+    public static partial void CreatingUpdatedIndex(this ILogger logger, string documentType, string indexName, string databaseName);
 
     // MongoLoggingEventSubscriber
     [LoggerMessage(6, LogLevel.Debug, "Executing mongo command {MongoCommandName}:{MongoRequestId} {MongoCommandJson}")]

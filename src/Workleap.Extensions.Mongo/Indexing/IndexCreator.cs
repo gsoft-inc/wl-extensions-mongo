@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -124,7 +124,7 @@ internal sealed class IndexCreator<TDocument>
 
             if (existingIndexName.Hash == newIndexName.Hash)
             {
-                this._logger.SkippingUpToDateIndex(typeof(TDocument).Name, existingIndexName.FullName);
+                this._logger.SkippingUpToDateIndex(typeof(TDocument).Name, existingIndexName.FullName, this._database.DatabaseNamespace.DatabaseName);
             }
             else
             {
@@ -147,10 +147,10 @@ internal sealed class IndexCreator<TDocument>
             switch (reason)
             {
                 case AddReason.New:
-                    this._logger.CreatingCompletelyNewIndex(typeof(TDocument).Name, indexName.FullName);
+                    this._logger.CreatingCompletelyNewIndex(typeof(TDocument).Name, indexName.FullName, this._database.DatabaseNamespace.DatabaseName);
                     break;
                 case AddReason.Updated:
-                    this._logger.CreatingUpdatedIndex(typeof(TDocument).Name, indexName.FullName);
+                    this._logger.CreatingUpdatedIndex(typeof(TDocument).Name, indexName.FullName, this._database.DatabaseNamespace.DatabaseName);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(reason));

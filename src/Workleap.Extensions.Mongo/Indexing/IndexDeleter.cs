@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -96,10 +96,10 @@ internal sealed class IndexDeleter
             switch (reason)
             {
                 case RemoveReason.Outdated:
-                    this._logger.DroppingOutdatedIndex(collectionName, indexName.FullName);
+                    this._logger.DroppingOutdatedIndex(collectionName, indexName.FullName, this._database.DatabaseNamespace.DatabaseName);
                     break;
                 case RemoveReason.Orphaned:
-                    this._logger.DroppingOrphanedIndex(collectionName, indexName.FullName);
+                    this._logger.DroppingOrphanedIndex(collectionName, indexName.FullName, this._database.DatabaseNamespace.DatabaseName);
                     break;
             }
             

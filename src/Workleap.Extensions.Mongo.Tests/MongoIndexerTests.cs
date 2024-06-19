@@ -1,4 +1,4 @@
-﻿using Workleap.Extensions.Xunit;
+using Workleap.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Workleap.Extensions.Mongo.Indexing;
@@ -15,20 +15,22 @@ public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
     [Fact]
     public async Task Indexes_Are_Automatically_Created_When_Specifying_DocumentType()
     {
-        await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(new[] { typeof(PersonDocument) });
-        await this.AssertPersonDocumentIndexes();
+        await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(new[] { typeof(PersonDocument), typeof(OtherDatabasePersonDocument) });
+        await this.AssertPersonDocumentIndexes<PersonDocument>();
+        await this.AssertPersonDocumentIndexes<OtherDatabasePersonDocument>();
     }
 
     [Fact]
     public async Task Indexes_Are_Automatically_Created_When_Specifying_Assembly()
     {
         await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(typeof(PersonDocument).Assembly);
-        await this.AssertPersonDocumentIndexes();
+        await this.AssertPersonDocumentIndexes<PersonDocument>();
+        await this.AssertPersonDocumentIndexes<OtherDatabasePersonDocument>();
     }
 
-    private async Task AssertPersonDocumentIndexes()
+    private async Task AssertPersonDocumentIndexes<TDocument>()
     {
-        using var personDocumentIndexCursor = await this.Services.GetRequiredService<IMongoCollection<PersonDocument>>().Indexes.ListAsync();
+        using var personDocumentIndexCursor = await this.Services.GetRequiredService<IMongoCollection<TDocument>>().Indexes.ListAsync();
         var personDocumentIndexNames = await personDocumentIndexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
 
         Assert.Equal(3, personDocumentIndexNames.Count);
@@ -51,6 +53,32 @@ public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
         public string Lastname { get; set; } = string.Empty;
 
         public int Age { get; set; }
+    }
+
+    [MongoCollection("person", DatabaseName = "other", IndexProviderType = typeof(OtherDatabasePersonDocumentIndexes))]
+    private sealed class OtherDatabasePersonDocument : MongoDocument
+    {
+        public string Firstname { get; set; } = string.Empty;
+
+        public string Lastname { get; set; } = string.Empty;
+
+        public int Age { get; set; }
+    }
+
+    private sealed class OtherDatabasePersonDocumentIndexes : MongoIndexProvider<OtherDatabasePersonDocument>
+    {
+        public override IEnumerable<CreateIndexModel<OtherDatabasePersonDocument>> CreateIndexModels()
+        {
+            yield return new CreateIndexModel<OtherDatabasePersonDocument>(
+                Builders<OtherDatabasePersonDocument>.IndexKeys.Combine(
+                    Builders<OtherDatabasePersonDocument>.IndexKeys.Ascending(x => x.Firstname),
+                    Builders<OtherDatabasePersonDocument>.IndexKeys.Ascending(x => x.Lastname)),
+                new CreateIndexOptions { Name = "fn_ln" });
+
+            yield return new CreateIndexModel<OtherDatabasePersonDocument>(
+                Builders<OtherDatabasePersonDocument>.IndexKeys.Ascending(x => x.Age),
+                new CreateIndexOptions { Name = "age" });
+        }
     }
 
     private sealed class PersonDocumentIndexes : MongoIndexProvider<PersonDocument>

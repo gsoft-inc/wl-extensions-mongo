@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Search;
@@ -9,10 +10,12 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
 {
     private readonly IMongoCollection<TDocument> _underlyingCollection;
 
-    public MongoCollectionProxy(IMongoDatabase database)
+    public MongoCollectionProxy(IMongoClient client, IOptions<MongoClientOptions> optionsMonitor)
     {
-        var collectionName = MongoCollectionNameCache.GetCollectionName(typeof(TDocument));
-        this._underlyingCollection = database.GetCollection<TDocument>(collectionName);
+        var collectionInfo = MongoCollectionInformationCache.GetCollectionInformation(typeof(TDocument));
+        var databaseName = collectionInfo.DatabaseName ?? optionsMonitor.Value.DefaultDatabaseName;
+
+        this._underlyingCollection = client.GetDatabase(databaseName).GetCollection<TDocument>(collectionInfo.CollectionName);
     }
 
     public CollectionNamespace CollectionNamespace => this._underlyingCollection.CollectionNamespace;

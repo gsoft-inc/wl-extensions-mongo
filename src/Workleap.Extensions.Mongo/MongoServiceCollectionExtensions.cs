@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -95,7 +95,7 @@ public static class MongoServiceCollectionExtensions
                     throw new ArgumentNullException($"{builderType} must specify a CollectionName");
                 }
 
-                MongoCollectionNameCache.SetCollectionName(documentType, metadata.CollectionName!);
+                MongoCollectionInformationCache.SetCollectionInformation(documentType, metadata.CollectionName!, metadata.DatabaseName);
 
                 MongoConfigurationIndexStore.AddIndexProviderType(documentType, metadata.IndexProviderType);
 
