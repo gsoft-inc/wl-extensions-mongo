@@ -36,7 +36,7 @@ internal static class MongoCollectionInformationCache
         {
             if (documentType.GetCustomAttribute<MongoCollectionAttribute>() is { } attribute)
             {
-                return new MongoCollectionInformation(documentType, attribute.Name, attribute?.DatabaseName, false);
+                return new MongoCollectionInformation(documentType, attribute.Name, attribute.DatabaseName, isRegisteredByConfiguration: false);
             }
 
             throw new ArgumentException(documentType + " must be decorated with " + nameof(MongoCollectionAttribute) + " or be registered by a " + typeof(IMongoCollectionConfiguration<>).MakeGenericType(documentType).Name);
@@ -45,7 +45,7 @@ internal static class MongoCollectionInformationCache
 
     internal static void SetCollectionInformation(Type documentType, string collectionName, string? databaseName)
     {
-        if (!CollectionInfos.TryAdd(documentType, new MongoCollectionInformation(documentType, collectionName, databaseName, true)))
+        if (!CollectionInfos.TryAdd(documentType, new MongoCollectionInformation(documentType, collectionName, databaseName, isRegisteredByConfiguration: true)))
         {
             throw new ArgumentException($"Collection name for {documentType} already set.");
         }
@@ -61,12 +61,12 @@ internal static class MongoCollectionInformationCache
             this.IsRegisteredByConfiguration = isRegisteredByConfiguration;
         }
 
-        public string CollectionName { get; set; } = string.Empty;
+        public string CollectionName { get; }
 
-        public string? DatabaseName { get; set; }
+        public string? DatabaseName { get; }
 
-        public Type DocumentType { get; set; }
+        public Type DocumentType { get; }
 
-        public bool IsRegisteredByConfiguration { get; set; }
+        public bool IsRegisteredByConfiguration { get; }
     }
 }

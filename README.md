@@ -164,7 +164,7 @@ public class PersonDocument : IMongoDocument
 }
 ```
 
-For multiple database setups, you can specify the database name directly on the attribute. This will have the following effect:
+For multiple databases setup, you can specify the database name directly on the attribute. This will have the following effect:
 * The index creation from `UpdateIndexesAsync` can be invoked on the assembly and the indexer will use the proper database
 * The injection of `IMongoCollection<TDocument>` will work, regardless of which database the collection is bound to
 
