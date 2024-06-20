@@ -7,6 +7,8 @@ public interface IMongoCollectionBuilder<TDocument>
 {
     IMongoCollectionBuilder<TDocument> CollectionName(string collectionName);
 
+    IMongoCollectionBuilder<TDocument> DatabaseName(string databaseName);
+
     IMongoCollectionBuilder<TDocument> IndexProvider<TIndexProvider>()
         where TIndexProvider : MongoIndexProvider<TDocument>;
 

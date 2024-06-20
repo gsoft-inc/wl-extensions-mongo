@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -17,7 +17,13 @@ public sealed class MongoCollectionBuilder<TDocument> : MongoCollectionBuilder, 
         this._metadata.CollectionName = collectionName;
         return this;
     }
-    
+
+    public IMongoCollectionBuilder<TDocument> DatabaseName(string databaseName)
+    {
+        this._metadata.DatabaseName = databaseName;
+        return this;
+    }
+
     public IMongoCollectionBuilder<TDocument> IndexProvider<TIndexProvider>()
         where TIndexProvider : MongoIndexProvider<TDocument>
     {

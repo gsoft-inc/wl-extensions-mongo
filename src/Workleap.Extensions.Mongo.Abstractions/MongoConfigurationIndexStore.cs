@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -14,5 +14,7 @@ internal static class MongoConfigurationIndexStore
         }
     }
 
-    internal static IReadOnlyDictionary<Type, Type?> GetIndexProviderTypes() => IndexProviderTypes;
+    internal static Type? GetIndexProviderType(Type documentType) => IndexProviderTypes[documentType];
+
+    internal static IEnumerable<Type> GetRegisteredDocumentTypes() => IndexProviderTypes.Keys;
 }

@@ -1,4 +1,4 @@
-﻿using Workleap.Extensions.Mongo;
+using Workleap.Extensions.Mongo;
 
 // ReSharper disable once CheckNamespace
 namespace MongoDB.Driver;
@@ -8,6 +8,6 @@ public static class IMongoCollectionExtensions
     public static string GetName<TDocument>(this IMongoCollection<TDocument> collection)
         where TDocument : class
     {
-        return MongoCollectionNameCache.GetCollectionName<TDocument>();
+        return MongoCollectionInformationCache.GetCollectionName<TDocument>();
     }
 }

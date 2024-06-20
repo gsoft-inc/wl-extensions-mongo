@@ -164,6 +164,18 @@ public class PersonDocument : IMongoDocument
 }
 ```
 
+For multiple databases setup, you can specify the database name directly on the attribute. This will have the following effect:
+* The index creation from `UpdateIndexesAsync` can be invoked on the assembly and the indexer will use the proper database
+* The injection of `IMongoCollection<TDocument>` will work, regardless of which database the collection is bound to
+
+```csharp
+[MongoCollection("people", DatabaseName = "foo")]
+public class PersonDocument : IMongoDocument
+{
+    // [...]
+}
+```
+
 ### With Configuration
 
 In certain scenarios, like in Domain Driven Design (DDD), one would like to persist their Domain Aggregates as is in the Document Database. These Domain objects are not aware of how they are persisted. They cannot be decorated with Persistence level attributes (ie `[MongoCollection()]`), nor can they implement `IMongoDocument`.
@@ -183,6 +195,7 @@ internal sealed class PersonConfiguration: IMongoCollectionConfiguration<Person>
     public void Configure(IMongoCollectionBuilder<Person> builder) 
     {
         builder.CollectionName("people");
+        builder.DatabaseName("foo"); // optional, not calling this will use the default database
     }
 }
 ```

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -68,37 +68,60 @@ internal sealed class MongoIndexer : IMongoIndexer
             enumeratedTypes.Add(type);
         }
 
+        var configurationDocumentTypes = MongoConfigurationIndexStore.GetRegisteredDocumentTypes();
+
+        foreach (var type in configurationDocumentTypes)
+        {
+            enumeratedTypes.Add(type);
+        }
+
         // Use default MongoDB client by default
         clientName ??= MongoDefaults.ClientName;
         var mongoClient = this._mongoClientProvider.GetClient(clientName);
         var options = this._optionsMonitor.Get(clientName);
 
-        // Use default MongoDB database by default
-        databaseName ??= options.DefaultDatabaseName;
-        var database = mongoClient.GetDatabase(databaseName);
+        var collectionInfoByDatabase = enumeratedTypes
+            .Select(t => MongoCollectionInformationCache.GetCollectionInformation(t))
+            .GroupBy(info => info.DatabaseName);
 
-        // Attempt to update the indexes if we acquire the distributed lock
-        var lockId = options.Indexing.DistributedLockName;
-        var lockLifetime = TimeSpan.FromSeconds(options.Indexing.LockMaxLifetimeInSeconds);
-        var acquireTimeout = TimeSpan.FromSeconds(options.Indexing.LockAcquisitionTimeoutInSeconds);
-        var distributedLockFactory = new MongoDistributedLockFactory(database, this._loggerFactory);
-
-        MongoDistributedLock distributedLock;
-        await using (distributedLock = await distributedLockFactory.AcquireAsync(lockId, lockLifetime, acquireTimeout, cancellationToken).ConfigureAwait(false))
+        foreach (var collectionInfos in collectionInfoByDatabase)
         {
-            if (distributedLock.IsAcquired)
+            // User provided parameter has precedance over the MongoCollectionAttribute, otherwise use the default MongoDB database
+            var database = mongoClient.GetDatabase(databaseName ?? collectionInfos.Key ?? options.DefaultDatabaseName);
+
+            // Attempt to update the indexes if we acquire the distributed lock
+            var lockId = options.Indexing.DistributedLockName;
+            var lockLifetime = TimeSpan.FromSeconds(options.Indexing.LockMaxLifetimeInSeconds);
+            var acquireTimeout = TimeSpan.FromSeconds(options.Indexing.LockAcquisitionTimeoutInSeconds);
+            var distributedLockFactory = new MongoDistributedLockFactory(database, this._loggerFactory);
+
+            MongoDistributedLock distributedLock;
+            await using (distributedLock = await distributedLockFactory.AcquireAsync(lockId, lockLifetime, acquireTimeout, cancellationToken).ConfigureAwait(false))
             {
-                await this.UpdateIndexesInternalAsync(enumeratedTypes, database, cancellationToken).ConfigureAwait(false);
+                if (distributedLock.IsAcquired)
+                {
+                    await this.UpdateIndexesInternalAsync(collectionInfos, database, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
     }
 
-    private async Task UpdateIndexesInternalAsync(IEnumerable<Type> types, IMongoDatabase database, CancellationToken cancellationToken = default)
+    private async Task UpdateIndexesInternalAsync(IEnumerable<MongoCollectionInformationCache.MongoCollectionInformation> collectionInfos, IMongoDatabase database, CancellationToken cancellationToken = default)
     {
         var registry = new IndexRegistry();
-        
-        AddAttributeIndexes(types, registry);
-        AddConfigurationIndexes(registry);
+        var typesByRegistrationMethod = collectionInfos
+            .GroupBy(x => x.IsRegisteredByConfiguration, x => x.DocumentType)
+            .ToDictionary(x => x.Key, x => x.AsEnumerable());
+
+        if (typesByRegistrationMethod.TryGetValue(false, out var types))
+        {
+            AddAttributeIndexes(types, registry);
+        }
+
+        if (typesByRegistrationMethod.TryGetValue(true, out types))
+        {
+            AddConfigurationIndexes(types, registry);
+        }
 
         var expectedIndexes = new Dictionary<string, IList<UniqueIndexName>>();
 
@@ -121,7 +144,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
             var processingResult = await task.ConfigureAwait(false);
             
-            var collectionName = MongoCollectionNameCache.GetCollectionName(documentType);
+            var collectionName = MongoCollectionInformationCache.GetCollectionName(documentType);
             if (expectedIndexes.TryGetValue(collectionName, out var expectedIndexesForCollection))
             {
                 // Better way to support AddRange?
@@ -137,11 +160,12 @@ internal sealed class MongoIndexer : IMongoIndexer
         await IndexDeleter.ProcessAsync(database, expectedIndexes, this._loggerFactory, cancellationToken).ConfigureAwait(false);
     }
 
-    private static void AddConfigurationIndexes(IndexRegistry registry)
+    private static void AddConfigurationIndexes(IEnumerable<Type> documentTypes, IndexRegistry registry)
     {
-        foreach (var cachedIndexType in MongoConfigurationIndexStore.GetIndexProviderTypes())
+        foreach (var documentType in documentTypes)
         {
-            registry.RegisterIndexType(cachedIndexType.Key, cachedIndexType.Value);
+            var indexProviderType = MongoConfigurationIndexStore.GetIndexProviderType(documentType);
+            registry.RegisterIndexType(documentType, indexProviderType);
         }
     }
 

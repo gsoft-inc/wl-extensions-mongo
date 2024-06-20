@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace Workleap.Extensions.Mongo;
 
@@ -13,6 +13,8 @@ public sealed class MongoCollectionAttribute : Attribute
     }
 
     public string Name { get; }
+
+    public string? DatabaseName { get; set; }
 
     public Type? IndexProviderType { get; set; }
 }
