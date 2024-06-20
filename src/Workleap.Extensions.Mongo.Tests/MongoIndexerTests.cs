@@ -7,6 +7,8 @@ namespace Workleap.Extensions.Mongo.Tests;
 
 public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
 {
+    private const string OtherDatabaseName = "other";
+
     public MongoIndexerTests(ConfigurationMongoFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture, testOutputHelper)
     {
@@ -16,21 +18,25 @@ public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
     public async Task Indexes_Are_Automatically_Created_When_Specifying_DocumentType()
     {
         await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(new[] { typeof(PersonDocument), typeof(OtherDatabasePersonDocument) });
-        await this.AssertPersonDocumentIndexes<PersonDocument>();
-        await this.AssertPersonDocumentIndexes<OtherDatabasePersonDocument>();
+        await this.AssertPersonDocumentIndexes<PersonDocument>(this.Services.GetRequiredService<IMongoDatabase>().DatabaseNamespace.DatabaseName);
+        await this.AssertPersonDocumentIndexes<OtherDatabasePersonDocument>(OtherDatabaseName);
     }
 
     [Fact]
     public async Task Indexes_Are_Automatically_Created_When_Specifying_Assembly()
     {
         await this.Services.GetRequiredService<IMongoIndexer>().UpdateIndexesAsync(typeof(PersonDocument).Assembly);
-        await this.AssertPersonDocumentIndexes<PersonDocument>();
-        await this.AssertPersonDocumentIndexes<OtherDatabasePersonDocument>();
+        await this.AssertPersonDocumentIndexes<PersonDocument>(this.Services.GetRequiredService<IMongoDatabase>().DatabaseNamespace.DatabaseName);
+        await this.AssertPersonDocumentIndexes<OtherDatabasePersonDocument>(OtherDatabaseName);
     }
 
-    private async Task AssertPersonDocumentIndexes<TDocument>()
+    private async Task AssertPersonDocumentIndexes<TDocument>(string expectedDatabaseName)
     {
-        using var personDocumentIndexCursor = await this.Services.GetRequiredService<IMongoCollection<TDocument>>().Indexes.ListAsync();
+        var collection = this.Services.GetRequiredService<IMongoCollection<TDocument>>();
+        Assert.Equal(expectedDatabaseName, collection.Database.DatabaseNamespace.DatabaseName);
+
+        using var personDocumentIndexCursor = await collection.Indexes.ListAsync();
+
         var personDocumentIndexNames = await personDocumentIndexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
 
         Assert.Equal(3, personDocumentIndexNames.Count);
@@ -55,7 +61,7 @@ public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
         public int Age { get; set; }
     }
 
-    [MongoCollection("person", DatabaseName = "other", IndexProviderType = typeof(OtherDatabasePersonDocumentIndexes))]
+    [MongoCollection("person", DatabaseName = OtherDatabaseName, IndexProviderType = typeof(OtherDatabasePersonDocumentIndexes))]
     private sealed class OtherDatabasePersonDocument : MongoDocument
     {
         public string Firstname { get; set; } = string.Empty;
