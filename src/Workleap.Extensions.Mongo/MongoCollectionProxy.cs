@@ -90,21 +90,25 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.BulkWriteAsync(session, requests, options, cancellationToken);
     }
 
+    [Obsolete("Use CountDocuments or EstimatedDocumentCount instead.")]
     public long Count(FilterDefinition<TDocument> filter, CountOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.Count(filter, options, cancellationToken);
     }
 
+    [Obsolete("Use CountDocuments or EstimatedDocumentCount instead.")]
     public long Count(IClientSessionHandle session, FilterDefinition<TDocument> filter, CountOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.Count(session, filter, options, cancellationToken);
     }
 
+    [Obsolete("Use CountDocumentsAsync or EstimatedDocumentCountAsync instead.")]
     public Task<long> CountAsync(FilterDefinition<TDocument> filter, CountOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.CountAsync(filter, options, cancellationToken);
     }
 
+    [Obsolete("Use CountDocumentsAsync or EstimatedDocumentCountAsync instead.")]
     public Task<long> CountAsync(IClientSessionHandle session, FilterDefinition<TDocument> filter, CountOptions? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.CountAsync(session, filter, options, cancellationToken);
@@ -330,6 +334,7 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         this._underlyingCollection.InsertOne(session, document, options, cancellationToken);
     }
 
+    [Obsolete("Use the new overload of InsertOneAsync with an InsertOneOptions parameter instead.")]
     public Task InsertOneAsync(TDocument document, CancellationToken _cancellationToken)
     {
         return this._underlyingCollection.InsertOneAsync(document, _cancellationToken);
@@ -365,21 +370,25 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.InsertManyAsync(session, documents, options, cancellationToken);
     }
 
+    [Obsolete("Use Aggregation pipeline instead.")]
     public IAsyncCursor<TResult> MapReduce<TResult>(BsonJavaScript map, BsonJavaScript reduce, MapReduceOptions<TDocument, TResult>? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.MapReduce(map, reduce, options, cancellationToken);
     }
 
+    [Obsolete("Use Aggregation pipeline instead.")]
     public IAsyncCursor<TResult> MapReduce<TResult>(IClientSessionHandle session, BsonJavaScript map, BsonJavaScript reduce, MapReduceOptions<TDocument, TResult>? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.MapReduce(session, map, reduce, options, cancellationToken);
     }
 
+    [Obsolete("Use Aggregation pipeline instead.")]
     public Task<IAsyncCursor<TResult>> MapReduceAsync<TResult>(BsonJavaScript map, BsonJavaScript reduce, MapReduceOptions<TDocument, TResult>? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.MapReduceAsync(map, reduce, options, cancellationToken);
     }
 
+    [Obsolete("Use Aggregation pipeline instead.")]
     public Task<IAsyncCursor<TResult>> MapReduceAsync<TResult>(IClientSessionHandle session, BsonJavaScript map, BsonJavaScript reduce, MapReduceOptions<TDocument, TResult>? options = null, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.MapReduceAsync(session, map, reduce, options, cancellationToken);
@@ -395,6 +404,7 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.ReplaceOne(filter, replacement, options, cancellationToken);
     }
 
+    [Obsolete("Use the overload that takes a ReplaceOptions instead of an UpdateOptions.")]
     public ReplaceOneResult ReplaceOne(FilterDefinition<TDocument> filter, TDocument replacement, UpdateOptions options, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.ReplaceOne(filter, replacement, options, cancellationToken);
@@ -405,6 +415,7 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.ReplaceOne(session, filter, replacement, options, cancellationToken);
     }
 
+    [Obsolete("Use the overload that takes a ReplaceOptions instead of an UpdateOptions.")]
     public ReplaceOneResult ReplaceOne(IClientSessionHandle session, FilterDefinition<TDocument> filter, TDocument replacement, UpdateOptions options, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.ReplaceOne(session, filter, replacement, options, cancellationToken);
@@ -415,6 +426,7 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.ReplaceOneAsync(filter, replacement, options, cancellationToken);
     }
 
+    [Obsolete("Use the overload that takes a ReplaceOptions instead of an UpdateOptions.")]
     public Task<ReplaceOneResult> ReplaceOneAsync(FilterDefinition<TDocument> filter, TDocument replacement, UpdateOptions options, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.ReplaceOneAsync(filter, replacement, options, cancellationToken);
@@ -425,6 +437,7 @@ internal sealed class MongoCollectionProxy<TDocument> : IMongoCollection<TDocume
         return this._underlyingCollection.ReplaceOneAsync(session, filter, replacement, options, cancellationToken);
     }
 
+    [Obsolete("Use the overload that takes a ReplaceOptions instead of an UpdateOptions.")]
     public Task<ReplaceOneResult> ReplaceOneAsync(IClientSessionHandle session, FilterDefinition<TDocument> filter, TDocument replacement, UpdateOptions options, CancellationToken cancellationToken = default)
     {
         return this._underlyingCollection.ReplaceOneAsync(session, filter, replacement, options, cancellationToken);
