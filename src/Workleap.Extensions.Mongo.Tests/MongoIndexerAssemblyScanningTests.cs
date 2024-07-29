@@ -15,7 +15,7 @@ public class MongoIndexerAssemblyScanningTests
         Assert.True(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(ChildWithOwnIndexerAssemblyScanningTestDocument)));
     }
 
-    private class RandomObject
+    private sealed class RandomObject
     {
         public Guid WastedGuid { get; set; }
     }

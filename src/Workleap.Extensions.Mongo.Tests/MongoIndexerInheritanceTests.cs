@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using Workleap.Extensions.Mongo;
 using Workleap.Extensions.Mongo.Indexing;
 using Workleap.Extensions.Xunit;
 

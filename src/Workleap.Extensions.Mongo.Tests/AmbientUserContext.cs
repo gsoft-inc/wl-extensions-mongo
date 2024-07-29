@@ -16,7 +16,7 @@ public sealed class AmbientUserContext
         return new UserContext(userId);
     }
 
-    private class UserContext : IDisposable
+    private sealed class UserContext : IDisposable
     {
         private readonly UserContext? _parent;
 

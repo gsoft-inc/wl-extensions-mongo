@@ -12,10 +12,10 @@ public sealed class MongoCollectionBuilderTests
         const string collectionName = "collection1";
         const string otherDatabaseName = "otherDatabaseName";
 
-        Action<BsonClassMap<TestDocument>> classMapInitializer = map =>
+        static void classMapInitializer(BsonClassMap<TestDocument> map)
         {
             map.MapIdProperty(x => x.Id);
-        };
+        }
 
         var builder = new MongoCollectionBuilder<TestDocument>();
         builder

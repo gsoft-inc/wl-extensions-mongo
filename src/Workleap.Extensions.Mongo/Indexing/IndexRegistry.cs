@@ -1,10 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Workleap.Extensions.Mongo.Indexing;
 
 /// <summary>
-/// Associates a concrete <see cref="IMongoDocument"/> class with its <see cref="MongoIndexProvider"/>.
+/// Associates a concrete <see cref="IMongoDocument"/> class with its <see cref="MongoIndexProvider{TDocument}"/>.
 /// </summary>
 internal sealed class IndexRegistry : List<DocumentTypeEntry>
 {
