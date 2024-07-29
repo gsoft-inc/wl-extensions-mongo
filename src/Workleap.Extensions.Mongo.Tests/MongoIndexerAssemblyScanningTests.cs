@@ -34,7 +34,7 @@ public class MongoIndexerAssemblyScanningTests
         [BsonElement("email")]
         public string Email { get; set; } = string.Empty;
     }
-    
+
     [BsonDiscriminator("Children")]
     [MongoCollection("assemblyScanner", IndexProviderType = typeof(ChildWithOwnIndexerAssemblyScanningTestProvider))]
     private sealed class ChildWithOwnIndexerAssemblyScanningTestDocument : BaseAssemblyScanningTestDocument
@@ -42,7 +42,7 @@ public class MongoIndexerAssemblyScanningTests
         [BsonElement("phone")]
         public string PhoneNumber { get; set; } = string.Empty;
     }
-    
+
     private sealed class BaseAssemblyScanningTestProvider : MongoIndexProvider<BaseAssemblyScanningTestDocument>
     {
         public override IEnumerable<CreateIndexModel<BaseAssemblyScanningTestDocument>> CreateIndexModels()
@@ -52,7 +52,7 @@ public class MongoIndexerAssemblyScanningTests
                 new CreateIndexOptions { Name = "name" });
         }
     }
-    
+
     private sealed class ChildWithOwnIndexerAssemblyScanningTestProvider : MongoIndexProvider<ChildWithOwnIndexerAssemblyScanningTestDocument>
     {
         public override IEnumerable<CreateIndexModel<ChildWithOwnIndexerAssemblyScanningTestDocument>> CreateIndexModels()

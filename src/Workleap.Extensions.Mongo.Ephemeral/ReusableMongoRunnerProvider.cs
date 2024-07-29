@@ -4,7 +4,7 @@ namespace Workleap.Extensions.Mongo.Ephemeral;
 
 internal sealed class ReusableMongoRunnerProvider : IDisposable
 {
-    private static readonly ConcurrentDictionary<string, Lazy<ReusableMongoRunner>> _lazyRunners = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, Lazy<ReusableMongoRunner>> LazyRunners = new(StringComparer.Ordinal);
 
     private readonly Guid _renterId;
 
@@ -15,7 +15,7 @@ internal sealed class ReusableMongoRunnerProvider : IDisposable
 
     public ReusableMongoRunner GetRunner(string clientName)
     {
-        var runner = _lazyRunners.GetOrAdd(clientName, CreateLazyReusableMongoRunner).Value;
+        var runner = LazyRunners.GetOrAdd(clientName, CreateLazyReusableMongoRunner).Value;
         runner.Rent(this._renterId);
         return runner;
     }
@@ -27,7 +27,7 @@ internal sealed class ReusableMongoRunnerProvider : IDisposable
 
     public void Dispose()
     {
-        foreach (var lazyRunner in _lazyRunners.Values)
+        foreach (var lazyRunner in LazyRunners.Values)
         {
             if (lazyRunner.IsValueCreated)
             {

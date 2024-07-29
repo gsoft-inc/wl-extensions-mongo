@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
@@ -56,18 +57,7 @@ internal sealed class UniqueIndexName
             .Append(options?.PartialFilterExpression is { } filter ? filter.Render(bsonSerializer, serializerRegistry) : string.Empty)
             .ToString();
 
-        string hashHex;
-        using (var sha = SHA256.Create())
-        {
-            var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(indexDescription));
-#if NET6_0_OR_GREATER
-            hashHex = Convert.ToHexString(hash);
-#else
-            hashHex = BitConverter.ToString(hash).Replace("-", string.Empty);
-#endif
-            hashHex = hashHex.ToLowerInvariant().Substring(0, IndexPartialHashLength);
-        }
-
+        var hashHex = ComputeIndexHash(indexDescription);
         var name = prefix + "_" + hashHex;
 
         if (ValidNameRegex.Match(name) is { Success: true })
@@ -84,6 +74,21 @@ internal sealed class UniqueIndexName
 
         indexName = null;
         return false;
+    }
+
+    private static string ComputeIndexHash(string name)
+    {
+#if NET6_0_OR_GREATER
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(name));
+        return Convert.ToHexString(hash).ToLowerInvariant().Substring(0, IndexPartialHashLength);
+#else
+        using (var sha = SHA256.Create())
+        {
+            var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(name));
+            var hashHex = BitConverter.ToString(hash).Replace("-", string.Empty);
+            return hashHex.ToLowerInvariant().Substring(0, IndexPartialHashLength);
+        }
+#endif
     }
 
     public static bool TryCreate(BsonValue indexDocument, [MaybeNullWhen(false)] out UniqueIndexName indexName)

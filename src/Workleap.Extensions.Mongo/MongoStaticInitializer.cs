@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
@@ -7,7 +7,7 @@ namespace Workleap.Extensions.Mongo;
 
 internal sealed class MongoStaticInitializer
 {
-    private static readonly object _lockObject = new object();
+    private static readonly object LockObject = new object();
     private static bool _initialized;
 
     private readonly IOptions<MongoStaticOptions> _options;
@@ -24,7 +24,7 @@ internal sealed class MongoStaticInitializer
             return;
         }
 
-        lock (_lockObject)
+        lock (LockObject)
         {
             if (_initialized)
             {

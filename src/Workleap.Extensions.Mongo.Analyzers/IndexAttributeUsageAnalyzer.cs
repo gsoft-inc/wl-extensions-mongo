@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -43,7 +43,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
         private readonly INamedTypeSymbol? _mongoCollectionExtensionsType;
         private readonly INamedTypeSymbol? _mongoCollectionInterfaceType;
         private readonly ImmutableHashSet<INamedTypeSymbol> _mongoIndexAttributes;
-        
+
         // We can skip class or method that we know have an attribute and already reported methods 
         private readonly ConcurrentDictionary<ISymbol, bool> _containingSymbolToSkipAnalyzing = new(SymbolEqualityComparer.Default);
 
@@ -57,7 +57,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             this._mongoCollectionExtensionsType = compilation.FindTypeByMetadataName(KnownSymbolNames.MongoCollectionExtensions, KnownSymbolNames.MongoAssembly);
             this._mongoCollectionInterfaceType = compilation.FindTypeByMetadataName(KnownSymbolNames.MongoCollectionInterface, KnownSymbolNames.MongoAssembly);
         }
-        
+
         public bool IsValid => this._mongoIndexAttributes.Count == 2 &&
                                this._mongoCollectionExtensionsType is not null &&
                                this._mongoCollectionInterfaceType is not null;
@@ -68,7 +68,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             {
                 return;
             }
-            
+
             var classSymbol = context.ContainingSymbol.ContainingType;
             if (this._containingSymbolToSkipAnalyzing.ContainsKey(classSymbol))
             {
@@ -109,7 +109,7 @@ public sealed class IndexAttributeUsageAnalyzer : DiagnosticAnalyzer
             var methodSymbol = context.ContainingSymbol;
             var doesMethodHaveAttribute = methodSymbol.GetAttributes()
                 .Any(this.IndexAttributePredicate);
-            
+
             if (doesMethodHaveAttribute)
             {
                 this._containingSymbolToSkipAnalyzing.TryAdd(methodSymbol, true);

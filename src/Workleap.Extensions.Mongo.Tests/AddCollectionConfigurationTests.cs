@@ -6,7 +6,7 @@ using Workleap.Extensions.Xunit;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
-public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<ConfigurationMongoFixture> 
+public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<ConfigurationMongoFixture>
 {
     public AddCollectionConfigurationTests(ConfigurationMongoFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture, testOutputHelper)
     {
@@ -16,9 +16,9 @@ public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<Config
     public async Task AddCollectionConfigurations_Registers_CollectionNames_IndexProviders_BsonClassMaps_Correctly()
     {
         var indexer = this.Services.GetRequiredService<IMongoIndexer>();
-        
+
         await indexer.UpdateIndexesAsync();
-        
+
         var collection = this.Services.GetRequiredService<IMongoCollection<ConfigurationMongoFixture.Person>>();
 
         Assert.Equal("People", collection.CollectionNamespace.CollectionName);
@@ -28,13 +28,13 @@ public sealed class AddCollectionConfigurationTests : BaseIntegrationTest<Config
         Assert.NotNull(indexes.SingleOrDefault(i => i.GetElement("name").Value.AsString.StartsWith("IX_name")));
 
         var personMap = BsonClassMap.GetRegisteredClassMaps().SingleOrDefault(map => map.ClassType == typeof(ConfigurationMongoFixture.Person));
-        
+
         Assert.NotNull(personMap);
         Assert.Equal(2, personMap.AllMemberMaps.Count);
         Assert.NotNull(personMap.AllMemberMaps.SingleOrDefault(m => m.ElementName == "_id"));
         Assert.NotNull(personMap.AllMemberMaps.SingleOrDefault(m => m.ElementName == "n"));
     }
-    
+
     [Fact]
     public void MultipleAddCollectionConfigurations_DoesNotCrash()
     {

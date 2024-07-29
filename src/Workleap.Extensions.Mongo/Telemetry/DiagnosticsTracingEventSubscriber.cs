@@ -131,14 +131,14 @@ internal sealed class DiagnosticsTracingEventSubscriber : IEventSubscriber
 
     private void HandleDiagnosticEvent(object diagnosticEvent)
     {
-        Activity? currentActivity = Activity.Current;
+        var currentActivity = Activity.Current;
         if (!this._options.Telemetry.CaptureDiagnosticEvents || currentActivity is null)
         {
             return;
         }
 
-        Type t = diagnosticEvent.GetType();
-        PropertyInfo[] props = this._propertyInfoCache.GetOrAdd(t, x => x.GetProperties(BindingFlags.Instance | BindingFlags.Public));
+        var t = diagnosticEvent.GetType();
+        var props = this._propertyInfoCache.GetOrAdd(t, x => x.GetProperties(BindingFlags.Instance | BindingFlags.Public));
 
         var tags = new List<KeyValuePair<string, object?>>(props.Length);
         foreach (var prop in props)

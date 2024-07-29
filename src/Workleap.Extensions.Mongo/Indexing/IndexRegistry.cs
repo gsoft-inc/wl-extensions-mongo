@@ -11,7 +11,7 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
     internal void RegisterIndexType(Type documentType, Type? indexProviderType)
     {
         indexProviderType ??= typeof(EmptyMongoIndexProvider<>).MakeGenericType(documentType);
-        
+
         if (!HasPublicParameterlessConstructor(indexProviderType))
         {
             throw new InvalidOperationException($"Type {indexProviderType}' must have a public parameterless constructor");
@@ -26,7 +26,7 @@ internal sealed class IndexRegistry : List<DocumentTypeEntry>
         {
             throw new InvalidOperationException($"Type '{indexProviderType} must provides index models for the document type '{documentType}'");
         }
-            
+
         this.Add(new DocumentTypeEntry(documentType, indexProviderType));
     }
 

@@ -13,11 +13,11 @@ public static class MongoServiceCollectionExtensions
 {
     private static readonly MethodInfo ConfigureMethod = typeof(MongoServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.NonPublic | BindingFlags.Static)
                                                          ?? throw new InvalidOperationException($"Could not find public instance method {nameof(MongoServiceCollectionExtensions)}.{nameof(Configure)}");
-    
+
     private static readonly object AddConfigurationLockObject = new();
-    
+
     private static ConcurrentBag<Type> RegisteredConfigurations { get; } = new();
-    
+
     public static MongoBuilder AddMongo(this IServiceCollection services, Action<MongoClientOptions>? configure = null)
     {
         services.ConfigureOptions<ConfigureMongoStaticOptions>();
@@ -109,20 +109,20 @@ public static class MongoServiceCollectionExtensions
     private static object GetMongoCollectionConfiguration(Type concreteType)
     {
         concreteType.EnsureHasPublicParameterlessConstructor();
-        
+
         var configuration = Activator.CreateInstance(concreteType);
-        
+
         return configuration ?? throw new InvalidOperationException($"Cannot create {concreteType}");
     }
 
     private static MongoCollectionMetadata GetMongoCollectionMetadata(Type documentType, object configuration, MongoCollectionBuilder configurationBuilder)
     {
         var configureMethod = ConfigureMethod.MakeGenericMethod(documentType);
-        
+
         configureMethod.Invoke(null, new[] { configuration, configurationBuilder });
 
         var metadata = configurationBuilder.Build(); // BsonClassMap registration happens here
-        
+
         return metadata;
     }
 
@@ -133,7 +133,7 @@ public static class MongoServiceCollectionExtensions
             .Select(t => (ConcreteType: t, Interface: t.GetInterfaces().FirstOrDefault(i => i.IsMongoCollectionConfigurationInterface())))
             .Where(t => t.Interface != null))
             .OfType<(Type, Type)>();
-        
+
         return configurationTypes;
     }
 
@@ -148,7 +148,7 @@ public static class MongoServiceCollectionExtensions
         var options = serviceProvider.GetRequiredService<IOptionsMonitor<MongoClientOptions>>().Get(MongoDefaults.ClientName);
         return client.GetDatabase(options.DefaultDatabaseName);
     }
-    
+
     private static void Configure<TDocument>(IMongoCollectionConfiguration<TDocument> configuration, IMongoCollectionBuilder<TDocument> configurationBuilder)
         where TDocument : class
     {

@@ -61,7 +61,7 @@ public sealed class UniqueIndexNameTests : BaseUnitTest
     }
 
     [MongoCollection("Sample")]
-    private class SampleDocument : MongoDocument
+    private sealed class SampleDocument : MongoDocument
     {
         public string? SampleField { get; set; }
     }

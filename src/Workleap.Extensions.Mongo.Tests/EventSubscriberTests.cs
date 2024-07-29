@@ -67,7 +67,7 @@ CommandTracingEventSubscriber.CommandSucceededEvent(find)";
     }
 
     [MongoCollection("dummy")]
-    private class DummyDocument : MongoDocument
+    private sealed class DummyDocument : MongoDocument
     {
     }
 

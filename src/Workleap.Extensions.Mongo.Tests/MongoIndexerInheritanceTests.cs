@@ -13,7 +13,7 @@ public class MongoIndexerInheritanceTests : BaseIntegrationTest<MongoFixture>
         : base(fixture, testOutputHelper)
     {
     }
-    
+
     [Fact]
     public async Task UpdateIndexesAsync_Ignores_Automatically_Inherited_Index_Provider()
     {

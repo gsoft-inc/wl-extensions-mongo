@@ -25,7 +25,7 @@ internal sealed class IndexCreator<TDocument>
 
     private readonly HashSet<UniqueIndexName> _existingIndexes;
     private readonly Dictionary<UniqueIndexName, CreateIndexModel<TDocument>> _indexModels;
-    
+
     private readonly Dictionary<UniqueIndexName, AddReason> _indexesToAdd;
     private readonly IndexCreationResult _creationResult;
 
@@ -47,7 +47,7 @@ internal sealed class IndexCreator<TDocument>
     {
         return new IndexCreator<TDocument>(provider, database, loggerFactory, cancellationToken).ProcessAsync();
     }
-    
+
     private async Task<IndexCreationResult> ProcessAsync()
     {
         await this.EnsureCollectionExists().ConfigureAwait(false);
@@ -66,7 +66,7 @@ internal sealed class IndexCreator<TDocument>
 
         return this._creationResult;
     }
-    
+
     private async Task EnsureCollectionExists()
     {
         var filteringOptions = new ListCollectionNamesOptions
@@ -132,7 +132,7 @@ internal sealed class IndexCreator<TDocument>
             }
         }
     }
-    
+
     private async Task AddIndexes()
     {
         foreach (var kvp in this._indexesToAdd)
