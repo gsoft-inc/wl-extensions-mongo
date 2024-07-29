@@ -31,7 +31,9 @@ internal sealed class MongoStaticInitializer
                 return;
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             BsonDefaults.GuidRepresentationMode = this._options.Value.GuidRepresentationMode;
+#pragma warning restore CS0618
 
             foreach (var kvp in this._options.Value.BsonSerializers)
             {

@@ -52,9 +52,9 @@ public sealed class MongoBasicTests : BaseIntegrationTest<MongoFixture>
         public string Name { get; set; } = string.Empty;
 
         [BsonRepresentation(BsonType.Int64)]
-        public new DateTime DateTimeProperty { get; set; }
+        public DateTime DateTimeProperty { get; set; }
 
         [BsonRepresentation(BsonType.Array)]
-        public new DateTimeOffset DateTimeOffsetProperty { get; set; }
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
     }
 }

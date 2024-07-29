@@ -7,7 +7,7 @@ namespace Workleap.Extensions.Mongo.Tests;
 public class MongoIndexerAssemblyScanningTests
 {
     [Fact]
-    public async Task IsDocumentTypesWithExplicitMongoCollectionAttribute_Filter_Works()
+    public void IsDocumentTypesWithExplicitMongoCollectionAttribute_Filter_Works()
     {
         Assert.False(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(RandomObject)));
         Assert.True(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(BaseAssemblyScanningTestDocument)));

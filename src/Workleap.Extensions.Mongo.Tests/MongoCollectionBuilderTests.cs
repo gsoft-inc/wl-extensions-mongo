@@ -7,7 +7,7 @@ namespace Workleap.Extensions.Mongo.Tests;
 public sealed class MongoCollectionBuilderTests
 {
     [Fact]
-    public async Task Builder_Builds_Correctly()
+    public void Builder_Builds_Correctly()
     {
         const string collectionName = "collection1";
         const string otherDatabaseName = "otherDatabaseName";
