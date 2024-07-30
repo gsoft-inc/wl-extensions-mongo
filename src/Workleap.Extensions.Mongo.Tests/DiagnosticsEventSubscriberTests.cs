@@ -10,6 +10,7 @@ using Workleap.Extensions.Mongo.Telemetry;
 
 namespace Workleap.Extensions.Mongo.Tests;
 
+[Collection("Non-Parallel Collection")]
 public class DiagnosticsEventSubscriberTests
 {
     static DiagnosticsEventSubscriberTests()
@@ -47,7 +48,7 @@ public class DiagnosticsEventSubscriberTests
                 var connPoolAddedConnEvent = activityEvents.First();
                 Assert.Equal("ConnectionPoolAddedConnectionEvent", connPoolAddedConnEvent.Name);
                 var operationId = connPoolAddedConnEvent.Tags.SingleOrDefault(t => t.Key == "db.mongodb.OperationId");
-                Assert.Equal(Convert.ToInt64(1), operationId.Value);
+                Assert.Equal(1L, operationId.Value);
 
                 stopFired = true;
             },

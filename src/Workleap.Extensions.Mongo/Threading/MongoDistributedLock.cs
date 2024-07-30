@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Workleap.Extensions.Mongo.Threading;
@@ -39,8 +39,8 @@ internal sealed class MongoDistributedLock
 
     private async ValueTask<bool> AcquireAsyncInternal(TimeSpan lifetime, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        using var timeoutCts = new CancellationTokenSource(timeout);
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        linkedCts.CancelAfter(timeout);
         var linkedCt = linkedCts.Token;
 
         try
@@ -57,7 +57,7 @@ internal sealed class MongoDistributedLock
         }
         catch (OperationCanceledException)
         {
-            if (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            if (linkedCt.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
             {
                 return false;
             }
