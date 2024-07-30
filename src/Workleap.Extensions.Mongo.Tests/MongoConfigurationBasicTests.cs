@@ -13,6 +13,7 @@ public sealed class MongoConfigurationBasicTests : BaseIntegrationTest<Configura
     }
 
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Performance is not important in tests")]
     public async Task Configuration_Works_In_Database()
     {
         var people = new List<ConfigurationMongoFixture.Person>

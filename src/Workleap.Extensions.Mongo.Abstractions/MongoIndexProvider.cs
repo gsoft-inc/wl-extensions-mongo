@@ -9,6 +9,6 @@ public abstract class MongoIndexProvider<TDocument>
     where TDocument : class
 {
     public IndexKeysDefinitionBuilder<TDocument> IndexKeys => Builders<TDocument>.IndexKeys;
-    
+
     public abstract IEnumerable<CreateIndexModel<TDocument>> CreateIndexModels();
 }

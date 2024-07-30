@@ -1,7 +1,8 @@
 using Workleap.Extensions.Mongo;
 
-// ReSharper disable once CheckNamespace
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace MongoDB.Driver;
+#pragma warning restore IDE0130
 
 public static class IMongoCollectionExtensions
 {

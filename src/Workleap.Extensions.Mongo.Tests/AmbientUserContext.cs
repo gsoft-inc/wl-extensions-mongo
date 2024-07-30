@@ -2,9 +2,9 @@ namespace Workleap.Extensions.Mongo.Tests;
 
 public sealed class AmbientUserContext
 {
-    private static readonly AsyncLocal<UserContext?> _asyncLocal = new AsyncLocal<UserContext?>();
+    private static readonly AsyncLocal<UserContext?> AsyncLocal = new AsyncLocal<UserContext?>();
 
-    public string? UserId => _asyncLocal.Value?.UserId;
+    public string? UserId => AsyncLocal.Value?.UserId;
 
     public IDisposable RegisterUserId(string userId)
     {
@@ -16,14 +16,14 @@ public sealed class AmbientUserContext
         return new UserContext(userId);
     }
 
-    private class UserContext : IDisposable
+    private sealed class UserContext : IDisposable
     {
         private readonly UserContext? _parent;
 
         public UserContext(string userId)
         {
-            this._parent = _asyncLocal.Value;
-            _asyncLocal.Value = this;
+            this._parent = AsyncLocal.Value;
+            AsyncLocal.Value = this;
             this.UserId = userId;
         }
 
@@ -31,7 +31,7 @@ public sealed class AmbientUserContext
 
         public void Dispose()
         {
-            _asyncLocal.Value = this._parent;
+            AsyncLocal.Value = this._parent;
         }
     }
 }

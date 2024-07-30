@@ -1,4 +1,4 @@
-﻿using Workleap.Extensions.Xunit;
+using Workleap.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -14,6 +14,7 @@ public sealed class MongoBasicTests : BaseIntegrationTest<MongoFixture>
     }
 
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "We want to explicitly test DateTime.Now")]
     public async Task Dates_Are_Always_Serialized_In_Utc()
     {
         var dtNow = DateTime.Now;
@@ -51,9 +52,9 @@ public sealed class MongoBasicTests : BaseIntegrationTest<MongoFixture>
         public string Name { get; set; } = string.Empty;
 
         [BsonRepresentation(BsonType.Int64)]
-        public new DateTime DateTimeProperty { get; set; }
+        public DateTime DateTimeProperty { get; set; }
 
         [BsonRepresentation(BsonType.Array)]
-        public new DateTimeOffset DateTimeOffsetProperty { get; set; }
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
     }
 }

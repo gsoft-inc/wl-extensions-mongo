@@ -7,7 +7,7 @@ namespace Workleap.Extensions.Mongo.Tests;
 public class MongoIndexerAssemblyScanningTests
 {
     [Fact]
-    public async Task IsDocumentTypesWithExplicitMongoCollectionAttribute_Filter_Works()
+    public void IsDocumentTypesWithExplicitMongoCollectionAttribute_Filter_Works()
     {
         Assert.False(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(RandomObject)));
         Assert.True(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(BaseAssemblyScanningTestDocument)));
@@ -15,7 +15,7 @@ public class MongoIndexerAssemblyScanningTests
         Assert.True(MongoIndexer.IsDocumentTypesWithExplicitMongoCollectionAttribute(typeof(ChildWithOwnIndexerAssemblyScanningTestDocument)));
     }
 
-    private class RandomObject
+    private sealed class RandomObject
     {
         public Guid WastedGuid { get; set; }
     }
@@ -34,7 +34,7 @@ public class MongoIndexerAssemblyScanningTests
         [BsonElement("email")]
         public string Email { get; set; } = string.Empty;
     }
-    
+
     [BsonDiscriminator("Children")]
     [MongoCollection("assemblyScanner", IndexProviderType = typeof(ChildWithOwnIndexerAssemblyScanningTestProvider))]
     private sealed class ChildWithOwnIndexerAssemblyScanningTestDocument : BaseAssemblyScanningTestDocument
@@ -42,7 +42,7 @@ public class MongoIndexerAssemblyScanningTests
         [BsonElement("phone")]
         public string PhoneNumber { get; set; } = string.Empty;
     }
-    
+
     private sealed class BaseAssemblyScanningTestProvider : MongoIndexProvider<BaseAssemblyScanningTestDocument>
     {
         public override IEnumerable<CreateIndexModel<BaseAssemblyScanningTestDocument>> CreateIndexModels()
@@ -52,7 +52,7 @@ public class MongoIndexerAssemblyScanningTests
                 new CreateIndexOptions { Name = "name" });
         }
     }
-    
+
     private sealed class ChildWithOwnIndexerAssemblyScanningTestProvider : MongoIndexProvider<ChildWithOwnIndexerAssemblyScanningTestDocument>
     {
         public override IEnumerable<CreateIndexModel<ChildWithOwnIndexerAssemblyScanningTestDocument>> CreateIndexModels()

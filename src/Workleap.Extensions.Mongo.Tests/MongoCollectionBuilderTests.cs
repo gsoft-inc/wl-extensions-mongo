@@ -7,15 +7,15 @@ namespace Workleap.Extensions.Mongo.Tests;
 public sealed class MongoCollectionBuilderTests
 {
     [Fact]
-    public async Task Builder_Builds_Correctly()
+    public void Builder_Builds_Correctly()
     {
         const string collectionName = "collection1";
         const string otherDatabaseName = "otherDatabaseName";
 
-        Action<BsonClassMap<TestDocument>> classMapInitializer = map =>
+        static void classMapInitializer(BsonClassMap<TestDocument> map)
         {
             map.MapIdProperty(x => x.Id);
-        };
+        }
 
         var builder = new MongoCollectionBuilder<TestDocument>();
         builder

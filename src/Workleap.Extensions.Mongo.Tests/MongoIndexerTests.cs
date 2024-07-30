@@ -43,7 +43,7 @@ public class MongoIndexerTests : BaseIntegrationTest<ConfigurationMongoFixture>
         Assert.Contains("_id_", personDocumentIndexNames);
         Assert.Contains("fn_ln_15cfbc3bcdc8c4f800adf1709115006a", personDocumentIndexNames);
         Assert.Contains("age_7c4afaa70df651e198675bca5bcb6ad2", personDocumentIndexNames);
-        
+
         using var personIndexCursor = await this.Services.GetRequiredService<IMongoCollection<ConfigurationMongoFixture.Person>>().Indexes.ListAsync();
         var personIndexNames = await personIndexCursor.ToAsyncEnumerable().Select(x => x["name"].AsString).ToListAsync();
         Assert.Equal(2, personIndexNames.Count);

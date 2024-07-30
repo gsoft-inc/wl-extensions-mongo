@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using Workleap.Extensions.Mongo;
 using Workleap.Extensions.Mongo.Indexing;
 using Workleap.Extensions.Xunit;
 
@@ -13,7 +12,7 @@ public class MongoIndexerInheritanceTests : BaseIntegrationTest<MongoFixture>
         : base(fixture, testOutputHelper)
     {
     }
-    
+
     [Fact]
     public async Task UpdateIndexesAsync_Ignores_Automatically_Inherited_Index_Provider()
     {

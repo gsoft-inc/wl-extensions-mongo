@@ -11,7 +11,7 @@ public sealed class MongoCollectionBuilder<TDocument> : MongoCollectionBuilder, 
     where TDocument : class
 {
     private readonly MongoCollectionMetadata<TDocument> _metadata = new();
-    
+
     public IMongoCollectionBuilder<TDocument> CollectionName(string collectionName)
     {
         this._metadata.CollectionName = collectionName;

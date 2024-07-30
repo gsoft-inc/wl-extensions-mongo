@@ -13,11 +13,11 @@ internal sealed class IndexDeleter
 {
     private readonly IMongoDatabase _database;
     private readonly ILogger _logger;
-    
+
     private readonly Dictionary<string, IList<UniqueIndexName>> _expectedIndexes;
-    
+
     private readonly CancellationToken _cancellationToken;
-    
+
     public IndexDeleter(IMongoDatabase database, Dictionary<string, IList<UniqueIndexName>> expectedIndexes, ILogger<IndexDeleter> logger, CancellationToken cancellationToken)
     {
         this._database = database;
@@ -26,33 +26,33 @@ internal sealed class IndexDeleter
 
         this._expectedIndexes = expectedIndexes;
     }
-    
+
     public static Task ProcessAsync(IMongoDatabase database, Dictionary<string, IList<UniqueIndexName>> expectedIndexes, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
         return new IndexDeleter(database, expectedIndexes, loggerFactory.CreateLogger<IndexDeleter>(), cancellationToken).ProcessAsync();
     }
-    
+
     private async Task ProcessAsync()
     {
         foreach (var expectedIndexForCollection in this._expectedIndexes)
         {
             var existingIndexesForCollection = await this.GetExistingIndexes(expectedIndexForCollection.Key).ConfigureAwait(false);
             this._cancellationToken.ThrowIfCancellationRequested();
-            
+
             var indexesToRemove = ComputeIndexesToRemove(expectedIndexForCollection.Value, existingIndexesForCollection);
             this._cancellationToken.ThrowIfCancellationRequested();
-            
+
             await this.RemoveIndexes(expectedIndexForCollection.Key, indexesToRemove).ConfigureAwait(false);
         }
     }
-    
+
     private async Task<List<UniqueIndexName>> GetExistingIndexes(string collectionName)
     {
         var existingIndexes = new List<UniqueIndexName>();
-        
+
         using var indexesCursor = await this._database.GetCollection<BsonDocument>(collectionName).Indexes.ListAsync().ConfigureAwait(false);
         var indexes = await indexesCursor.ToListAsync().ConfigureAwait(false);
-        
+
         foreach (var index in indexes)
         {
             if (UniqueIndexName.TryCreate(index, out var indexName))
@@ -102,7 +102,7 @@ internal sealed class IndexDeleter
                     this._logger.DroppingOrphanedIndex(collectionName, indexName.FullName, this._database.DatabaseNamespace.DatabaseName);
                     break;
             }
-            
+
             await this._database.GetCollection<BsonDocument>(collectionName).Indexes.DropOneAsync(indexName.FullName).ConfigureAwait(false);
         }
     }

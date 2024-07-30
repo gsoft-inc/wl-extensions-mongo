@@ -1,4 +1,4 @@
-﻿using Workleap.Extensions.Xunit;
+using Workleap.Extensions.Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -28,7 +28,7 @@ public sealed class MongoDistributedLockTests : BaseIntegrationTest<MongoFixture
 
         await using (var distributedLock = await distributedLockFactory.AcquireAsync("single", lifetime: 100, timeout: 100))
         {
-            Assert.True((bool)distributedLock.IsAcquired);
+            Assert.True(distributedLock.IsAcquired);
         }
     }
 

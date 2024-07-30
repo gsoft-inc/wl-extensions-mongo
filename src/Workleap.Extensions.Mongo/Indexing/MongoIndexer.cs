@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,8 +16,8 @@ internal sealed class MongoIndexer : IMongoIndexer
     private readonly ILoggerFactory _loggerFactory;
 
     public MongoIndexer(
-        IMongoClientProvider mongoClientProvider,  
-        IOptionsMonitor<MongoClientOptions> optionsMonitor, 
+        IMongoClientProvider mongoClientProvider,
+        IOptionsMonitor<MongoClientOptions> optionsMonitor,
         ILoggerFactory loggerFactory)
     {
         this._mongoClientProvider = mongoClientProvider;
@@ -45,7 +44,7 @@ internal sealed class MongoIndexer : IMongoIndexer
 
         var documentTypesWithExplicitMongoCollectionAttribute = assemblies.SelectMany(x => x.GetTypes().Where(IsDocumentTypesWithExplicitMongoCollectionAttribute))
             .ToArray();
-        
+
         return this.UpdateIndexesAsync(documentTypesWithExplicitMongoCollectionAttribute, clientName, databaseName, cancellationToken);
     }
 
@@ -143,7 +142,7 @@ internal sealed class MongoIndexer : IMongoIndexer
                 ?? throw new InvalidOperationException($"'{nameof(MongoIndexer)}.{nameof(this.ProcessAsync)}(...)' should have returned a task");
 
             var processingResult = await task.ConfigureAwait(false);
-            
+
             var collectionName = MongoCollectionInformationCache.GetCollectionName(documentType);
             if (expectedIndexes.TryGetValue(collectionName, out var expectedIndexesForCollection))
             {
@@ -187,7 +186,7 @@ internal sealed class MongoIndexer : IMongoIndexer
             registry.RegisterIndexType(documentType, mongoCollectionAttribute.IndexProviderType);
         }
     }
-    
+
     internal static bool IsDocumentTypesWithExplicitMongoCollectionAttribute(Type typeCandidate)
     {
         return typeCandidate.IsConcreteMongoDocumentType() && typeCandidate.GetCustomAttribute<MongoCollectionAttribute>(inherit: false) != null;
