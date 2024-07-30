@@ -13,18 +13,6 @@
       "extends": [
         ":separateMajorReleases"
       ]
-    },
-    {
-      "matchManagers": ["nuget"],
-      "includePaths": [
-        "Workleap.Extensions.Mongo.Analyzers.Tests"
-      ],
-      "matchPackagePatterns": [
-        "^xunit"
-      ],
-      "groupName": "XUnit (Roslyn Analyzer Tests)",
-      "description": "Newer XUnit versions have bugs that prevent the Roslyn analyzers testing engine to print detailed errors when diagnostic assertions are not right",
-      "enabled": false
     }
   ]
 }
