@@ -17,7 +17,7 @@ internal sealed class ConfigureEphemeralMongoClientOptions : IConfigureNamedOpti
     {
         // Each test that requests a IMongoDatabase will have its own database
         // There will also be one MongoDB instance per named MongoDB client
-        var runner = this._runnerProvider.GetRunner(name ?? "");
+        var runner = this._runnerProvider.GetRunner(name ?? Options.DefaultName);
 
         options.ConnectionString = runner.ConnectionString;
         options.DefaultDatabaseName = this._databaseName;
