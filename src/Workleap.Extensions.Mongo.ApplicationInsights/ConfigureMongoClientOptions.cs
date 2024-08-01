@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Workleap.Extensions.Mongo.Telemetry;
 
 namespace Workleap.Extensions.Mongo.ApplicationInsights;
@@ -9,7 +9,7 @@ internal sealed class ConfigureMongoClientOptions : IConfigureNamedOptions<Mongo
     {
     }
 
-    public void Configure(string name, MongoClientOptions options)
+    public void Configure(string? name, MongoClientOptions options)
     {
         var existingPostConfigureEventSubscribers = options.PostConfigureEventSubscribers;
 
