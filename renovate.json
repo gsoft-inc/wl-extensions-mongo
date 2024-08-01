@@ -1,21 +1,24 @@
-
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-      "github>gsoft-inc/renovate-config"
+    "github>gsoft-inc/renovate-config"
   ],
   "packageRules": [
     {
-      "matchManagers": ["nuget"],
-      "matchPackagePatterns": [
-        "^Microsoft\\.Bcl\\.AsyncInterfaces$"
+      "matchManagers": [
+        "nuget"
       ],
       "extends": [
         ":separateMajorReleases"
+      ],
+      "matchPackageNames": [
+        "/^Microsoft\\.Bcl\\.AsyncInterfaces$/"
       ]
     },
     {
-      "matchManagers": ["nuget"],
+      "matchManagers": [
+        "nuget"
+      ],
       "matchPackageNames": [
         "Microsoft.CodeAnalysis.CSharp.Workspaces"
       ],
