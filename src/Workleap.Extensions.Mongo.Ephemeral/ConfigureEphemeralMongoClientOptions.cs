@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 
 namespace Workleap.Extensions.Mongo.Ephemeral;
 
@@ -13,11 +13,11 @@ internal sealed class ConfigureEphemeralMongoClientOptions : IConfigureNamedOpti
         this._runnerProvider = runnerProvider;
     }
 
-    public void Configure(string name, MongoClientOptions options)
+    public void Configure(string? name, MongoClientOptions options)
     {
         // Each test that requests a IMongoDatabase will have its own database
         // There will also be one MongoDB instance per named MongoDB client
-        var runner = this._runnerProvider.GetRunner(name);
+        var runner = this._runnerProvider.GetRunner(name ?? Options.DefaultName);
 
         options.ConnectionString = runner.ConnectionString;
         options.DefaultDatabaseName = this._databaseName;
