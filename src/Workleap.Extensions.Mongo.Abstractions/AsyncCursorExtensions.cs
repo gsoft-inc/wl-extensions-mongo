@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
 namespace MongoDB.Driver;
 
