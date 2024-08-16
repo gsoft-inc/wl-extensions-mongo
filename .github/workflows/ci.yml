@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "6.0.x"
+          global-json-file: "global.json"
           source-url: ${{ secrets.NUGET_GSOFTDEV_FEED_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GSOFT_NUGET_API_KEY }}
