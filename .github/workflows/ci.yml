@@ -14,8 +14,10 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-dotnet@v4
+
+      - uses: actions/setup-dotnet@v4
         with:
-          global-json-file: "global.json"
+          dotnet-version: "6.0.x"
           source-url: ${{ secrets.NUGET_GSOFTDEV_FEED_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GSOFT_NUGET_API_KEY }}
