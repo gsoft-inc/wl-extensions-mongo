@@ -1,31 +1,6 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "github>gsoft-inc/renovate-config"
-  ],
-  "packageRules": [
-    {
-      "matchManagers": [
-        "nuget"
-      ],
-      "extends": [
-        ":separateMajorReleases"
-      ],
-      "matchPackageNames": [
-        "/^Microsoft\\.Bcl\\.AsyncInterfaces$/"
-      ]
-    },
-    {
-      "matchManagers": [
-        "nuget"
-      ],
-      "matchPackageNames": [
-        "Microsoft.CodeAnalysis.CSharp.Workspaces"
-      ],
-      "includePaths": [
-        "src/Workleap.Extensions.Mongo.Analyzers/**/*"
-      ],
-      "enabled": false
-    }
-  ]
-}
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+      "github>gsoft-inc/renovate-config"
+    ]
+  }
