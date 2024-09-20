@@ -37,23 +37,22 @@ internal sealed class UniqueIndexName
 
     public static bool TryCreate<TDocument>(CreateIndexModel<TDocument> indexModel, [MaybeNullWhen(false)] out UniqueIndexName indexName)
     {
+        var bsonRenderArgs = new RenderArgs<TDocument>(BsonSerializer.LookupSerializer<TDocument>(), BsonSerializer.SerializerRegistry);
+
         var options = indexModel.Options;
-        var prefix = options?.Name?.Trim() ?? IndexNameHelper.GetIndexName(indexModel.Keys.Render(BsonSerializer.LookupSerializer<TDocument>(), BsonSerializer.SerializerRegistry));
+        var prefix = options?.Name?.Trim() ?? IndexNameHelper.GetIndexName(indexModel.Keys.Render(bsonRenderArgs));
         if (prefix.Length == 0)
         {
             indexName = null;
             return false;
         }
 
-        var bsonSerializer = BsonSerializer.LookupSerializer<TDocument>();
-        var serializerRegistry = BsonSerializer.SerializerRegistry;
-
-        var bsonIndexFields = indexModel.Keys.Render(bsonSerializer, serializerRegistry).ToString();
+        var bsonIndexFields = indexModel.Keys.Render(bsonRenderArgs).ToString();
         var indexDescription = new StringBuilder(bsonIndexFields)
             .Append(options?.Unique is true ? "unique" : string.Empty)
             .Append(options?.Sparse is true ? "sparse" : string.Empty)
-            .Append(options?.WildcardProjection is { } projection ? projection.Render(bsonSerializer, serializerRegistry) : string.Empty)
-            .Append(options?.PartialFilterExpression is { } filter ? filter.Render(bsonSerializer, serializerRegistry) : string.Empty)
+            .Append(options?.WildcardProjection is { } projection ? projection.Render(bsonRenderArgs) : string.Empty)
+            .Append(options?.PartialFilterExpression is { } filter ? filter.Render(bsonRenderArgs) : string.Empty)
             .ToString();
 
         var hashHex = ComputeIndexHash(indexDescription);
