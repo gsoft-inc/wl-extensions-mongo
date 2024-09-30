@@ -1,6 +1,7 @@
 openapi: 3.0.1
 info:
   title: Workleap Extensions Mongo
+  description: Convenient set of .NET libraries designed to enhance and streamline the MongoDB C# driver integration into your C# projects.
   x-cortex-git:
     github:
       alias: gsoft-inc
@@ -9,14 +10,17 @@ info:
   x-cortex-type: library
   x-cortex-slack:
     channels:
-    - name: internal-dev-platform
-      notificationsEnabled: true
+      - name: internal-dev-platform
+        notificationsEnabled: true
   x-cortex-owners:
-  - name: team-internal-developer-platform-backend
-    type: GROUP
-    provider: CORTEX
+    - name: team-internal-developer-platform-backend
+      type: GROUP
+      provider: CORTEX
   x-cortex-link:
-  - type: cortex
-    url: https://github.com/gsoft-inc/wl-extensions-mongo/blob/main/.cortex/catalog/service-wl-extensions-mongo.yaml
-    name: Edit current Cortex entity in GitHub
+    - name: Documentation
+      type: documentation
+      url: https://gsoftdev.atlassian.net/wiki/spaces/TEC/pages/3515056559
+    - type: cortex
+      url: https://github.com/gsoft-inc/wl-extensions-mongo/blob/main/.cortex/catalog/service-wl-extensions-mongo.yaml
+      name: Edit current Cortex entity in GitHub
 
