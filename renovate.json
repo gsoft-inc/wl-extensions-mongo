@@ -16,10 +16,21 @@
       ]
     },
     {
+      "matchManagers": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "Microsoft.CodeAnalysis.CSharp.Workspaces"
+      ],
+      "includePaths": [
+        "src/Workleap.Extensions.Mongo.Analyzers/**/*"
+      ],
+      "enabled": false
+    },
+    {
       "matchManagers": ["nuget"],
       "matchPackagePatterns": [
         "^Microsoft\\.Extensions\\.",
-        "^Microsoft\\.CodeAnalysis\\.CSharp\\.",
         "^System\\."
       ],
       "groupName": "Ignored NuGet dependencies",
