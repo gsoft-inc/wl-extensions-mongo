@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   main:
+    # As of 18/12/2024, Ephemeral Mongo supports only MongoDB 6.0, which is compatible only with Ubuntu 22.04 (https://www.mongodb.com/docs/v6.0/tutorial/install-mongodb-on-ubuntu/)
     runs-on: ubuntu-22.04
 
     steps:
@@ -26,7 +27,6 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "6.0.x"
           source-url: ${{ secrets.NUGET_GSOFTDEV_FEED_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GSOFT_NUGET_API_KEY }}
