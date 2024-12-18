@@ -40,6 +40,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
     public void AnalyzeCommand(CommandToAnalyze command)
     {
+#pragma warning disable CA1513 // Justification: Ensuring maintainability by using a common approach that supports multiple .NET frameworks        
         if (this._isDisposed)
         {
             throw new ObjectDisposedException(nameof(CommandPerformanceAnalyzer));
@@ -51,6 +52,7 @@ internal sealed class CommandPerformanceAnalyzer : IDisposable
 
     public void StartBackgroundTask()
     {
+#pragma warning disable CA1513 // Justification: Ensuring maintainability by using a common approach that supports multiple .NET frameworks
         if (this._isDisposed)
         {
             throw new ObjectDisposedException(nameof(CommandPerformanceAnalyzer));

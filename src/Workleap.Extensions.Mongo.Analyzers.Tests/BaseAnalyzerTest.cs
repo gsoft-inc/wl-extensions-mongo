@@ -30,7 +30,7 @@ global using MongoDB.Driver;";
         this.TestState.Sources.Add(CSharp10GlobalUsings);
         this.TestState.Sources.Add(MongoGlobalUsings);
 
-        this.TestState.ReferenceAssemblies = ReferenceAssemblies.Net.Net60;
+        this.TestState.ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
         this.TestState.AdditionalReferences.Add(typeof(IMongoDocument).Assembly); // Workleap.Extensions.Mongo
         this.TestState.AdditionalReferences.Add(typeof(MongoClient).Assembly); // MongoDB.Driver
     }
