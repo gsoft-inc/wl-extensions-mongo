@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{E16B8921
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		..\README.md = ..\README.md
+		..\global.json = ..\global.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workleap.Extensions.Mongo.Abstractions", "Workleap.Extensions.Mongo.Abstractions\Workleap.Extensions.Mongo.Abstractions.csproj", "{9F410354-6AEC-4A46-84B4-214076363660}"
