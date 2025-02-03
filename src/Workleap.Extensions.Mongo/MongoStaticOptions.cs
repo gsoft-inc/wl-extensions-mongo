@@ -10,12 +10,16 @@ public sealed class MongoStaticOptions
         this.BsonSerializers = new Dictionary<Type, IBsonSerializer>();
         this.ConventionPacks = new List<NamedConventionPack>();
 
-        // Guid representation V3 will be the default in Mongo C# driver 3.x so we use it already (V2 is deprecated)
-        // https://mongodb.github.io/mongo-csharp-driver/2.18/reference/bson/guidserialization/guidrepresentationmode/guidrepresentationmode/
+        // This enum will disappear in Mongo C# driver 3.x and V3 will be the default
+        // https://www.mongodb.com/docs/drivers/csharp/current/upgrade/v3/#version-3.0-breaking-changes
+#pragma warning disable CS0618 // Type or member is obsolete
         this.GuidRepresentationMode = GuidRepresentationMode.V3;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public GuidRepresentationMode GuidRepresentationMode { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     public IDictionary<Type, IBsonSerializer> BsonSerializers { get; }
 
