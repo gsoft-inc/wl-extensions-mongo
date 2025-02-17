@@ -1,7 +1,7 @@
 # Workleap.Extensions.Mongo
 
 [![nuget](https://img.shields.io/nuget/v/Workleap.Extensions.Mongo.svg?logo=nuget)](https://www.nuget.org/packages/Workleap.Extensions.Mongo/)
-[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/wl-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/gsoft-inc/wl-extensions-mongo/actions/workflows/publish.yml)
+[![build](https://img.shields.io/github/actions/workflow/status/gsoft-inc/wl-extensions-mongo/publish.yml?logo=github&branch=main)](https://github.com/workleap/wl-extensions-mongo/actions/workflows/publish.yml)
 
 Workleap.Extensions.Mongo is a convenient set of .NET libraries designed to enhance and streamline the [MongoDB C# driver](https://github.com/mongodb/mongo-csharp-driver) integration into your C# projects.
 
@@ -501,4 +501,4 @@ To learn more about configuring or suppressing code analysis warnings, refer to 
 
 ## License
 
-Copyright © 2023, Workleap. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/gsoft-inc/gsoft-license/blob/master/LICENSE.
+Copyright © 2023, Workleap. This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license at https://github.com/workleap/gsoft-license/blob/master/LICENSE.
