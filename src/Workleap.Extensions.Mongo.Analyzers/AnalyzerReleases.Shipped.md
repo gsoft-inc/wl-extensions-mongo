@@ -4,4 +4,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-GMNG01 | Design | Warning | IndexAttributeUsageAnalyzer, [Documentation](https://github.com/gsoft-inc/wl-extensions-mongo)
+GMNG01 | Design | Warning | IndexAttributeUsageAnalyzer, [Documentation](https://github.com/workleap/wl-extensions-mongo)
